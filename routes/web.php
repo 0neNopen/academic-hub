@@ -61,4 +61,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Webhook Cron Scheduler (Gratis untuk Cloud Deployment via cron-job.org)
+Route::get('/cron/run-schedule', function (Request $request) {
+    $secret = config('app.key');
+    $providedKey = $request->query('key');
+
+    if (!$providedKey || !hash_equals((string) $secret, (string) $providedKey)) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Unauthorized cron trigger.',
+        ], 403);
+    }
+
+    \Illuminate\Support\Facades\Artisan::call('schedule:run');
+    $output = \Illuminate\Support\Facades\Artisan::output();
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Scheduler executed successfully.',
+        'output' => $output,
+        'timestamp' => now()->toIso8601String(),
+    ]);
+});
+
 require __DIR__.'/auth.php';

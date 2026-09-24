@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Storage;
 
 class MaterialController extends Controller
 {
+    private function getStorageDisk(): string
+    {
+        return config('filesystems.default') === 's3' ? 's3' : 'public';
+    }
+
     public function store(Request $request, Course $course)
     {
         abort_if($course->user_id !== Auth::id(), 403);
@@ -24,7 +29,7 @@ class MaterialController extends Controller
 
         $filePath = null;
         if ($request->hasFile('file')) {
-            $filePath = $request->file('file')->store('materials', 'public');
+            $filePath = $request->file('file')->store('materials', $this->getStorageDisk());
         }
 
         $course->materials()->create([
@@ -51,10 +56,11 @@ class MaterialController extends Controller
         ]);
 
         if ($request->hasFile('file')) {
-            if ($material->file_path && Storage::disk('public')->exists($material->file_path)) {
-                Storage::disk('public')->delete($material->file_path);
+            $disk = $this->getStorageDisk();
+            if ($material->file_path && Storage::disk($disk)->exists($material->file_path)) {
+                Storage::disk($disk)->delete($material->file_path);
             }
-            $material->file_path = $request->file('file')->store('materials', 'public');
+            $material->file_path = $request->file('file')->store('materials', $disk);
         }
 
         $material->title = $validated['title'];
@@ -72,7 +78,9 @@ class MaterialController extends Controller
     {
         abort_if($material->course->user_id !== Auth::id(), 403);
 
-        if (!$material->file_path || !Storage::disk('public')->exists($material->file_path)) {
+        $disk = $this->getStorageDisk();
+
+        if (!$material->file_path || !Storage::disk($disk)->exists($material->file_path)) {
             abort(404, 'Berkas materi tidak ditemukan.');
         }
 
@@ -81,12 +89,11 @@ class MaterialController extends Controller
             abort(403, 'Pratinjau berkas format ini dinonaktifkan demi alasan keamanan.');
         }
 
-        $path = Storage::disk('public')->path($material->file_path);
-        $mime = Storage::disk('public')->mimeType($material->file_path) ?: 'application/pdf';
+        $mime = Storage::disk($disk)->mimeType($material->file_path) ?: 'application/pdf';
 
-        return response()->file($path, [
+        return Storage::disk($disk)->response($material->file_path, basename($material->file_path), [
             'Content-Type' => $mime,
-            'Content-Disposition' => 'inline; filename="' . basename($path) . '"',
+            'Content-Disposition' => 'inline; filename="' . basename($material->file_path) . '"',
             'X-Content-Type-Options' => 'nosniff',
         ]);
     }
@@ -95,7 +102,9 @@ class MaterialController extends Controller
     {
         abort_if($material->course->user_id !== Auth::id(), 403);
 
-        if (!$material->file_path || !Storage::disk('public')->exists($material->file_path)) {
+        $disk = $this->getStorageDisk();
+
+        if (!$material->file_path || !Storage::disk($disk)->exists($material->file_path)) {
             abort(404, 'Berkas materi tidak ditemukan.');
         }
 
@@ -103,15 +112,17 @@ class MaterialController extends Controller
         $cleanTitle = preg_replace('/[^A-Za-z0-9_\-]/', '_', $material->title);
         $filename = "{$cleanTitle}.{$extension}";
 
-        return Storage::disk('public')->download($material->file_path, $filename);
+        return Storage::disk($disk)->download($material->file_path, $filename);
     }
 
     public function destroy(Material $material)
     {
         abort_if($material->course->user_id !== Auth::id(), 403);
 
-        if ($material->file_path && Storage::disk('public')->exists($material->file_path)) {
-            Storage::disk('public')->delete($material->file_path);
+        $disk = $this->getStorageDisk();
+
+        if ($material->file_path && Storage::disk($disk)->exists($material->file_path)) {
+            Storage::disk($disk)->delete($material->file_path);
         }
 
         $material->delete();
