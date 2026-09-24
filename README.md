@@ -90,8 +90,8 @@ Ikuti langkah-langkah berikut untuk menjalankan Academic Hub di komputer lokal A
 
 ### 2. Kloning Repositori
 ```bash
-git clone https://github.com/<username-anda>/<nama-repo>.git
-cd <nama-repo>
+git clone https://github.com/0neNopen/academic-hub.git
+cd academic-hub
 ```
 
 ### 3. Pasang Dependensi
