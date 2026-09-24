@@ -1,0 +1,47 @@
+name: Deploy to Oracle Cloud VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Auto Deploy to Production VPS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ${{ secrets.ORACLE_USERNAME }}
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          port: ${{ secrets.ORACLE_PORT || 22 }}
+          script_stop: true
+          script: |
+            echo "🚀 Mulai proses deployment..."
+            cd /var/www/academic-hub
+            
+            # Ambil update kode terbaru dari branch main
+            git pull origin main
+            
+            # Pasang dependensi PHP tanpa dev packages
+            composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+            
+            # Jalankan migrasi database
+            php artisan migrate --force
+            
+            # Build aset frontend produksi
+            npm install
+            npm run build
+            
+            # Bersihkan dan optimalkan cache Laravel
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            
+            # Muat ulang PHP-FPM agar menggunakan kode terbaru
+            sudo systemctl reload php8.2-fpm || sudo systemctl reload php8.3-fpm || true
+            
+            echo "✅ Deployment Academic Hub berhasil diselesaikan!"
