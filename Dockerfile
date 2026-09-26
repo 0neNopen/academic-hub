@@ -61,9 +61,9 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Atur hak akses folder storage dan cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+    && chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Port default (akan di-override otomatis oleh Render lewat variabel $PORT)
-EXPOSE 80
+# Port default (7860 untuk Hugging Face Spaces, atau dinamis sesuai $PORT di provider lain)
+EXPOSE 7860 80
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

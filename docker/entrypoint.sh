@@ -1,8 +1,8 @@
 #!/bin/sh
 set -e
 
-# Port default fallback ke 80 jika $PORT tidak disediakan oleh provider
-export PORT=${PORT:-80}
+# Port default fallback ke 7860 (standar Hugging Face Spaces) jika $PORT tidak disediakan oleh provider
+export PORT=${PORT:-7860}
 
 # Substitusi variabel $PORT ke konfigurasi Nginx
 envsubst '${PORT}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf
