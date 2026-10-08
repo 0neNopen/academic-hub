@@ -1,0 +1,30 @@
+name: Supabase Database Keep-Alive
+
+on:
+  schedule:
+    # Berjalan otomatis setiap 3 hari sekali pada jam 04:00 UTC
+    - cron: '0 4 */3 * *'
+  workflow_dispatch: # Dapat dipicu manual kapan saja dari tab GitHub Actions
+
+jobs:
+  ping-supabase:
+    name: Ping Supabase PostgreSQL
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Pooler
+        env:
+          DB_HOST: aws-0-ap-southeast-1.pooler.supabase.com
+          DB_PORT: "6543"
+          DB_NAME: postgres
+          DB_USER: postgres.plhpmelpbdskfmcrellk
+          DB_PASS: ${{ secrets.DB_PASSWORD || 'DataNop321!' }}
+        run: |
+          echo "🔌 Menghubungkan ke Supabase PostgreSQL Pooler..."
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+          
+          export PGPASSWORD="$DB_PASS"
+          if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT 1 as keep_alive_status;" ; then
+            echo "✅ Supabase database berhasil diping dan tetap AKTIF (Prevent Auto-Pause)!"
+          else
+            echo "⚠️ Ping gagal atau database sedang dalam status paused."
+          fi

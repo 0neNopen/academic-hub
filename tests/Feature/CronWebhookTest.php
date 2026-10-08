@@ -29,4 +29,11 @@ class CronWebhookTest extends TestCase
         ]);
         $this->assertEquals('success', $response->json('status'));
     }
+
+    public function test_healthz_endpoint_returns_ok(): void
+    {
+        $response = $this->get('/healthz');
+        $response->assertStatus(200);
+        $this->assertEquals('OK', $response->getContent());
+    }
 }
