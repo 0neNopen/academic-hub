@@ -13,6 +13,11 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// Render & Docker Health Check
+Route::get('/healthz', function () {
+    return response('OK', 200);
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard Utama: Menampilkan ringkasan matkul & deadline terdekat
     Route::get('/dashboard', function (Request $request) {
