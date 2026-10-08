@@ -4,8 +4,9 @@ set -e
 # Port default fallback ke 7860 (standar Hugging Face Spaces) jika $PORT tidak disediakan oleh provider
 export PORT=${PORT:-7860}
 
-# Substitusi variabel $PORT ke konfigurasi Nginx
-envsubst '${PORT}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf
+# Substitusi variabel $PORT ke konfigurasi Nginx (Di Alpine Linux, virtual host berada di /etc/nginx/http.d/)
+rm -f /etc/nginx/conf.d/default.conf /etc/nginx/http.d/default.conf
+envsubst '${PORT}' < /etc/nginx/templates/default.conf.template > /etc/nginx/http.d/default.conf
 
 echo "🚀 Memulai Academic Hub di port $PORT..."
 

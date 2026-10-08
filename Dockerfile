@@ -54,7 +54,7 @@ COPY --from=frontend-builder /app/public/build ./public/build
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
 # Pasang template Nginx dan skrip entrypoint
-RUN mkdir -p /etc/nginx/templates /etc/nginx/conf.d
+RUN mkdir -p /etc/nginx/templates /etc/nginx/http.d && rm -f /etc/nginx/http.d/default.conf /etc/nginx/conf.d/default.conf
 COPY docker/nginx.conf /etc/nginx/templates/default.conf.template
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
