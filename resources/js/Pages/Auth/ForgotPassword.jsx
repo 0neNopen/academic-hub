@@ -25,7 +25,7 @@ export default function ForgotPassword({ status }) {
             <div className="mb-5">
                 <Link
                     href={route('login')}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 transition group"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition group"
                 >
                     <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
                     <span>Kembali ke Halaman Masuk</span>
@@ -33,16 +33,16 @@ export default function ForgotPassword({ status }) {
             </div>
 
             <div className="mb-6">
-                <h2 className="text-lg font-bold text-gray-900">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                     Lupa Kata Sandi?
                 </h2>
-                <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
                     Jangan khawatir. Masukkan alamat email mahasiswa Anda, dan kami akan mengirimkan tautan untuk mengatur ulang kata sandi Anda.
                 </p>
             </div>
 
             {status && (
-                <div className="mb-5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-medium text-emerald-800 leading-relaxed">
+                <div className="mb-5 p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs font-medium text-emerald-800 dark:text-emerald-300 leading-relaxed">
                     {status}
                 </div>
             )}
@@ -52,7 +52,7 @@ export default function ForgotPassword({ status }) {
                     <InputLabel
                         htmlFor="email"
                         value="Alamat Email Mahasiswa"
-                        className="text-xs font-semibold text-gray-700"
+                        className="text-xs font-semibold text-gray-700 dark:text-gray-300"
                     />
 
                     <TextInput
@@ -79,11 +79,11 @@ export default function ForgotPassword({ status }) {
                     </PrimaryButton>
                 </div>
 
-                <div className="pt-4 border-t border-gray-100 text-center text-xs text-gray-500">
+                <div className="pt-4 border-t border-gray-100 dark:border-gray-800 text-center text-xs text-gray-500 dark:text-gray-400">
                     Ingat kata sandi Anda?{' '}
                     <Link
                         href={route('login')}
-                        className="font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+                        className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline"
                     >
                         Masuk ke Akun
                     </Link>

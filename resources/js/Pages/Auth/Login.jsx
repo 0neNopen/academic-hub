@@ -26,23 +26,23 @@ export default function Login({ status, canResetPassword }) {
             <Head title="Masuk" />
 
             <div className="mb-6">
-                <h2 className="text-lg font-bold text-gray-900">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                     Masuk ke Akun
                 </h2>
-                <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
                     Gunakan email mahasiswa dan kata sandi Anda untuk mengakses jadwal & materi kuliah.
                 </p>
             </div>
 
             {status && (
-                <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-medium text-emerald-700">
+                <div className="mb-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs font-medium text-emerald-700 dark:text-emerald-300">
                     {status}
                 </div>
             )}
 
             <form onSubmit={submit} className="space-y-4">
                 <div>
-                    <InputLabel htmlFor="email" value="Alamat Email Mahasiswa" className="text-xs font-semibold text-gray-700" />
+                    <InputLabel htmlFor="email" value="Alamat Email Mahasiswa" className="text-xs font-semibold text-gray-700 dark:text-gray-300" />
 
                     <TextInput
                         id="email"
@@ -61,7 +61,7 @@ export default function Login({ status, canResetPassword }) {
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="password" value="Kata Sandi" className="text-xs font-semibold text-gray-700" />
+                    <InputLabel htmlFor="password" value="Kata Sandi" className="text-xs font-semibold text-gray-700 dark:text-gray-300" />
 
                     <TextInput
                         id="password"
@@ -87,7 +87,7 @@ export default function Login({ status, canResetPassword }) {
                                 setData('remember', e.target.checked)
                             }
                         />
-                        <span className="ms-2 text-xs text-gray-600">
+                        <span className="ms-2 text-xs text-gray-600 dark:text-gray-300">
                             Ingat saya
                         </span>
                     </label>
@@ -95,7 +95,7 @@ export default function Login({ status, canResetPassword }) {
                     {canResetPassword && (
                         <Link
                             href={route('password.request')}
-                            className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                            className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline"
                         >
                             Lupa kata sandi?
                         </Link>
@@ -109,11 +109,11 @@ export default function Login({ status, canResetPassword }) {
                 </div>
 
                 {/* Tautan Registrasi Akun Baru */}
-                <div className="pt-4 border-t border-gray-100 text-center text-xs text-gray-500">
+                <div className="pt-4 border-t border-gray-100 dark:border-gray-800 text-center text-xs text-gray-500 dark:text-gray-400">
                     Belum memiliki akun?{' '}
                     <Link
                         href={route('register')}
-                        className="font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+                        className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline"
                     >
                         Daftar Akun Sekarang
                     </Link>
