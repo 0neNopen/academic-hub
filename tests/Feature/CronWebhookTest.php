@@ -28,6 +28,11 @@ class CronWebhookTest extends TestCase
             'timestamp',
         ]);
         $this->assertEquals('success', $response->json('status'));
+
+        // Test with clean CRON_KEY
+        $responseCleanKey = $this->getJson('/cron/run-schedule?key=academic-hub-keep-alive-2026');
+        $responseCleanKey->assertStatus(200);
+        $this->assertEquals('success', $responseCleanKey->json('status'));
     }
 
     public function test_healthz_endpoint_returns_ok(): void

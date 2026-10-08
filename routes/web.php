@@ -69,9 +69,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Webhook Cron Scheduler (Gratis untuk Cloud Deployment via cron-job.org)
 Route::get('/cron/run-schedule', function (Request $request) {
     $secret = config('app.key');
-    $providedKey = $request->query('key');
+    $cronKey = env('CRON_KEY', 'academic-hub-keep-alive-2026');
+    $providedKey = (string) $request->query('key');
 
-    if (!$providedKey || !hash_equals((string) $secret, (string) $providedKey)) {
+    $isAppKeyValid = !empty($secret) && hash_equals((string) $secret, $providedKey);
+    $isCronKeyValid = !empty($cronKey) && hash_equals((string) $cronKey, $providedKey);
+
+    if (!$isAppKeyValid && !$isCronKeyValid) {
         return response()->json([
             'status' => 'error',
             'message' => 'Unauthorized cron trigger.',
