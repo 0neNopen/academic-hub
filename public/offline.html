@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Academic Hub</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background-color: #0b0f19;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .container {
+            max-width: 440px;
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 1.25rem;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+        }
+        .icon-wrap {
+            width: 72px;
+            height: 72px;
+            background: rgba(37, 99, 235, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem auto;
+        }
+        .icon-wrap svg {
+            width: 36px;
+            height: 36px;
+            stroke: #3b82f6;
+        }
+        h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: #ffffff;
+        }
+        p {
+            font-size: 0.95rem;
+            color: #94a3b8;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0.85rem 1.5rem;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: none;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon-wrap">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.828m2.829 2.828L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.828M3 3l18 18M9.879 9.879a3 3 0 004.242 4.242M6.343 6.343a9 9 0 000 12.728M3.515 3.515A12.964 12.964 0 001.05 12c0 3.59 1.455 6.84 3.815 9.2M12 3c2.477 0 4.72 1.004 6.364 2.636" />
+            </svg>
+        </div>
+        <h1>Anda Sedang Offline</h1>
+        <p>Koneksi internet terputus. Sambungkan kembali perangkat Anda ke internet untuk mengakses dan menyinkronkan data tugas atau materi kuliah.</p>
+        <button class="btn" onclick="window.location.reload()">
+            Coba Muat Ulang
+        </button>
+    </div>
+</body>
+</html>
