@@ -17,6 +17,7 @@ import { useState } from 'react';
 
 export default function Dashboard({ auth, courses, upcomingAssignments }) {
     const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
+    const [mobileTab, setMobileTab] = useState('courses');
 
     // Form Tambah Mata Kuliah
     const { data, setData, post, processing, reset, errors } = useForm({
@@ -216,10 +217,46 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                         </div>
                     </div>
 
+                    {/* Tab Navigasi Khusus Layar HP / Mobile (< lg) */}
+                    <div className="flex lg:hidden p-1 bg-gray-200/80 dark:bg-gray-800 rounded-xl gap-1 shadow-xs">
+                        <button
+                            type="button"
+                            onClick={() => setMobileTab('courses')}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all duration-150 ${
+                                mobileTab === 'courses'
+                                    ? 'bg-white dark:bg-gray-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                            }`}
+                        >
+                            <BookOpen className="w-4 h-4" />
+                            <span>Mata Kuliah</span>
+                            <span className="text-[10px] px-1.5 py-0.2 bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 rounded-full font-bold">
+                                {courses.length}
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setMobileTab('deadlines')}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all duration-150 ${
+                                mobileTab === 'deadlines'
+                                    ? 'bg-white dark:bg-gray-900 text-amber-600 dark:text-amber-400 shadow-xs'
+                                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                            }`}
+                        >
+                            <Clock className="w-4 h-4" />
+                            <span>Deadline Tugas</span>
+                            {upcomingAssignments.length > 0 && (
+                                <span className="text-[10px] px-1.5 py-0.2 bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 rounded-full font-bold">
+                                    {upcomingAssignments.length}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+
                     {/* Konten Utama 2 Kolom (8 : 4) */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                         {/* Kolom Kiri (8): Daftar Mata Kuliah + Filter & Pencarian */}
-                        <div className="lg:col-span-7 xl:col-span-8 space-y-4">
+                        <div className={`${mobileTab === 'courses' ? 'block' : 'hidden'} lg:block lg:col-span-7 xl:col-span-8 space-y-4`}>
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                 <div className="flex items-center gap-2">
                                     <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -256,7 +293,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
 
                             {/* Filter Hari Kuliah (Pills Horisontal) */}
                             {courses.length > 0 && (
-                                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
+                                <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 pr-4 text-xs no-scrollbar">
                                     <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 shrink-0 mr-1 flex items-center gap-1">
                                         <Filter className="h-3 w-3" /> Hari:
                                     </span>
@@ -358,7 +395,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                         </div>
 
                         {/* Kolom Kanan (4): Deadline Tugas Terdekat (Sidebar Agenda + Aksi Selesai Cepat) */}
-                        <div className="lg:col-span-5 xl:col-span-4 space-y-3">
+                        <div className={`${mobileTab === 'deadlines' ? 'block' : 'hidden'} lg:block lg:col-span-5 xl:col-span-4 space-y-3`}>
                             <div className="flex items-center justify-between">
                                 <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                     <Clock className="h-4 w-4 text-amber-500" />

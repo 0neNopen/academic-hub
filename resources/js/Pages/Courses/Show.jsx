@@ -27,7 +27,7 @@ import {
     Trash2,
     X,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function CourseShow({ course }) {
     const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
@@ -39,6 +39,18 @@ export default function CourseShow({ course }) {
     const [previewMaterial, setPreviewMaterial] = useState(null);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [processingTaskId, setProcessingTaskId] = useState(null);
+
+    // Kunci scroll halaman saat modal pratinjau dokumen sedang aktif
+    useEffect(() => {
+        if (previewMaterial) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [previewMaterial]);
 
     // Tab Aktif untuk Tampilan Mobile (Materi vs Tugas)
     const [mobileTab, setMobileTab] = useState('materials');
@@ -459,7 +471,7 @@ export default function CourseShow({ course }) {
                     <div className="flex flex-wrap items-center gap-2">
                         <button
                             onClick={openEditCourse}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-750 transition"
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                         >
                             <Pencil className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
                             Edit Matkul
@@ -474,7 +486,7 @@ export default function CourseShow({ course }) {
                         </button>
                         <button
                             onClick={() => setIsMaterialModalOpen(true)}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-750 transition"
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                         >
                             <Plus className="h-4 w-4" />
                             Materi
@@ -592,7 +604,7 @@ export default function CourseShow({ course }) {
                                                     className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold shrink-0 transition ${
                                                         isSelected
                                                             ? 'bg-blue-600 text-white shadow-xs'
-                                                            : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750'
+                                                            : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
                                                     }`}
                                                 >
                                                     <span>{tab.label}</span>
@@ -1493,21 +1505,21 @@ export default function CourseShow({ course }) {
                 const fileInfo = getFileInfo(previewMaterial.file_path);
                 return (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-2 sm:p-4">
-                        <div className="flex flex-col w-full max-w-5xl h-[90vh] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800">
+                        <div className="flex flex-col w-full max-w-5xl h-[92dvh] sm:h-[90vh] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800">
                             {/* Modal Header */}
-                            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-200 dark:border-gray-800 bg-gray-50/90 dark:bg-gray-850/90">
-                                <div className="flex items-center gap-3 min-w-0">
+                            <div className="flex items-center justify-between px-3 sm:px-5 py-2.5 sm:py-3.5 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
                                     <div className={`p-2 rounded-lg shrink-0 ${fileInfo.iconBg}`}>
                                         <FileText className="h-5 w-5" />
                                     </div>
                                     <div className="truncate">
-                                        <div className="flex flex-wrap items-center gap-2">
+                                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                                             {previewMaterial.meeting_number && (
-                                                <span className="text-[11px] font-bold px-2 py-0.5 bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 rounded-full border dark:border-blue-900/60">
+                                                <span className="text-[11px] font-bold px-2 py-0.5 bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 rounded-full border border-blue-200 dark:border-blue-800">
                                                     Pertemuan {previewMaterial.meeting_number}
                                                 </span>
                                             )}
-                                            <h3 className="font-bold text-gray-900 dark:text-white text-base truncate">
+                                            <h3 className="font-bold text-gray-900 dark:text-white text-sm sm:text-base truncate">
                                                 {previewMaterial.title}
                                             </h3>
                                             {fileInfo.ext && (
@@ -1516,7 +1528,7 @@ export default function CourseShow({ course }) {
                                                 </span>
                                             )}
                                         </div>
-                                        <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                        <div className="flex items-center gap-2 sm:gap-3 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                             {previewMaterial.notes && (
                                                 <span className="truncate">{previewMaterial.notes}</span>
                                             )}
@@ -1529,13 +1541,13 @@ export default function CourseShow({ course }) {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-2 shrink-0">
+                                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                                     {fileInfo.canPreviewInline && (
                                         <a
                                             href={route('materials.preview', previewMaterial.id)}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="inline-flex items-center gap-1 text-xs font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-750 shadow-sm transition"
+                                            className="inline-flex items-center gap-1 text-xs font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 p-2 sm:px-3 sm:py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm transition"
                                             title="Buka dokumen di tab baru browser"
                                         >
                                             <ExternalLink className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
@@ -1544,7 +1556,7 @@ export default function CourseShow({ course }) {
                                     )}
                                     <a
                                         href={route('materials.download', previewMaterial.id)}
-                                        className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-blue-600 px-3 py-2 rounded-lg hover:bg-blue-700 shadow-sm transition"
+                                        className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-blue-600 p-2 sm:px-3 sm:py-2 rounded-lg hover:bg-blue-700 shadow-sm transition"
                                         title="Unduh berkas"
                                     >
                                         <Download className="h-3.5 w-3.5" />
@@ -1552,7 +1564,7 @@ export default function CourseShow({ course }) {
                                     </a>
                                     <button
                                         onClick={() => setPreviewMaterial(null)}
-                                        className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-200/60 dark:hover:bg-gray-800 p-2 rounded-lg transition"
+                                        className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-lg transition"
                                         title="Tutup pratinjau"
                                     >
                                         <X className="h-5 w-5" />
