@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Services\TelegramService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 
 class SendDailySchedule extends Command
 {
@@ -84,6 +85,10 @@ class SendDailySchedule extends Command
                     $cName = $task->course?->name ?? 'Mata Kuliah';
                     $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b> ({$cName})\n";
                     $message .= "   ⏰ Jam: " . $dl->format('H:i') . " WIB\n";
+                    if (!empty($task->description)) {
+                        $cleanDesc = htmlspecialchars(trim($task->description));
+                        $message .= "   📝 Keterangan: <i>" . Str::limit($cleanDesc, 100) . "</i>\n";
+                    }
                     if ($task->submission_url) {
                         $message .= "   🔗 <a href=\"" . htmlspecialchars($task->submission_url) . "\">Link Pengumpulan</a>\n";
                     }

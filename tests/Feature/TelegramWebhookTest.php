@@ -125,6 +125,8 @@ class TelegramWebhookTest extends TestCase
         Assignment::factory()->create([
             'course_id' => $course->id,
             'title' => 'Tugas Besar Basis Data',
+            'description' => 'Kerjakan modul 1 sampai 3 format PDF',
+            'submission_url' => 'https://classroom.google.com/test',
             'status' => 'pending',
             'deadline' => now()->addDays(2),
         ]);
@@ -133,7 +135,10 @@ class TelegramWebhookTest extends TestCase
         $telegramMock->shouldReceive('sendMessage')
             ->once()
             ->withArgs(function ($chatId, $msg) {
-                return $chatId == 12345678 && str_contains($msg, 'Tugas Besar Basis Data');
+                return $chatId == 12345678 
+                    && str_contains($msg, 'Tugas Besar Basis Data')
+                    && str_contains($msg, 'Kerjakan modul 1 sampai 3')
+                    && str_contains($msg, 'https://classroom.google.com/test');
             })
             ->andReturn(true);
 

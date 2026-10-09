@@ -12,6 +12,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class SendAssignmentReminderJob implements ShouldQueue
 {
@@ -76,13 +77,25 @@ class SendAssignmentReminderJob implements ShouldQueue
         $urgencyTitleTG = $this->isH3 ? "🚨 <b>PERINGATAN MENDESAK: DEADLINE &lt; 3 JAM!</b> 🚨" : "⏳ <b>PENGINGAT DEADLINE KULIAH</b>";
         $timeRemainingText = $this->isH3 ? "tinggal {$diffInMinutes} menit lagi!" : "sekitar {$hoursLeft} jam lagi";
 
+        $descWA = '';
+        if (!empty($assignment->description)) {
+            $descWA = "📝 *Keterangan:* _" . Str::limit(trim($assignment->description), 200) . "_\n";
+        }
+
+        $descTG = '';
+        if (!empty($assignment->description)) {
+            $cleanDesc = htmlspecialchars(trim($assignment->description));
+            $descTG = "📝 <b>Keterangan:</b> <i>" . Str::limit($cleanDesc, 200) . "</i>\n";
+        }
+
         // Format Pesan WhatsApp
         $waMessage = "{$urgencyTitleWA}\n\n"
             . "Halo *{$user->name}*!\n"
             . "Tugas *{$assignment->title}* ({$assignment->course->name}) {$statusWaktuWA}:\n\n"
             . "⏰ *Batas Pengumpulan:* {$formattedDeadline}\n"
             . "⏱️ *Sisa Waktu:* {$timeRemainingText}\n"
-            . ($assignment->submission_url ? "🔗 *Link Pengumpulan:* {$assignment->submission_url}\n\n" : "\n")
+            . ($descWA ? "{$descWA}\n" : "\n")
+            . ($assignment->submission_url ? "🔗 *Link Pengumpulan:* {$assignment->submission_url}\n\n" : "")
             . "Yuk segera diselesaikan agar tidak terburu-buru!";
 
         // Format Pesan Telegram (HTML + Inline Keyboard Button)
@@ -90,7 +103,8 @@ class SendAssignmentReminderJob implements ShouldQueue
             . "Halo <b>" . htmlspecialchars($user->name) . "</b>!\n"
             . "Tugas <b>" . htmlspecialchars($assignment->title) . "</b> (" . htmlspecialchars($assignment->course->name) . ") {$statusWaktuTG}:\n\n"
             . "📅 <b>Batas Pengumpulan:</b> {$formattedDeadline}\n"
-            . "⏱️ <b>Sisa Waktu:</b> {$timeRemainingText}\n\n"
+            . "⏱️ <b>Sisa Waktu:</b> {$timeRemainingText}\n"
+            . ($descTG ? "{$descTG}\n" : "\n")
             . "Yuk segera diselesaikan dan kumpulkan tepat waktu!";
 
         $tgButtons = $telegramService->buildSubmissionButton($assignment->submission_url);

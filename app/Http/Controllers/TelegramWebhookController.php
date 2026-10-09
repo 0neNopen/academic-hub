@@ -8,6 +8,7 @@ use App\Services\TelegramService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class TelegramWebhookController extends Controller
 {
@@ -271,9 +272,25 @@ class TelegramWebhookController extends Controller
                 $courseName = $assignment->course?->name ?? 'Mata Kuliah';
                 $formattedDeadline = $deadline->locale('id')->isoFormat('D MMM YYYY, HH:mm');
 
-                $msg .= "{$no}. <b>{$assignment->title}</b>\n"
-                      . "   📚 {$courseName}\n"
-                      . "   ⏳ Deadline: {$formattedDeadline} WIB ({$diffText})\n\n";
+                $title = htmlspecialchars($assignment->title);
+                $courseNameEscaped = htmlspecialchars($courseName);
+
+                $msg .= "{$no}. <b>{$title}</b>\n"
+                      . "   📚 {$courseNameEscaped}\n"
+                      . "   ⏳ Deadline: {$formattedDeadline} WIB ({$diffText})\n";
+
+                if (!empty($assignment->description)) {
+                    $cleanDesc = htmlspecialchars(trim($assignment->description));
+                    $descPreview = Str::limit($cleanDesc, 140);
+                    $msg .= "   📝 Keterangan: <i>{$descPreview}</i>\n";
+                }
+
+                if (!empty($assignment->submission_url)) {
+                    $url = htmlspecialchars($assignment->submission_url);
+                    $msg .= "   🔗 <a href=\"{$url}\">Link Pengumpulan</a>\n";
+                }
+
+                $msg .= "\n";
             }
         }
 
