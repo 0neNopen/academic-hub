@@ -18,6 +18,7 @@ class TelegramWebhookTest extends TestCase
     protected function makeMock(): Mockery\MockInterface
     {
         $mock = Mockery::mock(TelegramService::class);
+        $mock->shouldReceive('removeKeyboardMarkup')->byDefault()->andReturn(['remove_keyboard' => true]);
         $mock->shouldReceive('buildMainKeyboard')->byDefault()->andReturn([]);
         return $mock;
     }

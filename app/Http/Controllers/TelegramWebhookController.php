@@ -77,7 +77,7 @@ class TelegramWebhookController extends Controller
                  . "• ℹ️ <b>Bantuan</b> - Daftar perintah bot\n\n"
                  . "🌐 <a href=\"{$appUrl}/dashboard\">Buka Website Academic Hub</a>";
 
-            $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->buildMainKeyboard());
+            $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
         } else {
             $msg = "👋 Halo <b>{$firstName}</b>!\n\n"
                  . "Selamat datang di <b>Academic Hub Notifier</b>. 🎓\n\n"
@@ -156,7 +156,7 @@ class TelegramWebhookController extends Controller
             }
         }
 
-        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->buildMainKeyboard());
+        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
     }
 
     protected function handleSemuaJadwalCommand(int|string $chatId, ?User $user, string $appUrl): void
@@ -175,7 +175,7 @@ class TelegramWebhookController extends Controller
             $msg = "🗓️ <b>Seluruh Jadwal Perkuliahan Terdaftar</b>\n\n"
                  . "Belum ada mata kuliah yang didaftarkan di website.\n\n"
                  . "👉 Silakan tambahkan mata kuliah Anda melalui website: <a href=\"{$appUrl}/dashboard\">{$appUrl}/dashboard</a>";
-            $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->buildMainKeyboard());
+            $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
             return;
         }
 
@@ -223,7 +223,7 @@ class TelegramWebhookController extends Controller
 
         $msg .= "🌐 <a href=\"{$appUrl}/dashboard\">Kelola Mata Kuliah di Website</a>";
 
-        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->buildMainKeyboard());
+        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
     }
 
     protected function handleTugasCommand(int|string $chatId, ?User $user, string $appUrl): void
@@ -279,7 +279,7 @@ class TelegramWebhookController extends Controller
 
         $msg .= "🌐 <a href=\"{$appUrl}/dashboard\">Buka Website untuk Kumpul / Cek Detail</a>";
 
-        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->buildMainKeyboard());
+        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
     }
 
     protected function handleIdCommand(int|string $chatId): void
@@ -288,7 +288,7 @@ class TelegramWebhookController extends Controller
              . "<code>{$chatId}</code>\n\n"
              . "<i>Gunakan angka ID ini pada menu Pengaturan Profil di Academic Hub untuk menghubungkan bot notifikasi.</i>";
 
-        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->buildMainKeyboard());
+        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
     }
 
     protected function handleHelpCommand(int|string $chatId): void
@@ -302,7 +302,7 @@ class TelegramWebhookController extends Controller
              . "• ℹ️ <b>/help</b> - Bantuan perintah bot\n\n"
              . "<i>Bot akan otomatis mengingatkan deadline tugas (H-3, H-1, Hari H) dan menyapa dengan jadwal kuliah setiap pagi pukul 06.00 WIB.</i>";
 
-        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->buildMainKeyboard());
+        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
     }
 
     protected function handleDefaultMessage(int|string $chatId, ?User $user): void
@@ -315,6 +315,6 @@ class TelegramWebhookController extends Controller
              . "• 📝 <b>Tugas Aktif</b>\n"
              . "• ℹ️ <b>Bantuan</b>";
 
-        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->buildMainKeyboard());
+        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
     }
 }

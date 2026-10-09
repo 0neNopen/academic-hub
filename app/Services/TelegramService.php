@@ -68,23 +68,12 @@ class TelegramService
     }
 
     /**
-     * Shortcut keyboard menu tetap di layar chat Telegram (Reply Keyboard).
+     * Menghilangkan tombol keyboard bawah agar tampilan bersih dan hanya menyisakan tombol Menu biru di kiri bawah.
      */
-    public function buildMainKeyboard(): array
+    public function removeKeyboardMarkup(): array
     {
         return [
-            'keyboard' => [
-                [
-                    ['text' => '📅 Jadwal Hari Ini'],
-                    ['text' => '🗓️ Semua Jadwal'],
-                ],
-                [
-                    ['text' => '📝 Tugas Aktif'],
-                    ['text' => 'ℹ️ Bantuan'],
-                ],
-            ],
-            'resize_keyboard' => true,
-            'is_persistent' => true,
+            'remove_keyboard' => true,
         ];
     }
 
