@@ -93,4 +93,7 @@ Route::get('/cron/run-schedule', function (Request $request) {
     ]);
 });
 
+// Telegram Bot Webhook
+Route::match(['get', 'post'], '/telegram/webhook', [\App\Http\Controllers\TelegramWebhookController::class, 'handle'])->name('telegram.webhook');
+
 require __DIR__.'/auth.php';

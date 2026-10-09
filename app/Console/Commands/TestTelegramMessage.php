@@ -29,9 +29,14 @@ class TestTelegramMessage extends Command
              . "Halo! Integrasi bot pengingat tugas kuliah Anda di Laravel berhasil terhubung dan aktif.\n"
              . "Sistem siap memantau deadline tugas dan mengirimkan notifikasi tepat waktu! 🚀";
 
+        $appUrl = config('app.url', 'https://academic-hub-ocw2.onrender.com');
+        if (empty($appUrl) || str_contains($appUrl, 'localhost')) {
+            $appUrl = 'https://academic-hub-ocw2.onrender.com';
+        }
+
         $buttons = [
             [
-                ['text' => '🌐 Kunjungi Academic Hub', 'url' => config('app.url', 'https://academic-hub-ocw2.onrender.com')],
+                ['text' => '🌐 Kunjungi Academic Hub', 'url' => $appUrl],
             ],
         ];
 
