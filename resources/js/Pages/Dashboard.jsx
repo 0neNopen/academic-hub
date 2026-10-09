@@ -559,6 +559,27 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                 </div>
                             </div>
 
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Jam Mulai (Opsional)</label>
+                                    <input
+                                        type="time"
+                                        value={data.start_time}
+                                        onChange={(e) => setData('start_time', e.target.value)}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Jam Selesai (Opsional)</label>
+                                    <input
+                                        type="time"
+                                        value={data.end_time}
+                                        onChange={(e) => setData('end_time', e.target.value)}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                </div>
+                            </div>
+
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Nama Dosen Pengampu</label>
                                 <input

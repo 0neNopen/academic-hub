@@ -64,6 +64,8 @@ class SendDailySchedule extends Command
                         $start = substr($course->start_time, 0, 5);
                         $end = $course->end_time ? substr($course->end_time, 0, 5) : 'Selesai';
                         $message .= "   🕒 Waktu: {$start} - {$end} WIB\n";
+                    } else {
+                        $message .= "   🕒 Waktu: Menyesuaikan Dosen\n";
                     }
                     if ($course->lecturer_name) {
                         $message .= "   👨‍🏫 Dosen: " . htmlspecialchars($course->lecturer_name) . "\n";

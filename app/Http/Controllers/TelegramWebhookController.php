@@ -99,6 +99,24 @@ class TelegramWebhookController extends Controller
         }
     }
 
+    protected function formatCourseTime(?string $start, ?string $end): string
+    {
+        if (empty($start) && empty($end)) {
+            return 'Menyesuaikan Dosen';
+        }
+
+        $startTime = $start ? substr($start, 0, 5) : '';
+        $endTime = $end ? substr($end, 0, 5) : '';
+
+        if ($startTime && $endTime) {
+            return "{$startTime} - {$endTime} WIB";
+        } elseif ($startTime) {
+            return "Mulai {$startTime} WIB";
+        }
+
+        return 'Menyesuaikan Dosen';
+    }
+
     protected function handleJadwalCommand(int|string $chatId, ?User $user, string $appUrl): void
     {
         if (!$user) {
@@ -128,13 +146,13 @@ class TelegramWebhookController extends Controller
 
             foreach ($courses as $index => $course) {
                 $no = $index + 1;
-                $startTime = $course->start_time ? substr((string) $course->start_time, 0, 5) : '-';
-                $endTime = $course->end_time ? substr((string) $course->end_time, 0, 5) : '-';
+                $timeText = $this->formatCourseTime($course->start_time, $course->end_time);
                 $lecturer = $course->lecturer_name ?: 'Dosen belum diset';
+                $code = $course->code ? " ({$course->code})" : "";
 
-                $msg .= "{$no}. <b>{$course->name}</b>" . ($course->code ? " ({$course->code})" : "") . "\n"
-                      . "   ⏰ <b>Pukul:</b> {$startTime} - {$endTime} WIB\n"
-                      . "   👤 <b>Dosen:</b> {$lecturer}\n\n";
+                $msg .= "{$no}. <b>{$course->name}</b>{$code}\n"
+                      . "   ⏰ Waktu: {$timeText}\n"
+                      . "   👤 Dosen: {$lecturer}\n\n";
             }
         }
 
@@ -172,21 +190,18 @@ class TelegramWebhookController extends Controller
         $msg = "🗓️ <b>Seluruh Jadwal Perkuliahan Anda</b>\n"
              . "Halo <b>{$user->name}</b>, berikut ringkasan seluruh matkul yang terdaftar di Academic Hub:\n\n";
 
-        $hasPrintedAny = false;
         foreach ($dayOrder as $day) {
             if (!empty($grouped[$day])) {
-                $hasPrintedAny = true;
                 $msg .= "📌 <b>" . strtoupper($day) . "</b>\n";
                 foreach ($grouped[$day] as $course) {
-                    $startTime = $course->start_time ? substr((string) $course->start_time, 0, 5) : '-';
-                    $endTime = $course->end_time ? substr((string) $course->end_time, 0, 5) : '-';
-                    $code = $course->code ? "[{$course->code}] " : "";
-                    $lecturer = $course->lecturer_name ? " • {$course->lecturer_name}" : "";
+                    $timeText = $this->formatCourseTime($course->start_time, $course->end_time);
+                    $code = $course->code ? " ({$course->code})" : "";
+                    $lecturer = $course->lecturer_name ?: 'Dosen belum diset';
 
-                    $msg .= "• <b>{$code}{$course->name}</b>\n"
-                          . "  ⏰ {$startTime} - {$endTime} WIB{$lecturer}\n";
+                    $msg .= "• <b>{$course->name}</b>{$code}\n"
+                          . "   ⏰ Waktu: {$timeText}\n"
+                          . "   👤 Dosen: {$lecturer}\n\n";
                 }
-                $msg .= "\n";
             }
         }
 
@@ -195,12 +210,14 @@ class TelegramWebhookController extends Controller
             if (!in_array($day, $dayOrder) && !empty($courses)) {
                 $msg .= "📌 <b>" . strtoupper($day) . "</b>\n";
                 foreach ($courses as $course) {
-                    $startTime = $course->start_time ? substr((string) $course->start_time, 0, 5) : '-';
-                    $endTime = $course->end_time ? substr((string) $course->end_time, 0, 5) : '-';
-                    $msg .= "• <b>{$course->name}</b>\n"
-                          . "  ⏰ {$startTime} - {$endTime} WIB\n";
+                    $timeText = $this->formatCourseTime($course->start_time, $course->end_time);
+                    $code = $course->code ? " ({$course->code})" : "";
+                    $lecturer = $course->lecturer_name ?: 'Dosen belum diset';
+
+                    $msg .= "• <b>{$course->name}</b>{$code}\n"
+                          . "   ⏰ Waktu: {$timeText}\n"
+                          . "   👤 Dosen: {$lecturer}\n\n";
                 }
-                $msg .= "\n";
             }
         }
 
@@ -231,21 +248,32 @@ class TelegramWebhookController extends Controller
                  . "🎉 <i>Hebat! Tidak ada tugas aktif yang mendekati deadline saat ini. Semua tugas telah terselesaikan.</i>";
         } else {
             $msg = "📝 <b>Daftar Tugas Mendekati Deadline:</b>\n\n";
+            $now = Carbon::now('Asia/Jakarta');
 
             foreach ($assignments as $index => $assignment) {
                 $no = $index + 1;
                 $deadline = Carbon::parse($assignment->deadline)->setTimezone('Asia/Jakarta');
-                $diff = Carbon::now('Asia/Jakarta')->diffForHumans($deadline, [
-                    'syntax' => Carbon::DIFF_RELATIVE_TO_NOW,
-                    'parts' => 2,
-                ]);
+
+                if ($deadline->isPast()) {
+                    $diffText = 'Terlewat ' . $deadline->diffForHumans($now, [
+                        'syntax' => Carbon::DIFF_RELATIVE_TO_NOW,
+                        'parts' => 2,
+                    ]);
+                } else {
+                    $rawDiff = $deadline->diffForHumans($now, [
+                        'syntax' => Carbon::DIFF_RELATIVE_TO_NOW,
+                        'parts' => 2,
+                    ]);
+                    $cleanDiff = str_replace('dari sekarang', 'lagi', $rawDiff);
+                    $diffText = "sisa {$cleanDiff}";
+                }
 
                 $courseName = $assignment->course?->name ?? 'Mata Kuliah';
                 $formattedDeadline = $deadline->locale('id')->isoFormat('D MMM YYYY, HH:mm');
 
                 $msg .= "{$no}. <b>{$assignment->title}</b>\n"
                       . "   📚 {$courseName}\n"
-                      . "   ⏳ Deadline: {$formattedDeadline} WIB ({$diff})\n\n";
+                      . "   ⏳ Deadline: {$formattedDeadline} WIB ({$diffText})\n\n";
             }
         }
 
