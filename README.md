@@ -15,143 +15,124 @@ pinned: false
 </p>
 
 <p align="center">
-  <strong>Sistem Manajemen Perkuliahan Modern, Arsip Berkas Materi, & Pengingat Deadline Tugas Otomatis</strong>
+  <strong>Sistem Manajemen Perkuliahan & Pengingat Tugas Otomatis untuk Mahasiswa</strong>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Laravel-11%2F12-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel">
-  <img src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React">
-  <img src="https://img.shields.io/badge/Inertia.js-v2-9553E9?style=for-the-badge&logo=inertia&logoColor=white" alt="Inertia.js">
-  <img src="https://img.shields.io/badge/Tailwind_CSS-v3-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
-  <img src="https://img.shields.io/badge/Telegram_Bot-API-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Bot">
-  <img src="https://img.shields.io/badge/PHPUnit_Tests-76%20Passed-44CC11?style=for-the-badge&logo=php&logoColor=white" alt="Tests">
+  <img src="https://img.shields.io/badge/Status-Active%20&%20Maintained-success?style=for-the-badge" alt="Status">
+  <img src="https://img.shields.io/badge/UI-Dual%20Theme%20(Dark%20&%20Light)-indigo?style=for-the-badge" alt="Theme">
+  <img src="https://img.shields.io/badge/Notification-Telegram%20&%20WhatsApp-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Notification">
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License">
 </p>
 
 ---
 
-## 🌟 Tentang Academic Hub
+## 🌟 Mengenal Academic Hub
 
-**Academic Hub** adalah aplikasi web komprehensif yang dirancang khusus untuk mahasiswa agar dapat mengelola seluruh aktivitas perkuliahan dalam satu platform terpadu. Mulai dari pencatatan mata kuliah, pengarsipan berkas materi per pertemuan, hingga pelacakan deadline tugas dengan sistem pengingat otomatis (*automated reminder*) yang terkirim langsung ke akun **Telegram** dan **WhatsApp** mahasiswa.
+**Academic Hub** adalah platform asisten akademik all-in-one yang diciptakan untuk membantu mahasiswa mengorganisir kehidupan perkuliahan dengan tenang, terstruktur, dan bebas stres. 
 
----
-
-## ✨ Fitur Utama
-
-### 🌓 1. Dual Theme (Light & Dark Mode)
-- **Desain Modern & Responsif**: Tampilan ramah mata dengan peralihan tema yang mulus.
-- **Anti-FOUC (Flash of Unstyled Content)**: Tidak ada efek kedip putih saat memuat ulang halaman.
-- **Deteksi Preferensi Otomatis**: Mendukung sinkronisasi dengan preferensi tema sistem peramban/OS pengguna.
-
-### 📚 2. Manajemen Mata Kuliah (Courses)
-- Tambah, edit, dan hapus mata kuliah dengan metadata lengkap (Kode Matkul, Nama, SKS, Dosen Pengampu, Ruang Kelas, Semester).
-- Pencarian cerdas dan filter mata kuliah berdasarkan semester atau hari kuliah.
-- Kartu ringkasan statistik (Total Matkul, Tugas Aktif, Materi Diunggah).
-
-### 📑 3. Arsip Berkas & Materi Kuliah (Materials)
-- **Multi-Format Upload**: Mendukung dokumen (`PDF`, `DOCX`, `PPTX`, `XLSX`, `TXT`) dan gambar (`JPG`, `PNG`, `WEBP`, `JPEG`).
-- **Filter & Pengurutan Berkas**: Filter materi berdasarkan ekstensi format dan nomor pertemuan kuliah (Pertemuan 1 - 16).
-- **In-Browser File Previewer**: Lihat langsung isi berkas dokumen PDF dan gambar di dalam aplikasi tanpa perlu mengunduhnya terlebih dahulu.
-- **Edit & Unduh Berkas**: Ubah nama materi dan nomor pertemuan kapan saja dengan mudah.
-- **Pembersihan Berkas Otomatis**: Saat materi atau mata kuliah dihapus, berkas fisik pada penyimpanan disk otomatis dibersihkan.
-
-### ⏰ 4. Pelacak Tugas & Indikator Deadline (Assignments)
-- **Indikator Urgensi Dinamis**:
-  - 🔴 **Merah**: Deadline kurang dari 24 jam.
-  - 🟡 **Kuning**: Deadline kurang dari 3 hari.
-  - 🟢 **Hijau**: Deadline lebih dari 3 hari.
-- **Pengubah Status Interaktif**: Tandai tugas selesai atau kembalikan ke aktif dalam satu kali klik.
-- **Riwayat Tugas Selesai**: Bagian tugas selesai dapat diciutkan (*collapsible*) agar tampilan tetap rapi dan fokus.
-
-### 🤖 5. Multi-Channel Notification Gateway
-- **Bot Telegram Otomatis (100% Gratis)**:
-  - Notifikasi pengingat otomatis deadline tugas (H-3, H-1, dan Hari H).
-  - **Pengingat Jadwal Kuliah Harian**: Bot mengirimkan jadwal mata kuliah hari ini setiap pukul 06.00 WIB pagi (`courses:send-daily-schedule`).
-  - **Weekly Digest**: Rekapitulasi tugas mingguan setiap hari Senin pukul 07.00 WIB.
-  - Panduan integrasi bot interaktif di halaman Profil Pengguna.
-- **Dukungan WhatsApp**: Opsi integrasi pesan WhatsApp via Green-API atau self-hosted WAHA.
-
-### 🛡️ 6. Keamanan, Penyimpanan Berkas & Diagnostik
-- **Isolasi Data Pengguna**: Diterapkan *Eloquent Authorization Policy* sehingga setiap mahasiswa hanya dapat melihat dan mengelola datanya sendiri.
-- **Pencegahan XSS Berkas**: Validasi unggahan berkas ketat dan pemblokiran berkas SVG berbahaya.
-- **Endpoint File Terlindungi**: Seluruh unduhan dan pratinjau materi diverifikasi hak aksesnya sebelum berkas disajikan.
-- **Cloud Storage Resilien**: Mendukung **Cloudflare R2** (S3-compatible 10 GB gratis selamanya tanpa biaya egress) dengan deteksi cerdas fallback ke disk lokal.
-- **CLI Mail Tester**: Perintah `php artisan mail:test {email}` untuk verifikasi instan koneksi SMTP Gmail di server produksi.
+Seringkali mahasiswa melewatkan batas waktu tugas kuliah atau kesulitan mencari slide materi perkuliahan yang tercecer di berbagai grup chat. Academic Hub hadir sebagai solusi terpusat: mencatat jadwal kuliah, mengarsipkan berkas materi setiap pertemuan, serta memantau deadline tugas dengan **pengingat cerdas otomatis yang dikirim langsung ke Telegram dan WhatsApp**.
 
 ---
 
-## 🛠️ Tech Stack
+## 🚀 Fitur Unggulan Sistem
 
-| Lapisan | Teknologi |
-| :--- | :--- |
-| **Backend Framework** | [Laravel 11 / 12](https://laravel.com) (PHP 8.2+) |
-| **Frontend Framework** | [React 18](https://react.dev) + [Inertia.js v2](https://inertiajs.com) |
-| **Styling & UI** | [Tailwind CSS v3](https://tailwindcss.com), [Lucide React](https://lucide.dev) |
-| **Database** | PostgreSQL ([Supabase](https://supabase.com)) / SQLite / MySQL |
-| **Penyimpanan Berkas** | Local Filesystem / [Cloudflare R2](https://www.cloudflare.com/developer-platform/r2/) (S3-compatible) |
-| **Pengujian** | PHPUnit / Pest (76 tests, 100% lulus) |
+### 📚 1. Manajemen Mata Kuliah & Jadwal Terstruktur
+- **Pencatatan Lengkap**: Simpan informasi mata kuliah, dosen pengampu, kode matkul, jumlah SKS, hingga ruangan kelas.
+- **Navigasi Cepat**: Cari dan saring mata kuliah berdasarkan hari atau semester aktif.
+- **Ringkasan Kartu Kuliah**: Pantau jumlah tugas aktif dan materi yang tersimpan dalam satu kartu mata kuliah.
+
+### ⏰ 2. Pelacak Tugas & Indikator Urgensi Deadline
+- **Penanda Visual Otomatis**: Warna status tugas berubah dinamis sesuai kedekatan waktu deadline (🔴 Sangat Mendesak <24 Jam, 🟡 Siaga <3 Hari, 🟢 Aman >3 Hari).
+- **Instruksi & Tautan Tugas**: Catat keterangan tugas dosen (format berkas, syarat pengumpulan) beserta tautan link Google Classroom / LMS kampus.
+- **Riwayat Tugas Selesai**: Arsipkan tugas yang sudah selesai dikerjakan agar daftar tetap fokus dan rapi.
+
+### 📑 3. Arsip & Pratinjau Berkas Materi Kuliah
+- **Mendukung Ragam Format**: Unggah modul dokumen (`PDF`, `DOCX`, `PPTX`, `XLSX`, `TXT`) maupun gambar materi (`JPG`, `PNG`, `WEBP`).
+- **Pratinjau Langsung di Browser**: Baca slide dan dokumen PDF tanpa wajib mengunduh berkas ke perangkat.
+- **Pengelompokan Pertemuan**: Berkas tertata rapi per pertemuan kuliah (Pertemuan 1 sampai 16).
+
+### 🤖 4. Bot Asisten Telegram Cerdas
+- **Pengingat Deadline Otomatis**: Notifikasi H-24 (1 hari sebelum) dan peringatan darurat H-3 (3 jam sebelum deadline) terkirim otomatis tanpa perlu membuka website.
+- **Sapaan Jadwal Pagi (06:00 WIB)**: Rangkuman agenda kuliah hari ini dan tugas yang harus dikumpulkan disapa setiap pagi.
+- **Ringkasan Awal Pekan (Senin 07:00 WIB)**: Rekapitulasi target tugas untuk satu minggu ke depan.
+- **Menu Shortcut Interaktif**: Cek jadwal hari ini (`/jadwal`), seluruh jadwal (`/semua_jadwal`), tugas aktif (`/tugas`), dan arsip materi (`/materi`) hanya dengan satu ketukan tombol Menu biru.
+
+### 🌓 5. Pengalaman Pengguna Modern
+- **Mode Terang & Gelap (Dark Mode)**: Tampilan nyaman dan elegan untuk belajar di siang hari maupun mengerjakan tugas di malam hari.
+- **Desain Responsif**: Akses nyaman melalui smartphone, tablet, maupun laptop.
 
 ---
 
-## 🚀 Panduan Instalasi Lokal
+## 🛠️ Ringkasan Teknologi yang Digunakan
 
-Ikuti langkah-langkah berikut untuk menjalankan Academic Hub di komputer lokal Anda:
+Projek ini dibangun menggunakan teknologi web modern yang cepat, andal, dan modular:
+- **Core Platform**: [Laravel](https://laravel.com) & [PHP](https://www.php.net) (Stabilitas logika dan penjadwalan otomatis)
+- **Frontend Interaktif**: [React](https://react.dev) & [Inertia.js](https://inertiajs.com) (Navigasi mulus tanpa reload)
+- **Desain & Styling**: [Tailwind CSS](https://tailwindcss.com) & [Lucide Icons](https://lucide.dev)
+- **Integrasi Pesan**: Telegram Bot API & WhatsApp Gateway
 
-### 1. Prasyarat Sistem
-- PHP >= 8.2 (dengan ekstensi `pdo`, `mbstring`, `fileinfo`, `openssl`, `curl`)
-- [Composer](https://getcomposer.org/)
-- [Node.js](https://nodejs.org/) (Versi 18 atau lebih baru) & NPM
+---
 
-### 2. Kloning Repositori
+## 💻 Panduan Clone & Fork untuk Pengembang
+
+Bagi mahasiswa, dosen, atau pengembang yang ingin **melakukan Clone atau Fork** projek ini untuk digunakan sendiri di kampus Anda atau dikembangkan lebih lanjut, silakan ikuti petunjuk langkah demi langkah berikut:
+
+### 1. Prasyarat Lingkungan
+Pastikan perangkat Anda telah terpasang:
+- Git
+- PHP >= 8.2
+- Composer
+- Node.js (v18+) & NPM
+
+### 2. Fork & Kloning Repositori
+Lakukan fork pada repositori ini di GitHub, lalu unduh ke komputer lokal Anda:
 ```bash
-git clone https://github.com/0neNopen/academic-hub.git
+git clone https://github.com/<username-anda>/academic-hub.git
 cd academic-hub
 ```
 
 ### 3. Pasang Dependensi
+Pasang pustaka backend dan frontend:
 ```bash
-# Dependensi PHP
+# Dependensi Backend
 composer install
 
-# Dependensi Frontend JavaScript
+# Dependensi Frontend
 npm install
 ```
 
 ### 4. Konfigurasi Environment (`.env`)
-Salin berkas contoh environment dan buat *Application Key*:
+Salin berkas template environment:
 ```bash
 cp .env.example .env
 php artisan key:generate
 ```
 
-Buka berkas `.env` lalu sesuaikan konfigurasi database Anda. Untuk database lokal SQLite sederhana:
+Buka file `.env` yang baru dibuat. Anda dapat menggunakan database lokal SQLite yang sangat praktis tanpa perlu menginstal server database tambahan:
 ```ini
 DB_CONNECTION=sqlite
 ```
-*(Atau arahkan ke PostgreSQL / Supabase sesuai kebutuhan Anda).*
+*(File database SQLite akan otomatis dibuat saat menjalankan perintah migrasi).*
 
-### 5. Jalankan Migrasi Database
+### 5. Jalankan Migrasi Database & Storage Link
 ```bash
 php artisan migrate
-```
-
-### 6. Buat Symlink Storage
-Untuk mengizinkan akses ke berkas materi yang diunggah secara lokal:
-```bash
 php artisan storage:link
 ```
 
-### 7. Pengaturan Bot Telegram (Opsional tapi Direkomendasikan)
-1. Buka Telegram dan hubungi [@BotFather](https://t.me/BotFather).
-2. Kirim perintah `/newbot` dan ikuti langkah pembuatan bot hingga mendapatkan **Bot Token**.
-3. Masukkan token tersebut ke dalam berkas `.env`:
+### 6. Konfigurasi Bot Telegram Pribadi (Opsional)
+Jika Anda ingin bot Telegram mengirimkan notifikasi ke akun Anda sendiri:
+1. Buka aplikasi Telegram, cari akun resmi **[@BotFather](https://t.me/BotFather)**.
+2. Ketik `/newbot`, ikuti petunjuk nama bot Anda, lalu salin **API Token** yang diberikan.
+3. Masukkan token ke file `.env`:
    ```ini
-   TELEGRAM_BOT_TOKEN=123456789:ABCdefGhIJKlmNoPQRstuVWXyz
-   TELEGRAM_BOT_USERNAME=NamaBotAnda_bot
+   TELEGRAM_BOT_TOKEN=masukkan_token_botfather_disini
+   TELEGRAM_BOT_USERNAME=username_bot_anda
    ```
 
-### 8. Jalankan Server Pengembangan
-Jalankan server aplikasi dan Vite:
+### 7. Jalankan Aplikasi
+Jalankan aplikasi di lingkungan lokal:
 ```bash
 # Terminal 1: Backend Server
 php artisan serve
@@ -159,39 +140,41 @@ php artisan serve
 # Terminal 2: Frontend Asset Bundler
 npm run dev
 
-# Terminal 3 (Opsional): Background Task Scheduler
+# Terminal 3 (Opsional): Jalankan Penjadwal Pengingat
 php artisan schedule:work
 ```
-
-Buka peramban Anda di: **`http://localhost:8000`**
-
----
-
-## 🧪 Menjalankan Pengujian (Testing)
-
-Proyek ini telah dilengkapi dengan 76 unit & feature tests mencakup autentikasi, manajemen matkul, unggah/unduh/pratinjau materi, keamanan berkas, Cloudflare R2 storage, pengujian email SMTP, serta verifikasi pengingat otomatis & webhook interaktif Telegram.
-
-```bash
-php artisan test
-```
+Akses aplikasi melalui peramban di: **`http://localhost:8000`**
 
 ---
 
-## ☁️ Rekomendasi Deployment Produksi (100% Gratis)
+## 💡 Ide & Rekomendasi Pengembangan Lanjutan
 
-Academic Hub dapat di-deploy jangka panjang tanpa biaya menggunakan salah satu arsitektur berikut:
+Bagi Anda yang ingin menjadikan repositori ini sebagai bahan tugas akhir, portofolio, atau proyek open-source kampus, berikut adalah beberapa rekomendasi fitur yang sangat menarik untuk ditambahkan:
 
-1. **Oracle Cloud "Always Free" VPS (Paling Direkomendasikan)**:
-   - Gratis permanen selamanya (hingga 24GB RAM, 200GB disk).
-   - Menjalankan Nginx, PHP 8.2, native cron scheduler, dan penyimpanan lokal yang stabil.
-2. **Kombinasi Cloud Free-Tier**:
-   - **Web App**: [Render.com](https://render.com) atau [Koyeb](https://koyeb.com) (via Dockerfile).
-   - **Database**: [Supabase](https://supabase.com) (500 MB PostgreSQL gratis).
-   - **File Storage**: [Cloudflare R2](https://www.cloudflare.com/products/r2/) (10 GB S3-compatible gratis tanpa biaya egress).
-   - **Cron Trigger**: [cron-job.org](https://cron-job.org) untuk memanggil scheduler pengingat tugas.
+1. **Sistem Presensi & Kehadiran Kuliah**:
+   - Menambahkan catatan kehadiran per pertemuan (Hadir, Izin, Sakit, Alpa) dan persentase kehadiran agar tidak melewati batas minimal ujian kampus.
+2. **Kalkulator Prediksi IPK & Target Nilai**:
+   - Fitur simulasi nilai tugas, kuis, UTS, dan UAS untuk menghitung estimasi indeks prestasi semester (IPS) dan kumulatif (IPK).
+3. **Notifikasi Grup Diskusi Telegram**:
+   - Kemampuan bot untuk dimasukkan ke grup belajar atau grup kelas, sehingga pengingat tugas kelompok dapat diterima bersama oleh anggota tim.
+4. **Sinkronisasi Kalender (Google Calendar / iCal)**:
+   - Fitur ekspor jadwal kuliah langsung ke kalender ponsel mahasiswa dengan format `.ics`.
+5. **AI Ringkasan Materi & Kuis Mandiri**:
+   - Integrasi AI untuk merangkum berkas materi kuliah yang diunggah dan membuat kartu latihan soal (flashcards) otomatis sebelum ujian.
+
+---
+
+## 🤝 Berkontribusi
+
+Kontribusi dari siapa pun selalu terbuka lebar!
+1. Lakukan **Fork** pada projek ini.
+2. Buat branch baru untuk fitur Anda (`git checkout -b fitur/nama-fitur-baru`).
+3. Lakukan commit perubahan Anda (`git commit -m 'Menambahkan fitur nama-fitur-baru'`).
+4. Push ke branch Anda (`git push origin fitur/nama-fitur-baru`).
+5. Buat **Pull Request** di GitHub.
 
 ---
 
 ## 📄 Lisensi
 
-Academic Hub dirilis di bawah lisensi [MIT License](LICENSE). Bebas digunakan dan dikembangkan untuk keperluan akademik maupun pribadi.
+Projek ini berlisensi di bawah lisensi terbuka [MIT License](LICENSE). Anda bebas menggunakan, memodifikasi, dan mendistribusikan projek ini baik untuk kebutuhan akademik maupun pengembangan pribadi.

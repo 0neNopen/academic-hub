@@ -22,7 +22,11 @@ jobs:
           echo "🔌 Menghubungkan ke Supabase PostgreSQL Pooler..."
           sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
           
-          export PGPASSWORD="${SECRET_PASS:-DataNop321!}"
+          if [ -z "${SECRET_PASS}" ]; then
+            echo "❌ Error: Rahasia DB_PASSWORD belum dikonfigurasi di GitHub Actions Secrets."
+            exit 1
+          fi
+          export PGPASSWORD="${SECRET_PASS}"
           if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT 1 as keep_alive_status;" ; then
             echo "✅ Supabase database berhasil diping dan tetap AKTIF (Prevent Auto-Pause)!"
           else

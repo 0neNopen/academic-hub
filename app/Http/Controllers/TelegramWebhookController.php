@@ -55,6 +55,8 @@ class TelegramWebhookController extends Controller
             $this->handleJadwalCommand($chatId, $user, $appUrl);
         } elseif (str_starts_with($lowerText, '/tugas') || str_contains($lowerText, 'tugas aktif')) {
             $this->handleTugasCommand($chatId, $user, $appUrl);
+        } elseif (str_starts_with($lowerText, '/materi') || str_contains($lowerText, 'materi')) {
+            $this->handleMateriCommand($chatId, $user, $appUrl);
         } elseif (str_starts_with($lowerText, '/id') || str_contains($lowerText, 'chat id')) {
             $this->handleIdCommand($chatId);
         } elseif (str_starts_with($lowerText, '/help') || str_starts_with($lowerText, '/bantuan') || str_contains($lowerText, 'bantuan')) {
@@ -71,11 +73,12 @@ class TelegramWebhookController extends Controller
         if ($user) {
             $msg = "👋 Halo <b>{$user->name}</b>!\n\n"
                  . "✅ <b>Akun Telegram Anda Berhasil Terhubung</b> dengan Academic Hub.\n\n"
-                 . "Gunakan tombol shortcut di bawah atau ketuk menu di kiri bawah untuk akses cepat:\n"
-                 . "• 📅 <b>Jadwal Hari Ini</b> - Cek kuliah hari ini\n"
-                 . "• 🗓️ <b>Semua Jadwal</b> - Lihat seluruh matkul terdaftar\n"
-                 . "• 📝 <b>Tugas Aktif</b> - Cek tugas mendekati deadline\n"
-                 . "• ℹ️ <b>Bantuan</b> - Daftar perintah bot\n\n"
+                 . "Ketuk tombol biru <b>[ Menu ]</b> di kiri bawah atau gunakan perintah berikut:\n"
+                 . "• 📅 <b>/jadwal</b> - Cek kuliah hari ini\n"
+                 . "• 🗓️ <b>/semua_jadwal</b> - Lihat seluruh matkul terdaftar\n"
+                 . "• 📝 <b>/tugas</b> - Cek tugas mendekati deadline\n"
+                 . "• 📑 <b>/materi</b> - Cek ringkasan berkas materi kuliah\n"
+                 . "• ℹ️ <b>/help</b> - Daftar perintah bot\n\n"
                  . "🌐 <a href=\"{$appUrl}/dashboard\">Buka Website Academic Hub</a>";
 
             $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
@@ -299,6 +302,47 @@ class TelegramWebhookController extends Controller
         $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
     }
 
+    protected function handleMateriCommand(int|string $chatId, ?User $user, string $appUrl): void
+    {
+        if (!$user) {
+            $this->telegramService->sendMessage(
+                $chatId,
+                "⚠️ Akun Telegram Anda belum terhubung ke akun Academic Hub.\n\nSilakan hubungkan Chat ID Anda <code>{$chatId}</code> di profil web: <a href=\"{$appUrl}/profile\">{$appUrl}/profile</a>"
+            );
+            return;
+        }
+
+        $courses = $user->courses()->withCount('materials')->orderBy('name', 'asc')->get();
+
+        if ($courses->isEmpty()) {
+            $msg = "📑 <b>Arsip Berkas Materi Perkuliahan</b>\n\n"
+                 . "Belum ada mata kuliah yang didaftarkan di website.\n\n"
+                 . "👉 Tambahkan mata kuliah Anda: <a href=\"{$appUrl}/dashboard\">{$appUrl}/dashboard</a>";
+            $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
+            return;
+        }
+
+        $msg = "📑 <b>Arsip Berkas Materi Perkuliahan</b>\n"
+             . "Halo <b>{$user->name}</b>, berikut ringkasan berkas materi kuliah Anda:\n\n";
+
+        $totalMaterials = 0;
+        foreach ($courses as $course) {
+            $count = (int) $course->materials_count;
+            $totalMaterials += $count;
+            $statusText = $count > 0 ? "<b>{$count} berkas</b> tersimpan" : "<i>Belum ada berkas</i>";
+
+            $latest = $course->materials()->orderBy('meeting_number', 'desc')->first();
+            $latestText = ($latest && $latest->meeting_number) ? " <i>(P{$latest->meeting_number})</i>" : "";
+
+            $msg .= "• <b>{$course->name}</b>: {$statusText}{$latestText}\n";
+        }
+
+        $msg .= "\n📊 <b>Total Materi:</b> {$totalMaterials} berkas tersimpan\n\n"
+              . "🌐 <a href=\"{$appUrl}/dashboard\">Buka Website untuk Pratinjau & Unduh Berkas</a>";
+
+        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
+    }
+
     protected function handleIdCommand(int|string $chatId): void
     {
         $msg = "🔢 <b>Chat ID Telegram Anda:</b>\n\n"
@@ -310,14 +354,15 @@ class TelegramWebhookController extends Controller
 
     protected function handleHelpCommand(int|string $chatId): void
     {
-        $msg = "🤖 <b>Panduan Shortcut & Perintah Academic Hub Bot</b>\n\n"
-             . "Anda dapat mengetuk tombol menu di layar atau tombol Menu biru di pojok kiri bawah:\n\n"
+        $msg = "🤖 <b>Panduan Perintah Academic Hub Bot</b>\n\n"
+             . "Ketuk tombol biru <b>[ Menu ]</b> di pojok kiri bawah atau kirim perintah berikut:\n\n"
              . "• 📅 <b>/jadwal</b> - Jadwal kuliah hari ini\n"
              . "• 🗓️ <b>/semua_jadwal</b> - Rangkuman semua jadwal kuliah Anda\n"
-             . "• 📝 <b>/tugas</b> - 5 tugas kuliah aktif terdekat\n"
-             . "• 🔢 <b>/id</b> - Melihat nomor Chat ID Anda\n"
-             . "• ℹ️ <b>/help</b> - Bantuan perintah bot\n\n"
-             . "<i>Bot akan otomatis mengingatkan deadline tugas (H-3, H-1, Hari H) dan menyapa dengan jadwal kuliah setiap pagi pukul 06.00 WIB.</i>";
+             . "• 📝 <b>/tugas</b> - Daftar tugas aktif & hitung mundur deadline\n"
+             . "• 📑 <b>/materi</b> - Cek berkas materi per mata kuliah\n"
+             . "• 🔢 <b>/id</b> - Melihat nomor Chat ID Telegram Anda\n"
+             . "• ℹ️ <b>/help</b> - Panduan & bantuan perintah bot\n\n"
+             . "<i>Bot akan otomatis mengingatkan deadline tugas (H-24 & H-3) serta menyapa jadwal kuliah setiap pagi pukul 06.00 WIB.</i>";
 
         $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
     }
@@ -326,11 +371,12 @@ class TelegramWebhookController extends Controller
     {
         $name = $user ? $user->name : 'Mahasiswa';
         $msg = "Halo <b>{$name}</b>! 👋\n\n"
-             . "Silakan gunakan tombol menu di bawah untuk memilih aksi:\n"
-             . "• 📅 <b>Jadwal Hari Ini</b>\n"
-             . "• 🗓️ <b>Semua Jadwal</b>\n"
-             . "• 📝 <b>Tugas Aktif</b>\n"
-             . "• ℹ️ <b>Bantuan</b>";
+             . "Silakan ketuk tombol biru <b>[ Menu ]</b> di pojok kiri bawah atau gunakan perintah berikut:\n"
+             . "• 📅 <b>/jadwal</b> - Jadwal kuliah hari ini\n"
+             . "• 🗓️ <b>/semua_jadwal</b> - Rangkuman semua jadwal\n"
+             . "• 📝 <b>/tugas</b> - Tugas aktif mendekati deadline\n"
+             . "• 📑 <b>/materi</b> - Ringkasan berkas materi kuliah\n"
+             . "• ℹ️ <b>/help</b> - Panduan bot";
 
         $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
     }

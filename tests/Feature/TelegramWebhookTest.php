@@ -221,4 +221,44 @@ class TelegramWebhookTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+    public function test_telegram_webhook_handles_materi_command(): void
+    {
+        $user = User::factory()->create([
+            'telegram_chat_id' => '12345678',
+        ]);
+
+        $course = Course::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Struktur Data & Algoritma',
+        ]);
+
+        \App\Models\Material::factory()->create([
+            'course_id' => $course->id,
+            'title' => 'Pertemuan 1 - Pengantar Array',
+            'meeting_number' => 1,
+        ]);
+
+        $telegramMock = $this->makeMock();
+        $telegramMock->shouldReceive('sendMessage')
+            ->once()
+            ->withArgs(function ($chatId, $msg) {
+                return $chatId == 12345678 
+                    && str_contains($msg, 'Arsip Berkas Materi Perkuliahan')
+                    && str_contains($msg, 'Struktur Data & Algoritma')
+                    && str_contains($msg, '1 berkas');
+            })
+            ->andReturn(true);
+
+        $this->app->instance(TelegramService::class, $telegramMock);
+
+        $response = $this->postJson('/telegram/webhook', [
+            'message' => [
+                'chat' => ['id' => 12345678],
+                'text' => '/materi',
+            ],
+        ]);
+
+        $response->assertStatus(200);
+    }
 }

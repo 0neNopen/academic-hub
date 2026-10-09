@@ -93,8 +93,9 @@ class TelegramService
                     ['command' => 'jadwal', 'description' => 'Jadwal kuliah hari ini'],
                     ['command' => 'semua_jadwal', 'description' => 'Semua jadwal kuliah (Senin-Minggu)'],
                     ['command' => 'tugas', 'description' => 'Daftar tugas & deadline aktif'],
+                    ['command' => 'materi', 'description' => 'Ringkasan berkas materi kuliah'],
                     ['command' => 'id', 'description' => 'Lihat Chat ID Telegram saya'],
-                    ['command' => 'help', 'description' => 'Bantuan perintah'],
+                    ['command' => 'help', 'description' => 'Bantuan perintah bot'],
                 ],
             ]);
 
