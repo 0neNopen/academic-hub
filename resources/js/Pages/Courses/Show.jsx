@@ -372,6 +372,18 @@ export default function CourseShow({ course }) {
         });
     };
 
+    const handleDeleteCourse = () => {
+        setIsEditCourseModalOpen(false);
+        openConfirmModal(
+            'Hapus Mata Kuliah',
+            `Apakah Anda yakin ingin menghapus mata kuliah "${course.name}" (${course.code || 'MK'})?\n\nPERINGATAN: Seluruh materi kuliah (${course.materials?.length || 0}) dan tugas (${course.assignments?.length || 0}) di dalam mata kuliah ini akan ikut terhapus secara permanen.`,
+            () => {
+                router.delete(route('courses.destroy', course.id));
+            },
+            'Hapus Mata Kuliah'
+        );
+    };
+
     // Form Edit Tugas Kuliah
     const editAssignmentForm = useForm({
         title: '',
@@ -451,6 +463,14 @@ export default function CourseShow({ course }) {
                         >
                             <Pencil className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
                             Edit Matkul
+                        </button>
+                        <button
+                            onClick={handleDeleteCourse}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/30 px-3 py-2 text-xs font-semibold text-red-600 dark:text-red-400 shadow-xs hover:bg-red-100 dark:hover:bg-red-900/50 transition"
+                            title="Hapus Mata Kuliah"
+                        >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            Hapus Matkul
                         </button>
                         <button
                             onClick={() => setIsMaterialModalOpen(true)}
@@ -1339,21 +1359,31 @@ export default function CourseShow({ course }) {
                                 />
                             </div>
 
-                            <div className="flex justify-end gap-2 pt-3 border-t border-gray-100 dark:border-gray-800">
+                            <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800">
                                 <button
                                     type="button"
-                                    onClick={() => setIsEditCourseModalOpen(false)}
-                                    className="rounded-lg px-4 py-2 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                                    onClick={handleDeleteCourse}
+                                    className="rounded-lg px-3 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition inline-flex items-center gap-1.5"
                                 >
-                                    Batal
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                    Hapus Matkul
                                 </button>
-                                <button
-                                    type="submit"
-                                    disabled={editCourseForm.processing}
-                                    className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition"
-                                >
-                                    {editCourseForm.processing ? 'Menyimpan...' : 'Perbarui Mata Kuliah'}
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsEditCourseModalOpen(false)}
+                                        className="rounded-lg px-4 py-2 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                                    >
+                                        Batal
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={editCourseForm.processing}
+                                        className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition"
+                                    >
+                                        {editCourseForm.processing ? 'Menyimpan...' : 'Perbarui Mata Kuliah'}
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     </div>

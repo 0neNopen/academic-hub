@@ -15,6 +15,12 @@ Schedule::command('assignments:send-weekly-digest')
     ->timezone('Asia/Jakarta')
     ->withoutOverlapping();
 
+// Jadwalkan Ringkasan Jadwal Kuliah Harian setiap pagi pukul 06:00 WIB
+Schedule::command('courses:send-daily-schedule')
+    ->dailyAt('06:00')
+    ->timezone('Asia/Jakarta')
+    ->withoutOverlapping();
+
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
