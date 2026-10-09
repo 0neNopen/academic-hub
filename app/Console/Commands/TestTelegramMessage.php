@@ -31,7 +31,7 @@ class TestTelegramMessage extends Command
 
         $buttons = [
             [
-                ['text' => '🌐 Kunjungi Academic Hub', 'url' => config('app.url', 'https://academic-hub.onrender.com')],
+                ['text' => '🌐 Kunjungi Academic Hub', 'url' => config('app.url', 'https://academic-hub-ocw2.onrender.com')],
             ],
         ];
 

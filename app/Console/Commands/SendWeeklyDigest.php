@@ -63,7 +63,7 @@ class SendWeeklyDigest extends Command
             // Seksi 2: Ringkasan Mata Kuliah
             $message .= "📚 <b>Mata Kuliah Terdaftar:</b> " . $courses->count() . " Matkul\n";
             $message .= "💡 <i>Tips: Cicil tugasmu lebih awal agar akhir pekanmu tetap tenang!</i>\n\n";
-            $message .= "🔗 Buka Academic Hub: " . config('app.url', 'https://academic-hub.onrender.com') . "/dashboard";
+            $message .= "🔗 Buka Academic Hub: " . config('app.url', 'https://academic-hub-ocw2.onrender.com') . "/dashboard";
 
             $success = $telegramService->sendMessage($user->telegram_chat_id, $message);
             if ($success) {

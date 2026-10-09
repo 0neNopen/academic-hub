@@ -1,3 +1,6 @@
+import DangerButton from '@/Components/DangerButton';
+import Modal from '@/Components/Modal';
+import SecondaryButton from '@/Components/SecondaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
@@ -7,6 +10,7 @@ import {
     BookOpen,
     Calendar,
     CheckCircle2,
+    CheckSquare,
     ChevronDown,
     ChevronUp,
     Clock,
@@ -35,6 +39,32 @@ export default function CourseShow({ course }) {
     const [previewMaterial, setPreviewMaterial] = useState(null);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [processingTaskId, setProcessingTaskId] = useState(null);
+
+    // Tab Aktif untuk Tampilan Mobile (Materi vs Tugas)
+    const [mobileTab, setMobileTab] = useState('materials');
+
+    // Modal Konfirmasi Hapus Custom
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        confirmText: 'Hapus',
+        onConfirm: null,
+    });
+
+    const openConfirmModal = (title, message, onConfirm, confirmText = 'Hapus') => {
+        setConfirmModal({
+            isOpen: true,
+            title,
+            message,
+            confirmText,
+            onConfirm,
+        });
+    };
+
+    const closeConfirmModal = () => {
+        setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+    };
 
     // Pencarian & Filter Materi Kuliah
     const [materialSearch, setMaterialSearch] = useState('');
@@ -444,9 +474,45 @@ export default function CourseShow({ course }) {
 
             <div className="py-8">
                 <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                    {/* Mobile Segmented Control Tab */}
+                    <div className="flex lg:hidden p-1 bg-gray-200/80 dark:bg-gray-800 rounded-xl mb-5">
+                        <button
+                            type="button"
+                            onClick={() => setMobileTab('materials')}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all duration-150 ${
+                                mobileTab === 'materials'
+                                    ? 'bg-white dark:bg-gray-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                            }`}
+                        >
+                            <BookOpen className="w-4 h-4" />
+                            <span>Materi Kuliah</span>
+                            <span className="text-[10px] px-1.5 py-0.2 bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 rounded-full font-bold">
+                                {course.materials.length}
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setMobileTab('assignments')}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all duration-150 ${
+                                mobileTab === 'assignments'
+                                    ? 'bg-white dark:bg-gray-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                            }`}
+                        >
+                            <CheckSquare className="w-4 h-4" />
+                            <span>Tugas & Tenggat</span>
+                            {activeAssignments.length > 0 && (
+                                <span className="text-[10px] px-1.5 py-0.2 bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 rounded-full font-bold">
+                                    {activeAssignments.length}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                         {/* Kolom Kiri: Daftar Materi */}
-                        <div className="lg:col-span-7 xl:col-span-8 space-y-4">
+                        <div className={`${mobileTab === 'materials' ? 'block' : 'hidden'} lg:block lg:col-span-7 xl:col-span-8 space-y-4`}>
                             {/* Header Judul & Search Bar */}
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                 <div className="flex items-center gap-2">
@@ -564,9 +630,20 @@ export default function CourseShow({ course }) {
                             )}
 
                             {course.materials.length === 0 ? (
-                                <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 text-center text-gray-500 dark:text-gray-400">
-                                    <FileText className="mx-auto h-8 w-8 text-gray-300 dark:text-gray-600 mb-2" />
-                                    <p className="text-sm">Belum ada berkas atau tautan materi yang diunggah.</p>
+                                <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-8 text-center text-gray-500 dark:text-gray-400 shadow-2xs">
+                                    <FileText className="mx-auto h-9 w-9 text-gray-300 dark:text-gray-600 mb-2" />
+                                    <p className="text-sm font-bold text-gray-800 dark:text-gray-200">Belum ada materi kuliah</p>
+                                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 mb-4">
+                                        Unggah slide perkuliahan, modul PDF, atau simpan tautan materi referensi.
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsMaterialModalOpen(true)}
+                                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" />
+                                        Unggah Materi Pertama
+                                    </button>
                                 </div>
                             ) : filteredMaterials.length === 0 ? (
                                 <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-8 text-center text-gray-500 dark:text-gray-400 shadow-2xs">
@@ -674,11 +751,16 @@ export default function CourseShow({ course }) {
                                                     <button
                                                         type="button"
                                                         onClick={() => {
-                                                            if (confirm('Hapus materi ini?')) {
-                                                                router.delete(route('materials.destroy', item.id), {
-                                                                    preserveScroll: true,
-                                                                });
-                                                            }
+                                                            openConfirmModal(
+                                                                'Hapus Materi Kuliah',
+                                                                `Apakah Anda yakin ingin menghapus materi "${item.title}"? Berkas yang telah dihapus tidak dapat dipulihkan.`,
+                                                                () => {
+                                                                    router.delete(route('materials.destroy', item.id), {
+                                                                        preserveScroll: true,
+                                                                    });
+                                                                },
+                                                                'Hapus Materi'
+                                                            );
                                                         }}
                                                         title="Hapus Materi"
                                                         className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -694,7 +776,7 @@ export default function CourseShow({ course }) {
                         </div>
 
                         {/* Kolom Kanan: Daftar Tugas & Riwayat Selesai */}
-                        <div className="lg:col-span-5 xl:col-span-4 space-y-5">
+                        <div className={`${mobileTab === 'assignments' ? 'block' : 'hidden'} lg:block lg:col-span-5 xl:col-span-4 space-y-5`}>
                             {/* 1. Tugas Aktif yang Perlu Dikerjakan */}
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
@@ -716,6 +798,16 @@ export default function CourseShow({ course }) {
                                                 ? 'Semua tugas telah diselesaikan dan tersimpan di riwayat bawah.'
                                                 : 'Belum ada tugas yang ditambahkan untuk mata kuliah ini.'}
                                         </p>
+                                        {completedAssignments.length === 0 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsAssignmentModalOpen(true)}
+                                                className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition"
+                                            >
+                                                <Plus className="w-3.5 h-3.5" />
+                                                Tambah Tugas Pertama
+                                            </button>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="space-y-3">
@@ -738,11 +830,16 @@ export default function CourseShow({ course }) {
                                                         </button>
                                                         <button
                                                             onClick={() => {
-                                                                if (confirm('Hapus tugas ini?')) {
-                                                                    router.delete(route('assignments.destroy', task.id), {
-                                                                        preserveScroll: true,
-                                                                    });
-                                                                }
+                                                                openConfirmModal(
+                                                                    'Hapus Tugas Kuliah',
+                                                                    `Apakah Anda yakin ingin menghapus tugas "${task.title}"?`,
+                                                                    () => {
+                                                                        router.delete(route('assignments.destroy', task.id), {
+                                                                            preserveScroll: true,
+                                                                        });
+                                                                    },
+                                                                    'Hapus Tugas'
+                                                                );
                                                             }}
                                                             title="Hapus Tugas"
                                                             className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition p-1"
@@ -864,11 +961,16 @@ export default function CourseShow({ course }) {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => {
-                                                                    if (confirm('Hapus permanen tugas ini dari riwayat?')) {
-                                                                        router.delete(route('assignments.destroy', task.id), {
-                                                                            preserveScroll: true,
-                                                                        });
-                                                                    }
+                                                                    openConfirmModal(
+                                                                        'Hapus Riwayat Tugas',
+                                                                        `Apakah Anda yakin ingin menghapus tugas "${task.title}" secara permanen dari riwayat?`,
+                                                                        () => {
+                                                                            router.delete(route('assignments.destroy', task.id), {
+                                                                                preserveScroll: true,
+                                                                            });
+                                                                        },
+                                                                        'Hapus Permanen'
+                                                                    );
                                                                 }}
                                                                 title="Hapus Tugas"
                                                                 className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition p-1"
@@ -1483,6 +1585,37 @@ export default function CourseShow({ course }) {
                     </div>
                 );
             })()}
+
+            {/* Modal Konfirmasi Hapus Kustom */}
+            <Modal show={confirmModal.isOpen} onClose={closeConfirmModal} maxWidth="md">
+                <div className="p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2.5 rounded-xl bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 shrink-0">
+                            <AlertCircle className="w-5 h-5" />
+                        </div>
+                        <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                            {confirmModal.title}
+                        </h3>
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
+                        {confirmModal.message}
+                    </p>
+                    <div className="flex items-center justify-end gap-2.5">
+                        <SecondaryButton onClick={closeConfirmModal} className="text-xs">
+                            Batal
+                        </SecondaryButton>
+                        <DangerButton
+                            onClick={() => {
+                                if (confirmModal.onConfirm) confirmModal.onConfirm();
+                                closeConfirmModal();
+                            }}
+                            className="text-xs"
+                        >
+                            {confirmModal.confirmText}
+                        </DangerButton>
+                    </div>
+                </div>
+            </Modal>
         </AuthenticatedLayout>
     );
 }
