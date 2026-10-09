@@ -12,7 +12,33 @@ class MaterialController extends Controller
 {
     private function getStorageDisk(): string
     {
-        return config('filesystems.default') === 's3' ? 's3' : 'public';
+        $defaultDisk = config('filesystems.default');
+        $s3Key = config('filesystems.disks.s3.key');
+        $s3Bucket = config('filesystems.disks.s3.bucket');
+
+        if ($defaultDisk === 's3' && !empty($s3Key) && !empty($s3Bucket)) {
+            return 's3';
+        }
+
+        return 'public';
+    }
+
+    private function resolveDiskForFile(?string $filePath): string
+    {
+        if (!$filePath) {
+            return $this->getStorageDisk();
+        }
+
+        $activeDisk = $this->getStorageDisk();
+        if (Storage::disk($activeDisk)->exists($filePath)) {
+            return $activeDisk;
+        }
+
+        if ($activeDisk !== 'public' && Storage::disk('public')->exists($filePath)) {
+            return 'public';
+        }
+
+        return $activeDisk;
     }
 
     public function store(Request $request, Course $course)
@@ -56,11 +82,11 @@ class MaterialController extends Controller
         ]);
 
         if ($request->hasFile('file')) {
-            $disk = $this->getStorageDisk();
-            if ($material->file_path && Storage::disk($disk)->exists($material->file_path)) {
-                Storage::disk($disk)->delete($material->file_path);
+            $oldDisk = $this->resolveDiskForFile($material->file_path);
+            if ($material->file_path && Storage::disk($oldDisk)->exists($material->file_path)) {
+                Storage::disk($oldDisk)->delete($material->file_path);
             }
-            $material->file_path = $request->file('file')->store('materials', $disk);
+            $material->file_path = $request->file('file')->store('materials', $this->getStorageDisk());
         }
 
         $material->title = $validated['title'];
@@ -78,7 +104,7 @@ class MaterialController extends Controller
     {
         abort_if($material->course->user_id !== Auth::id(), 403);
 
-        $disk = $this->getStorageDisk();
+        $disk = $this->resolveDiskForFile($material->file_path);
 
         if (!$material->file_path || !Storage::disk($disk)->exists($material->file_path)) {
             abort(404, 'Berkas materi tidak ditemukan.');
@@ -102,7 +128,7 @@ class MaterialController extends Controller
     {
         abort_if($material->course->user_id !== Auth::id(), 403);
 
-        $disk = $this->getStorageDisk();
+        $disk = $this->resolveDiskForFile($material->file_path);
 
         if (!$material->file_path || !Storage::disk($disk)->exists($material->file_path)) {
             abort(404, 'Berkas materi tidak ditemukan.');
@@ -119,7 +145,7 @@ class MaterialController extends Controller
     {
         abort_if($material->course->user_id !== Auth::id(), 403);
 
-        $disk = $this->getStorageDisk();
+        $disk = $this->resolveDiskForFile($material->file_path);
 
         if ($material->file_path && Storage::disk($disk)->exists($material->file_path)) {
             Storage::disk($disk)->delete($material->file_path);

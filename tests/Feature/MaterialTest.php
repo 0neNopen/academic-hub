@@ -308,4 +308,43 @@ class MaterialTest extends TestCase
         $this->assertDatabaseMissing('materials', ['id' => $material->id]);
         Storage::disk('public')->assertMissing($filePath);
     }
+
+    public function test_materials_support_s3_storage_disk(): void
+    {
+        config([
+            'filesystems.default' => 's3',
+            'filesystems.disks.s3.key' => 'fake-access-key',
+            'filesystems.disks.s3.bucket' => 'academic-hub-storage',
+        ]);
+        Storage::fake('s3');
+
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['user_id' => $user->id]);
+        $file = UploadedFile::fake()->create('slide_r2.pdf', 300, 'application/pdf');
+
+        // 1. Upload ke S3
+        $response = $this->actingAs($user)->post("/courses/{$course->id}/materials", [
+            'title' => 'Modul Cloudflare R2',
+            'meeting_number' => 5,
+            'file' => $file,
+        ]);
+        $response->assertSessionHasNoErrors();
+
+        $material = Material::where('course_id', $course->id)->first();
+        $this->assertNotNull($material->file_path);
+        Storage::disk('s3')->assertExists($material->file_path);
+
+        // 2. Preview dari S3
+        $previewResponse = $this->actingAs($user)->get("/materials/{$material->id}/preview");
+        $previewResponse->assertOk();
+
+        // 3. Download dari S3
+        $downloadResponse = $this->actingAs($user)->get("/materials/{$material->id}/download");
+        $downloadResponse->assertOk();
+
+        // 4. Hapus dari S3
+        $deleteResponse = $this->actingAs($user)->delete("/materials/{$material->id}");
+        $deleteResponse->assertSessionHasNoErrors();
+        Storage::disk('s3')->assertMissing($material->file_path);
+    }
 }

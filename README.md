@@ -24,7 +24,7 @@ pinned: false
   <img src="https://img.shields.io/badge/Inertia.js-v2-9553E9?style=for-the-badge&logo=inertia&logoColor=white" alt="Inertia.js">
   <img src="https://img.shields.io/badge/Tailwind_CSS-v3-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
   <img src="https://img.shields.io/badge/Telegram_Bot-API-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Bot">
-  <img src="https://img.shields.io/badge/PHPUnit_Tests-57%20Passed-44CC11?style=for-the-badge&logo=php&logoColor=white" alt="Tests">
+  <img src="https://img.shields.io/badge/PHPUnit_Tests-70%20Passed-44CC11?style=for-the-badge&logo=php&logoColor=white" alt="Tests">
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License">
 </p>
 
@@ -65,14 +65,18 @@ pinned: false
 
 ### 🤖 5. Multi-Channel Notification Gateway
 - **Bot Telegram Otomatis (100% Gratis)**:
-  - Notifikasi pengingat otomatis dikirimkan terjadwal (H-3, H-1, dan Hari H).
+  - Notifikasi pengingat otomatis deadline tugas (H-3, H-1, dan Hari H).
+  - **Pengingat Jadwal Kuliah Harian**: Bot mengirimkan jadwal mata kuliah hari ini setiap pukul 06.00 WIB pagi (`courses:send-daily-schedule`).
+  - **Weekly Digest**: Rekapitulasi tugas mingguan setiap hari Senin pukul 07.00 WIB.
   - Panduan integrasi bot interaktif di halaman Profil Pengguna.
 - **Dukungan WhatsApp**: Opsi integrasi pesan WhatsApp via Green-API atau self-hosted WAHA.
 
-### 🛡️ 6. Keamanan & Performa
+### 🛡️ 6. Keamanan, Penyimpanan Berkas & Diagnostik
 - **Isolasi Data Pengguna**: Diterapkan *Eloquent Authorization Policy* sehingga setiap mahasiswa hanya dapat melihat dan mengelola datanya sendiri.
 - **Pencegahan XSS Berkas**: Validasi unggahan berkas ketat dan pemblokiran berkas SVG berbahaya.
 - **Endpoint File Terlindungi**: Seluruh unduhan dan pratinjau materi diverifikasi hak aksesnya sebelum berkas disajikan.
+- **Cloud Storage Resilien**: Mendukung **Cloudflare R2** (S3-compatible 10 GB gratis selamanya tanpa biaya egress) dengan deteksi cerdas fallback ke disk lokal.
+- **CLI Mail Tester**: Perintah `php artisan mail:test {email}` untuk verifikasi instan koneksi SMTP Gmail di server produksi.
 
 ---
 
@@ -85,7 +89,7 @@ pinned: false
 | **Styling & UI** | [Tailwind CSS v3](https://tailwindcss.com), [Lucide React](https://lucide.dev) |
 | **Database** | PostgreSQL ([Supabase](https://supabase.com)) / SQLite / MySQL |
 | **Penyimpanan Berkas** | Local Filesystem / [Cloudflare R2](https://www.cloudflare.com/developer-platform/r2/) (S3-compatible) |
-| **Pengujian** | PHPUnit (57 tests, 100% lulus) |
+| **Pengujian** | PHPUnit / Pest (70 tests, 100% lulus) |
 
 ---
 
@@ -165,7 +169,7 @@ Buka peramban Anda di: **`http://localhost:8000`**
 
 ## 🧪 Menjalankan Pengujian (Testing)
 
-Proyek ini telah dilengkapi dengan 57 unit & feature tests mencakup autentikasi, manajemen matkul, unggah/unduh/pratinjau materi, keamanan berkas, serta verifikasi pengingat otomatis.
+Proyek ini telah dilengkapi dengan 70 unit & feature tests mencakup autentikasi, manajemen matkul, unggah/unduh/pratinjau materi, keamanan berkas, Cloudflare R2 storage, pengujian email SMTP, serta verifikasi pengingat otomatis.
 
 ```bash
 php artisan test
