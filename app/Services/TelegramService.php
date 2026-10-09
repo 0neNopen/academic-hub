@@ -21,10 +21,11 @@ class TelegramService
      *
      * @param string|int $chatId
      * @param string $message (Format HTML didukung)
-     * @param array|null $inlineKeyboard Array tombol interaktif
+     * @param array|null $inlineKeyboard Array tombol interaktif inline
+     * @param array|null $replyMarkup Array reply markup kustom (keyboard atau inline_keyboard)
      * @return bool
      */
-    public function sendMessage(string|int $chatId, string $message, ?array $inlineKeyboard = null): bool
+    public function sendMessage(string|int $chatId, string $message, ?array $inlineKeyboard = null, ?array $replyMarkup = null): bool
     {
         if (empty($this->botToken)) {
             Log::error('TELEGRAM_BOT_TOKEN belum diset di config/services.php atau .env');
@@ -43,7 +44,9 @@ class TelegramService
             'disable_web_page_preview' => false,
         ];
 
-        if (!empty($inlineKeyboard)) {
+        if (!empty($replyMarkup)) {
+            $payload['reply_markup'] = $replyMarkup;
+        } elseif (!empty($inlineKeyboard)) {
             $payload['reply_markup'] = [
                 'inline_keyboard' => $inlineKeyboard,
             ];
@@ -60,6 +63,55 @@ class TelegramService
             return true;
         } catch (\Throwable $e) {
             Log::error('Telegram Service Exception: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Shortcut keyboard menu tetap di layar chat Telegram (Reply Keyboard).
+     */
+    public function buildMainKeyboard(): array
+    {
+        return [
+            'keyboard' => [
+                [
+                    ['text' => '📅 Jadwal Hari Ini'],
+                    ['text' => '🗓️ Semua Jadwal'],
+                ],
+                [
+                    ['text' => '📝 Tugas Aktif'],
+                    ['text' => 'ℹ️ Bantuan'],
+                ],
+            ],
+            'resize_keyboard' => true,
+            'is_persistent' => true,
+        ];
+    }
+
+    /**
+     * Mendaftarkan daftar shortcut tombol Menu biru di kiri bawah ke Telegram API.
+     */
+    public function setBotCommands(): bool
+    {
+        if (empty($this->botToken)) {
+            return false;
+        }
+
+        try {
+            $response = Http::timeout(10)->post("{$this->apiUrl}/setMyCommands", [
+                'commands' => [
+                    ['command' => 'start', 'description' => 'Mulai & cek status akun'],
+                    ['command' => 'jadwal', 'description' => 'Jadwal kuliah hari ini'],
+                    ['command' => 'semua_jadwal', 'description' => 'Semua jadwal kuliah (Senin-Minggu)'],
+                    ['command' => 'tugas', 'description' => 'Daftar tugas & deadline aktif'],
+                    ['command' => 'id', 'description' => 'Lihat Chat ID Telegram saya'],
+                    ['command' => 'help', 'description' => 'Bantuan perintah'],
+                ],
+            ]);
+
+            return $response->successful();
+        } catch (\Throwable $e) {
+            Log::error('Telegram Service setMyCommands Exception: ' . $e->getMessage());
             return false;
         }
     }

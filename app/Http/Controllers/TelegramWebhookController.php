@@ -8,7 +8,6 @@ use App\Services\TelegramService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class TelegramWebhookController extends Controller
 {
@@ -31,6 +30,7 @@ class TelegramWebhookController extends Controller
 
         $chatId = $message['chat']['id'] ?? null;
         $text = trim((string) ($message['text'] ?? ''));
+        $lowerText = strtolower($text);
         $firstName = $message['from']['first_name'] ?? 'Mahasiswa';
 
         if (!$chatId) {
@@ -45,16 +45,18 @@ class TelegramWebhookController extends Controller
         // Cari user berdasarkan telegram_chat_id
         $user = User::where('telegram_chat_id', (string) $chatId)->first();
 
-        // Routing perintah teks
-        if (str_starts_with($text, '/start')) {
+        // Routing perintah teks (mendukung slash command & teks tombol keyboard)
+        if (str_starts_with($lowerText, '/start')) {
             $this->handleStartCommand($chatId, $firstName, $user, $appUrl);
-        } elseif (str_starts_with($text, '/jadwal')) {
+        } elseif (str_starts_with($lowerText, '/semua_jadwal') || str_starts_with($lowerText, '/semuajadwal') || str_contains($lowerText, 'semua jadwal')) {
+            $this->handleSemuaJadwalCommand($chatId, $user, $appUrl);
+        } elseif (str_starts_with($lowerText, '/jadwal') || str_contains($lowerText, 'jadwal hari ini')) {
             $this->handleJadwalCommand($chatId, $user, $appUrl);
-        } elseif (str_starts_with($text, '/tugas')) {
+        } elseif (str_starts_with($lowerText, '/tugas') || str_contains($lowerText, 'tugas aktif')) {
             $this->handleTugasCommand($chatId, $user, $appUrl);
-        } elseif (str_starts_with($text, '/id')) {
+        } elseif (str_starts_with($lowerText, '/id') || str_contains($lowerText, 'chat id')) {
             $this->handleIdCommand($chatId);
-        } elseif (str_starts_with($text, '/help') || str_starts_with($text, '/bantuan')) {
+        } elseif (str_starts_with($lowerText, '/help') || str_starts_with($lowerText, '/bantuan') || str_contains($lowerText, 'bantuan')) {
             $this->handleHelpCommand($chatId);
         } else {
             $this->handleDefaultMessage($chatId, $user);
@@ -68,20 +70,14 @@ class TelegramWebhookController extends Controller
         if ($user) {
             $msg = "👋 Halo <b>{$user->name}</b>!\n\n"
                  . "✅ <b>Akun Telegram Anda Berhasil Terhubung</b> dengan Academic Hub.\n\n"
-                 . "Bot ini siap otomatis mengirimkan:\n"
-                 . "⏰ <b>Pengingat Deadline Tugas</b> (H-3, H-1, dan Hari H)\n"
-                 . "📅 <b>Jadwal Kuliah Harian</b> setiap pagi pukul 06.00 WIB\n"
-                 . "📊 <b>Rekapitulasi Tugas Mingguan</b> setiap hari Senin pukul 07.00 WIB\n\n"
-                 . "<b>Perintah Cepat:</b>\n"
-                 . "• /jadwal - Cek jadwal kuliah hari ini\n"
-                 . "• /tugas - Cek daftar tugas kuliah aktif\n"
-                 . "• /help - Bantuan perintah bot";
+                 . "Gunakan tombol shortcut di bawah atau ketuk menu di kiri bawah untuk akses cepat:\n"
+                 . "• 📅 <b>Jadwal Hari Ini</b> - Cek kuliah hari ini\n"
+                 . "• 🗓️ <b>Semua Jadwal</b> - Lihat seluruh matkul terdaftar\n"
+                 . "• 📝 <b>Tugas Aktif</b> - Cek tugas mendekati deadline\n"
+                 . "• ℹ️ <b>Bantuan</b> - Daftar perintah bot\n\n"
+                 . "🌐 <a href=\"{$appUrl}/dashboard\">Buka Website Academic Hub</a>";
 
-            $buttons = [
-                [
-                    ['text' => '🌐 Buka Dashboard Web', 'url' => "{$appUrl}/dashboard"],
-                ],
-            ];
+            $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->buildMainKeyboard());
         } else {
             $msg = "👋 Halo <b>{$firstName}</b>!\n\n"
                  . "Selamat datang di <b>Academic Hub Notifier</b>. 🎓\n\n"
@@ -98,9 +94,9 @@ class TelegramWebhookController extends Controller
                     ['text' => '⚙️ Hubungkan di Profil Web', 'url' => "{$appUrl}/profile"],
                 ],
             ];
-        }
 
-        $this->telegramService->sendMessage($chatId, $msg, $buttons);
+            $this->telegramService->sendMessage($chatId, $msg, $buttons);
+        }
     }
 
     protected function handleJadwalCommand(int|string $chatId, ?User $user, string $appUrl): void
@@ -124,7 +120,8 @@ class TelegramWebhookController extends Controller
 
         if ($courses->isEmpty()) {
             $msg = "📅 <b>Jadwal Kuliah Hari Ini ({$todayName}, {$todayDate})</b>\n\n"
-                 . "🎉 <i>Tidak ada jadwal perkuliahan untuk hari ini. Selamat beristirahat atau belajar mandiri!</i>";
+                 . "🎉 <i>Tidak ada jadwal perkuliahan untuk hari ini. Selamat beristirahat atau belajar mandiri!</i>\n\n"
+                 . "💡 Ketuk <b>Semua Jadwal</b> untuk melihat jadwal hari lain.";
         } else {
             $msg = "📅 <b>Jadwal Kuliah Hari Ini ({$todayName}, {$todayDate})</b>\n"
                  . "Halo <b>{$user->name}</b>, berikut agenda perkuliahanmu hari ini:\n\n";
@@ -133,17 +130,83 @@ class TelegramWebhookController extends Controller
                 $no = $index + 1;
                 $startTime = $course->start_time ? substr((string) $course->start_time, 0, 5) : '-';
                 $endTime = $course->end_time ? substr((string) $course->end_time, 0, 5) : '-';
-                $room = $course->room_location ?: 'Belum diset';
                 $lecturer = $course->lecturer_name ?: 'Dosen belum diset';
 
-                $msg .= "{$no}. <b>{$course->name}</b> ({$course->code})\n"
+                $msg .= "{$no}. <b>{$course->name}</b>" . ($course->code ? " ({$course->code})" : "") . "\n"
                       . "   ⏰ <b>Pukul:</b> {$startTime} - {$endTime} WIB\n"
-                      . "   📍 <b>Ruang:</b> {$room}\n"
                       . "   👤 <b>Dosen:</b> {$lecturer}\n\n";
             }
         }
 
-        $this->telegramService->sendMessage($chatId, $msg);
+        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->buildMainKeyboard());
+    }
+
+    protected function handleSemuaJadwalCommand(int|string $chatId, ?User $user, string $appUrl): void
+    {
+        if (!$user) {
+            $this->telegramService->sendMessage(
+                $chatId,
+                "⚠️ Akun Telegram Anda belum terhubung ke akun Academic Hub.\n\nSilakan hubungkan Chat ID Anda <code>{$chatId}</code> di halaman profil: <a href=\"{$appUrl}/profile\">{$appUrl}/profile</a>"
+            );
+            return;
+        }
+
+        $allCourses = $user->courses()->orderBy('start_time', 'asc')->get();
+
+        if ($allCourses->isEmpty()) {
+            $msg = "🗓️ <b>Seluruh Jadwal Perkuliahan Terdaftar</b>\n\n"
+                 . "Belum ada mata kuliah yang didaftarkan di website.\n\n"
+                 . "👉 Silakan tambahkan mata kuliah Anda melalui website: <a href=\"{$appUrl}/dashboard\">{$appUrl}/dashboard</a>";
+            $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->buildMainKeyboard());
+            return;
+        }
+
+        $dayOrder = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+        $grouped = [];
+
+        foreach ($allCourses as $c) {
+            $day = ucfirst(strtolower(trim((string) $c->day_of_week))) ?: 'Lainnya';
+            $grouped[$day][] = $c;
+        }
+
+        $msg = "🗓️ <b>Seluruh Jadwal Perkuliahan Anda</b>\n"
+             . "Halo <b>{$user->name}</b>, berikut ringkasan seluruh matkul yang terdaftar di Academic Hub:\n\n";
+
+        $hasPrintedAny = false;
+        foreach ($dayOrder as $day) {
+            if (!empty($grouped[$day])) {
+                $hasPrintedAny = true;
+                $msg .= "📌 <b>" . strtoupper($day) . "</b>\n";
+                foreach ($grouped[$day] as $course) {
+                    $startTime = $course->start_time ? substr((string) $course->start_time, 0, 5) : '-';
+                    $endTime = $course->end_time ? substr((string) $course->end_time, 0, 5) : '-';
+                    $code = $course->code ? "[{$course->code}] " : "";
+                    $lecturer = $course->lecturer_name ? " • {$course->lecturer_name}" : "";
+
+                    $msg .= "• <b>{$code}{$course->name}</b>\n"
+                          . "  ⏰ {$startTime} - {$endTime} WIB{$lecturer}\n";
+                }
+                $msg .= "\n";
+            }
+        }
+
+        // Cetak hari lainnya jika ada yang tidak standar
+        foreach ($grouped as $day => $courses) {
+            if (!in_array($day, $dayOrder) && !empty($courses)) {
+                $msg .= "📌 <b>" . strtoupper($day) . "</b>\n";
+                foreach ($courses as $course) {
+                    $startTime = $course->start_time ? substr((string) $course->start_time, 0, 5) : '-';
+                    $endTime = $course->end_time ? substr((string) $course->end_time, 0, 5) : '-';
+                    $msg .= "• <b>{$course->name}</b>\n"
+                          . "  ⏰ {$startTime} - {$endTime} WIB\n";
+                }
+                $msg .= "\n";
+            }
+        }
+
+        $msg .= "🌐 <a href=\"{$appUrl}/dashboard\">Kelola Mata Kuliah di Website</a>";
+
+        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->buildMainKeyboard());
     }
 
     protected function handleTugasCommand(int|string $chatId, ?User $user, string $appUrl): void
@@ -186,13 +249,9 @@ class TelegramWebhookController extends Controller
             }
         }
 
-        $buttons = [
-            [
-                ['text' => '🌐 Kelola Tugas di Web', 'url' => "{$appUrl}/dashboard"],
-            ],
-        ];
+        $msg .= "🌐 <a href=\"{$appUrl}/dashboard\">Buka Website untuk Kumpul / Cek Detail</a>";
 
-        $this->telegramService->sendMessage($chatId, $msg, $buttons);
+        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->buildMainKeyboard());
     }
 
     protected function handleIdCommand(int|string $chatId): void
@@ -201,32 +260,33 @@ class TelegramWebhookController extends Controller
              . "<code>{$chatId}</code>\n\n"
              . "<i>Gunakan angka ID ini pada menu Pengaturan Profil di Academic Hub untuk menghubungkan bot notifikasi.</i>";
 
-        $this->telegramService->sendMessage($chatId, $msg);
+        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->buildMainKeyboard());
     }
 
     protected function handleHelpCommand(int|string $chatId): void
     {
-        $msg = "🤖 <b>Panduan Perintah Academic Hub Bot</b>\n\n"
-             . "Berikut daftar perintah yang dapat Anda gunakan:\n\n"
-             . "• /start - Memulai bot & cek status koneksi akun\n"
-             . "• /jadwal - Melihat jadwal kuliah hari ini\n"
-             . "• /tugas - Melihat 5 tugas aktif terdekat\n"
-             . "• /id - Melihat Chat ID Telegram Anda\n"
-             . "• /help - Menampilkan panduan bantuan ini\n\n"
-             . "<i>Bot akan otomatis mengingatkan Anda saat ada deadline tugas (H-3, H-1, Hari H) dan mengirimkan jadwal kuliah setiap pukul 06.00 WIB pagi.</i>";
+        $msg = "🤖 <b>Panduan Shortcut & Perintah Academic Hub Bot</b>\n\n"
+             . "Anda dapat mengetuk tombol menu di layar atau tombol Menu biru di pojok kiri bawah:\n\n"
+             . "• 📅 <b>/jadwal</b> - Jadwal kuliah hari ini\n"
+             . "• 🗓️ <b>/semua_jadwal</b> - Rangkuman semua jadwal kuliah Anda\n"
+             . "• 📝 <b>/tugas</b> - 5 tugas kuliah aktif terdekat\n"
+             . "• 🔢 <b>/id</b> - Melihat nomor Chat ID Anda\n"
+             . "• ℹ️ <b>/help</b> - Bantuan perintah bot\n\n"
+             . "<i>Bot akan otomatis mengingatkan deadline tugas (H-3, H-1, Hari H) dan menyapa dengan jadwal kuliah setiap pagi pukul 06.00 WIB.</i>";
 
-        $this->telegramService->sendMessage($chatId, $msg);
+        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->buildMainKeyboard());
     }
 
     protected function handleDefaultMessage(int|string $chatId, ?User $user): void
     {
         $name = $user ? $user->name : 'Mahasiswa';
         $msg = "Halo <b>{$name}</b>! 👋\n\n"
-             . "Saya adalah bot otomatis Academic Hub. Ketik salah satu perintah berikut:\n"
-             . "• /jadwal untuk melihat jadwal kuliah hari ini\n"
-             . "• /tugas untuk melihat deadline tugas terdekat\n"
-             . "• /help untuk bantuan lengkap";
+             . "Silakan gunakan tombol menu di bawah untuk memilih aksi:\n"
+             . "• 📅 <b>Jadwal Hari Ini</b>\n"
+             . "• 🗓️ <b>Semua Jadwal</b>\n"
+             . "• 📝 <b>Tugas Aktif</b>\n"
+             . "• ℹ️ <b>Bantuan</b>";
 
-        $this->telegramService->sendMessage($chatId, $msg);
+        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->buildMainKeyboard());
     }
 }

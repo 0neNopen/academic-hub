@@ -24,7 +24,7 @@ pinned: false
   <img src="https://img.shields.io/badge/Inertia.js-v2-9553E9?style=for-the-badge&logo=inertia&logoColor=white" alt="Inertia.js">
   <img src="https://img.shields.io/badge/Tailwind_CSS-v3-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
   <img src="https://img.shields.io/badge/Telegram_Bot-API-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Bot">
-  <img src="https://img.shields.io/badge/PHPUnit_Tests-74%20Passed-44CC11?style=for-the-badge&logo=php&logoColor=white" alt="Tests">
+  <img src="https://img.shields.io/badge/PHPUnit_Tests-76%20Passed-44CC11?style=for-the-badge&logo=php&logoColor=white" alt="Tests">
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License">
 </p>
 
@@ -89,7 +89,7 @@ pinned: false
 | **Styling & UI** | [Tailwind CSS v3](https://tailwindcss.com), [Lucide React](https://lucide.dev) |
 | **Database** | PostgreSQL ([Supabase](https://supabase.com)) / SQLite / MySQL |
 | **Penyimpanan Berkas** | Local Filesystem / [Cloudflare R2](https://www.cloudflare.com/developer-platform/r2/) (S3-compatible) |
-| **Pengujian** | PHPUnit / Pest (74 tests, 100% lulus) |
+| **Pengujian** | PHPUnit / Pest (76 tests, 100% lulus) |
 
 ---
 
@@ -169,7 +169,7 @@ Buka peramban Anda di: **`http://localhost:8000`**
 
 ## 🧪 Menjalankan Pengujian (Testing)
 
-Proyek ini telah dilengkapi dengan 74 unit & feature tests mencakup autentikasi, manajemen matkul, unggah/unduh/pratinjau materi, keamanan berkas, Cloudflare R2 storage, pengujian email SMTP, serta verifikasi pengingat otomatis & webhook interaktif Telegram.
+Proyek ini telah dilengkapi dengan 76 unit & feature tests mencakup autentikasi, manajemen matkul, unggah/unduh/pratinjau materi, keamanan berkas, Cloudflare R2 storage, pengujian email SMTP, serta verifikasi pengingat otomatis & webhook interaktif Telegram.
 
 ```bash
 php artisan test
