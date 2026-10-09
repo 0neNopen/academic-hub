@@ -83,6 +83,16 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
         return matchesSearch && matchesDay;
     });
 
+    // Format Jam Kuliah (Contoh: 12:05 - 14:15 WIB)
+    const formatCourseTime = (start, end) => {
+        if (!start && !end) return null;
+        const s = start ? start.slice(0, 5) : '';
+        const e = end ? end.slice(0, 5) : '';
+        if (s && e) return `${s} - ${e} WIB`;
+        if (s) return `Mulai ${s} WIB`;
+        return null;
+    };
+
     // Helper status urgensi deadline tugas
     const getUrgencyInfo = (deadlineString) => {
         const now = new Date();
@@ -375,9 +385,18 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                                 <h4 className="font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition text-sm sm:text-base">
                                                     {course.name}
                                                 </h4>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                    Dosen: {course.lecturer_name || '-'}
-                                                </p>
+                                                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-gray-500 dark:text-gray-400 mt-1.5">
+                                                    <span>Dosen: {course.lecturer_name || '-'}</span>
+                                                    {formatCourseTime(course.start_time, course.end_time) && (
+                                                        <>
+                                                            <span>•</span>
+                                                            <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
+                                                                <Clock className="h-3 w-3" />
+                                                                {formatCourseTime(course.start_time, course.end_time)}
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                </div>
                                             </div>
 
                                             <div className="bg-gray-50/80 dark:bg-gray-800/50 px-4 py-2.5 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs">
@@ -554,8 +573,8 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
 
             {/* Modal Sederhana Tambah Mata Kuliah */}
             {isAddCourseModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-xs p-4">
-                    <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-xs p-4 overflow-y-auto">
+                    <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 sm:p-6 shadow-2xl max-h-[90dvh] overflow-y-auto my-auto">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Tambah Mata Kuliah</h3>
                         <form onSubmit={submitCourse} className="space-y-4">
                             <div>
@@ -571,7 +590,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                 {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Kode MK</label>
                                     <input
@@ -596,7 +615,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Jam Mulai (Opsional)</label>
                                     <input

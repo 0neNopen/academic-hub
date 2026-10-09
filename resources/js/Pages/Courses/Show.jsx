@@ -437,6 +437,16 @@ export default function CourseShow({ course }) {
         );
     };
 
+    // Format Jam Kuliah (Contoh: 12:05 - 14:15 WIB)
+    const formatCourseTime = (start, end) => {
+        if (!start && !end) return null;
+        const s = start ? start.slice(0, 5) : '';
+        const e = end ? end.slice(0, 5) : '';
+        if (s && e) return `${s} - ${e} WIB`;
+        if (s) return `Mulai ${s} WIB`;
+        return null;
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -457,10 +467,15 @@ export default function CourseShow({ course }) {
                                     {course.name}
                                 </h2>
                             </div>
-                            <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">
                                 <span className="flex items-center gap-1">
                                     <Calendar className="h-3.5 w-3.5 text-blue-500" />
                                     {course.day_of_week || 'Jadwal fleksibel'}
+                                </span>
+                                <span>•</span>
+                                <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                                    <Clock className="h-3.5 w-3.5" />
+                                    {formatCourseTime(course.start_time, course.end_time) || 'Jam fleksibel'}
                                 </span>
                                 <span>•</span>
                                 <span>Dosen: {course.lecturer_name || '-'}</span>
@@ -468,35 +483,35 @@ export default function CourseShow({ course }) {
                         </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
+                        <button
+                            onClick={() => setIsAssignmentModalOpen(true)}
+                            className="order-1 sm:order-4 inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Tugas Baru
+                        </button>
+                        <button
+                            onClick={() => setIsMaterialModalOpen(true)}
+                            className="order-2 sm:order-3 inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 shadow-xs hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Materi
+                        </button>
                         <button
                             onClick={openEditCourse}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                            className="order-3 sm:order-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 shadow-xs hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                         >
                             <Pencil className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
                             Edit Matkul
                         </button>
                         <button
                             onClick={handleDeleteCourse}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/30 px-3 py-2 text-xs font-semibold text-red-600 dark:text-red-400 shadow-xs hover:bg-red-100 dark:hover:bg-red-900/50 transition"
+                            className="order-4 sm:order-2 inline-flex items-center justify-center gap-1.5 rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/30 px-3 py-2 text-xs font-semibold text-red-600 dark:text-red-400 shadow-xs hover:bg-red-100 dark:hover:bg-red-900/50 transition"
                             title="Hapus Mata Kuliah"
                         >
                             <Trash2 className="h-3.5 w-3.5" />
                             Hapus Matkul
-                        </button>
-                        <button
-                            onClick={() => setIsMaterialModalOpen(true)}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-                        >
-                            <Plus className="h-4 w-4" />
-                            Materi
-                        </button>
-                        <button
-                            onClick={() => setIsAssignmentModalOpen(true)}
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow hover:bg-blue-700 transition"
-                        >
-                            <Plus className="h-4 w-4" />
-                            Tugas Baru
                         </button>
                     </div>
                 </div>
@@ -1317,8 +1332,8 @@ export default function CourseShow({ course }) {
 
             {/* Modal Edit Mata Kuliah */}
             {isEditCourseModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/75 backdrop-blur-xs p-4">
-                    <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 border border-transparent dark:border-gray-800 p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/75 backdrop-blur-xs p-4 overflow-y-auto">
+                    <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 border border-transparent dark:border-gray-800 p-5 sm:p-6 shadow-xl max-h-[90dvh] overflow-y-auto my-auto">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Edit Data Mata Kuliah</h3>
                         <form onSubmit={submitEditCourse} className="space-y-4">
                             <div>
@@ -1335,7 +1350,7 @@ export default function CourseShow({ course }) {
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Kode MK</label>
                                     <input
@@ -1354,13 +1369,13 @@ export default function CourseShow({ course }) {
                                         className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 cursor-pointer"
                                     >
                                         {['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'].map((d) => (
-                                            <option key={d} value={d}>{d}</option>
+                                             <option key={d} value={d}>{d}</option>
                                         ))}
                                     </select>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Jam Mulai (Opsional)</label>
                                     <input

@@ -48,7 +48,7 @@ export default function Toast() {
     return (
         <div
             aria-live="polite"
-            className="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm w-full px-4 sm:px-0 pointer-events-none"
+            className="fixed top-4 sm:top-auto sm:bottom-5 right-0 sm:right-5 left-0 sm:left-auto z-[70] flex flex-col gap-2.5 max-w-sm w-full mx-auto sm:mx-0 px-4 sm:px-0 pointer-events-none"
         >
             {toasts.map((toast) => (
                 <ToastItem key={toast.id} toast={toast} onDismiss={() => removeToast(toast.id)} />
@@ -91,7 +91,7 @@ function ToastItem({ toast, onDismiss }) {
 
     return (
         <div
-            className={`pointer-events-auto flex flex-col overflow-hidden rounded-xl border shadow-lg transition-all duration-300 animate-in fade-in slide-in-from-bottom-3 ${currentStyle.bg}`}
+            className={`pointer-events-auto flex flex-col overflow-hidden rounded-xl border shadow-lg transition-all duration-300 animate-in fade-in slide-in-from-top-3 sm:slide-in-from-bottom-3 ${currentStyle.bg}`}
             role="alert"
         >
             <div className="flex items-start gap-3 p-3.5">
