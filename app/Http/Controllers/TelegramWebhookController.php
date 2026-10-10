@@ -362,6 +362,7 @@ class TelegramWebhookController extends Controller
              . "• 🗓️ <b>/semua_jadwal</b> - Rangkuman semua jadwal kuliah Anda\n"
              . "• 📝 <b>/tugas</b> - Daftar tugas aktif & hitung mundur deadline\n"
              . "• 📑 <b>/materi</b> - Cek berkas materi per mata kuliah\n"
+             . "• 🔐 <b>/reset</b> - Atur ulang kata sandi akun Anda\n"
              . "• 🔢 <b>/id</b> - Melihat nomor Chat ID Telegram Anda\n"
              . "• ℹ️ <b>/help</b> - Panduan & bantuan perintah bot\n\n"
              . "<i>Bot akan otomatis mengingatkan deadline tugas (H-24 & H-3) serta menyapa jadwal kuliah setiap pagi pukul 06.00 WIB.</i>";
@@ -378,6 +379,7 @@ class TelegramWebhookController extends Controller
              . "• 🗓️ <b>/semua_jadwal</b> - Rangkuman semua jadwal\n"
              . "• 📝 <b>/tugas</b> - Tugas aktif mendekati deadline\n"
              . "• 📑 <b>/materi</b> - Ringkasan berkas materi kuliah\n"
+             . "• 🔐 <b>/reset</b> - Atur ulang kata sandi akun\n"
              . "• ℹ️ <b>/help</b> - Panduan bot";
 
         $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
@@ -419,11 +421,16 @@ class TelegramWebhookController extends Controller
              . "🔗 <a href=\"{$resetUrl}\">{$resetUrl}</a>\n\n"
              . "<i>Ketuk tombol di bawah ini untuk membuka halaman ubah sandi baru:</i>";
 
-        $this->telegramService->sendMessage($chatId, $msg, [
+        $msgId = $this->telegramService->sendMessageWithId($chatId, $msg, [
             [
                 ['text' => '🔑 Atur Ulang Kata Sandi', 'url' => $resetUrl],
             ],
         ]);
+
+        if ($msgId) {
+            cache()->put('tg_reset_msg_' . $targetUser->id, $msgId, 3600);
+        }
     }
 }
+
 

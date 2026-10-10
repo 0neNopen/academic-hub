@@ -270,14 +270,14 @@ class TelegramWebhookTest extends TestCase
         ]);
 
         $telegramMock = $this->makeMock();
-        $telegramMock->shouldReceive('sendMessage')
+        $telegramMock->shouldReceive('sendMessageWithId')
             ->once()
             ->withArgs(function ($chatId, $msg, $keyboard) {
                 return $chatId == 12345678
                     && str_contains($msg, 'Tautan Reset Kata Sandi Anda')
                     && !empty($keyboard);
             })
-            ->andReturn(true);
+            ->andReturn(8888);
 
         $this->app->instance(TelegramService::class, $telegramMock);
 

@@ -59,6 +59,39 @@ class NewPasswordController extends Controller
         // the application's home authenticated view. If there is an error we can
         // redirect them back to where they came from with their error message.
         if ($status == Password::PASSWORD_RESET) {
+            // Perbarui status pesan reset di Telegram dan kirim notifikasi konfirmasi keamanan
+            $user = \App\Models\User::where('email', $request->email)->first();
+            if ($user && ! empty($user->telegram_chat_id)) {
+                try {
+                    $telegram = app(\App\Services\TelegramService::class);
+                    $oldMsgId = cache()->pull('tg_reset_msg_' . $user->id);
+
+                    // 1. Edit pesan tautan reset sebelumnya agar tombol hilang dan status diperbarui
+                    if ($oldMsgId) {
+                        $updatedText = "✅ <b>Kata Sandi Berhasil Diperbarui</b>\n\n"
+                            . "🔒 <i>Tautan reset ini telah otomatis dinonaktifkan & kedaluwarsa demi keamanan akun Anda.</i>\n\n"
+                            . "Waktu pembaruan: " . now()->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . " WIB";
+                        $telegram->editMessageText($user->telegram_chat_id, (int) $oldMsgId, $updatedText, []);
+                    }
+
+                    // 2. Kirim pesan notifikasi keamanan baru
+                    $securityAlert = "🎉 <b>Pemberitahuan Keamanan: Kata Sandi Berhasil Diperbarui!</b>\n\n"
+                        . "Halo <b>" . htmlspecialchars($user->name) . "</b>,\n"
+                        . "Kata sandi akun Academic Hub Anda telah berhasil diubah pada " . now()->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm:ss') . " WIB.\n\n"
+                        . "Silakan masuk ke akun Anda menggunakan kata sandi yang baru.\n\n"
+                        . "<i>Jika Anda tidak merasa melakukan perubahan ini, segera hubungi administrator.</i>";
+
+                    $loginUrl = url(route('login', [], false));
+                    $telegram->sendMessage($user->telegram_chat_id, $securityAlert, [
+                        [
+                            ['text' => '🌐 Masuk ke Akun', 'url' => $loginUrl],
+                        ],
+                    ]);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Gagal memperbarui notifikasi Telegram setelah reset password: ' . $e->getMessage());
+                }
+            }
+
             return redirect()->route('login')->with('status', __($status));
         }
 

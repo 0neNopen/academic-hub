@@ -75,7 +75,7 @@ class PasswordResetTest extends TestCase
     {
         Notification::fake();
         $this->mock(\App\Services\TelegramService::class, function ($mock) {
-            $mock->shouldReceive('sendMessage')->once()->andReturn(true);
+            $mock->shouldReceive('sendMessageWithId')->once()->andReturn(9999);
         });
 
         $user = User::factory()->create(['telegram_chat_id' => '123456789']);
@@ -83,6 +83,35 @@ class PasswordResetTest extends TestCase
         $response = $this->post('/forgot-password', ['email' => $user->email]);
 
         $response->assertSessionHas('status');
+    }
+
+    public function test_password_reset_edits_telegram_message_and_sends_confirmation(): void
+    {
+        Notification::fake();
+        $this->mock(\App\Services\TelegramService::class, function ($mock) {
+            $mock->shouldReceive('sendMessageWithId')->once()->andReturn(5555);
+            $mock->shouldReceive('editMessageText')->once()->with(123456789, 5555, \Mockery::any(), \Mockery::any())->andReturn(true);
+            $mock->shouldReceive('sendMessage')->once()->with(123456789, \Mockery::any(), \Mockery::any())->andReturn(true);
+        });
+
+        $user = User::factory()->create(['telegram_chat_id' => '123456789']);
+
+        $this->post('/forgot-password', ['email' => $user->email]);
+
+        Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
+            $response = $this->post('/reset-password', [
+                'token' => $notification->token,
+                'email' => $user->email,
+                'password' => 'new-password-123',
+                'password_confirmation' => 'new-password-123',
+            ]);
+
+            $response
+                ->assertSessionHasNoErrors()
+                ->assertRedirect(route('login'));
+
+            return true;
+        });
     }
 
     public function test_reset_password_link_handles_mailer_exception_gracefully(): void
