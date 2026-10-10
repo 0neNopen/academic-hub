@@ -70,4 +70,20 @@ class PasswordResetTest extends TestCase
             return true;
         });
     }
+
+    public function test_reset_password_link_handles_mailer_exception_gracefully(): void
+    {
+        $user = User::factory()->create();
+
+        // Simulate mail exception by mocking Password broker or Notification
+        \Illuminate\Support\Facades\Password::shouldReceive('sendResetLink')
+            ->once()
+            ->with(['email' => $user->email])
+            ->andThrow(new \Exception('Connection to mail host timed out'));
+
+        $response = $this->post('/forgot-password', ['email' => $user->email]);
+
+        $response->assertSessionHasErrors(['email']);
+    }
 }
+

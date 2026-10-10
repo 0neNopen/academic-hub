@@ -1,10 +1,12 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import ThemeToggle from '@/Components/ThemeToggle';
+import Toast from '@/Components/Toast';
 import { Link } from '@inertiajs/react';
 
 export default function GuestLayout({ children }) {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-gray-950 flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-200">
+            <Toast />
             {/* Top theme toggle */}
             <div className="absolute top-4 right-4 z-20">
                 <ThemeToggle />

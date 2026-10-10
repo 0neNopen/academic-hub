@@ -55,4 +55,30 @@ class EmailVerificationTest extends TestCase
 
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
     }
+
+    public function test_email_verification_notification_can_be_sent(): void
+    {
+        \Illuminate\Support\Facades\Notification::fake();
+
+        $user = User::factory()->unverified()->create();
+
+        $response = $this->actingAs($user)->post('/email/verification-notification');
+
+        $response->assertSessionHas('status', 'verification-link-sent');
+        \Illuminate\Support\Facades\Notification::assertSentTo($user, \Illuminate\Auth\Notifications\VerifyEmail::class);
+    }
+
+    public function test_email_verification_notification_handles_mailer_failure_gracefully(): void
+    {
+        $user = User::factory()->unverified()->create();
+
+        \Illuminate\Support\Facades\Notification::shouldReceive('send')
+            ->once()
+            ->andThrow(new \Exception('SMTP timeout'));
+
+        $response = $this->actingAs($user)->post('/email/verification-notification');
+
+        $response->assertSessionHas('error');
+    }
 }
+
