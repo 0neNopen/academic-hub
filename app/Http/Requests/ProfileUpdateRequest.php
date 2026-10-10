@@ -28,7 +28,24 @@ class ProfileUpdateRequest extends FormRequest
             ],
             'whatsapp_number' => ['nullable', 'string', 'max:20'],
             'notification_channel' => ['nullable', 'string', 'in:whatsapp,telegram,both'],
-            'telegram_chat_id' => ['nullable', 'string', 'max:50'],
+            'telegram_chat_id' => [
+                'nullable',
+                'string',
+                'max:50',
+                Rule::unique(User::class, 'telegram_chat_id')->ignore($this->user()->id),
+            ],
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'telegram_chat_id.unique' => 'Telegram Chat ID ini sudah terhubung ke akun lain. Mohon periksa kembali Chat ID Anda.',
         ];
     }
 }

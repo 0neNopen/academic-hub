@@ -1081,7 +1081,7 @@ export default function CourseShow({ course }) {
                                 <input
                                     type="text"
                                     required
-                                    placeholder="Contoh: Slide MVC & Routing"
+                                    placeholder="Contoh: Slide Pertemuan 1 - Pengantar"
                                     value={materialForm.data.title}
                                     onChange={(e) => materialForm.setData('title', e.target.value)}
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -1172,7 +1172,7 @@ export default function CourseShow({ course }) {
                                 <input
                                     type="text"
                                     required
-                                    placeholder="Contoh: Slide Arsitektur Web"
+                                    placeholder="Contoh: Slide Bahan Bacaan"
                                     value={editMaterialForm.data.title}
                                     onChange={(e) => editMaterialForm.setData('title', e.target.value)}
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -1281,7 +1281,7 @@ export default function CourseShow({ course }) {
                                 <input
                                     type="text"
                                     required
-                                    placeholder="Contoh: Tugas 1 - Skema Database"
+                                    placeholder="Contoh: Tugas 1 - Resume Materi"
                                     value={assignmentForm.data.title}
                                     onChange={(e) => assignmentForm.setData('title', e.target.value)}
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -1353,6 +1353,7 @@ export default function CourseShow({ course }) {
                                 <input
                                     type="text"
                                     required
+                                    placeholder="Contoh: Metodologi Penelitian"
                                     value={editCourseForm.data.name}
                                     onChange={(e) => editCourseForm.setData('name', e.target.value)}
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -1367,7 +1368,7 @@ export default function CourseShow({ course }) {
                                     <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Kode MK</label>
                                     <input
                                         type="text"
-                                        placeholder="Contoh: IF-302"
+                                        placeholder="Contoh: MKU-101"
                                         value={editCourseForm.data.code}
                                         onChange={(e) => editCourseForm.setData('code', e.target.value)}
                                         className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -1423,7 +1424,7 @@ export default function CourseShow({ course }) {
                                 <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Ruangan / Tempat Kelas (Opsional)</label>
                                 <input
                                     type="text"
-                                    placeholder="Contoh: Lab Jaringan, TEFA, atau Zoom"
+                                    placeholder="Contoh: Ruang 302, Gedung B, atau Zoom"
                                     value={editCourseForm.data.room}
                                     onChange={(e) => editCourseForm.setData('room', e.target.value)}
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -1472,6 +1473,7 @@ export default function CourseShow({ course }) {
                                 <input
                                     type="text"
                                     required
+                                    placeholder="Contoh: Tugas 1 - Resume Materi"
                                     value={editAssignmentForm.data.title}
                                     onChange={(e) => editAssignmentForm.setData('title', e.target.value)}
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"

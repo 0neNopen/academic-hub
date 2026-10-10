@@ -197,7 +197,7 @@ export default function UpdateProfileInformation({
                                     className="mt-1 block w-full shadow-sm"
                                     value={data.telegram_chat_id}
                                     onChange={(e) => setData("telegram_chat_id", e.target.value)}
-                                    placeholder="Contoh: 8684409030"
+                                    placeholder="Contoh: 1234567890"
                                 />
                                 <InputError className="mt-2" message={errors.telegram_chat_id} />
                             </div>

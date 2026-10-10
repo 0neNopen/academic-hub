@@ -689,7 +689,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                 <input
                                     type="text"
                                     required
-                                    placeholder="Contoh: Pemrograman Web Lanjut"
+                                    placeholder="Contoh: Metodologi Penelitian"
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
@@ -702,7 +702,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                     <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Kode MK</label>
                                     <input
                                         type="text"
-                                        placeholder="Contoh: IF-302"
+                                        placeholder="Contoh: MKU-101"
                                         value={data.code}
                                         onChange={(e) => setData('code', e.target.value)}
                                         className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
@@ -758,7 +758,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                 <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Ruangan / Tempat Kelas (Opsional)</label>
                                 <input
                                     type="text"
-                                    placeholder="Contoh: Lab Jaringan, TEFA, atau Zoom"
+                                    placeholder="Contoh: Ruang 302, Gedung B, atau Zoom"
                                     value={data.room}
                                     onChange={(e) => setData('room', e.target.value)}
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"

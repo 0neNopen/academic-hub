@@ -96,4 +96,71 @@ class ProfileTest extends TestCase
 
         $this->assertNotNull($user->fresh());
     }
+
+    public function test_user_can_update_telegram_chat_id(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'telegram_chat_id' => '123456789',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $this->assertSame('123456789', $user->fresh()->telegram_chat_id);
+    }
+
+    public function test_user_cannot_use_telegram_chat_id_already_taken_by_another_user(): void
+    {
+        $existingUser = User::factory()->create([
+            'telegram_chat_id' => '999888777',
+        ]);
+
+        $user = User::factory()->create([
+            'telegram_chat_id' => null,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->from('/profile')
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'telegram_chat_id' => '999888777',
+            ]);
+
+        $response
+            ->assertSessionHasErrors(['telegram_chat_id' => 'Telegram Chat ID ini sudah terhubung ke akun lain. Mohon periksa kembali Chat ID Anda.'])
+            ->assertRedirect('/profile');
+
+        $this->assertNull($user->fresh()->telegram_chat_id);
+    }
+
+    public function test_user_can_keep_their_own_telegram_chat_id_when_updating_profile(): void
+    {
+        $user = User::factory()->create([
+            'telegram_chat_id' => '999888777',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => 'Updated Name',
+                'email' => $user->email,
+                'telegram_chat_id' => '999888777',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $this->assertSame('Updated Name', $user->fresh()->name);
+        $this->assertSame('999888777', $user->fresh()->telegram_chat_id);
+    }
 }

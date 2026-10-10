@@ -398,9 +398,17 @@ class TelegramWebhookController extends Controller
 
         $targetUser = $user;
         if (! $targetUser && $targetEmail && filter_var($targetEmail, FILTER_VALIDATE_EMAIL)) {
-            $targetUser = User::where('email', $targetEmail)->first();
-            if ($targetUser && empty($targetUser->telegram_chat_id)) {
-                $targetUser->update(['telegram_chat_id' => (string) $chatId]);
+            $candidateUser = User::where('email', $targetEmail)->first();
+            if ($candidateUser) {
+                if (empty($candidateUser->telegram_chat_id)) {
+                    $chatIdInUse = User::where('telegram_chat_id', (string) $chatId)->exists();
+                    if (! $chatIdInUse) {
+                        $candidateUser->update(['telegram_chat_id' => (string) $chatId]);
+                    }
+                }
+                if ($candidateUser->telegram_chat_id === (string) $chatId) {
+                    $targetUser = $candidateUser;
+                }
             }
         }
 
