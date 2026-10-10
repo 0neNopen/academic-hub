@@ -736,7 +736,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                 <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Nama Dosen Pengampu</label>
                                 <input
                                     type="text"
-                                    placeholder="Contoh: Dr. Budi Santoso, M.Kom"
+                                    placeholder="Nama dosen pengampu"
                                     value={data.lecturer_name}
                                     onChange={(e) => setData('lecturer_name', e.target.value)}
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"

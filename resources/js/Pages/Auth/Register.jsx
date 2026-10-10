@@ -50,7 +50,7 @@ export default function Register() {
                         id="name"
                         name="name"
                         value={data.name}
-                        placeholder="Contoh: Ahmad Fauzi"
+                        placeholder="Nama lengkap Anda"
                         className="mt-1 block w-full text-sm rounded-xl"
                         autoComplete="name"
                         isFocused={true}

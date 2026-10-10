@@ -48,6 +48,7 @@ export default function UpdateProfileInformation({
                             id="name"
                             className="mt-1 block w-full"
                             value={data.name}
+                            placeholder="Nama lengkap Anda"
                             onChange={(e) => setData("name", e.target.value)}
                             required
                             isFocused
