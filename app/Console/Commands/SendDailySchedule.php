@@ -71,6 +71,9 @@ class SendDailySchedule extends Command
                     if ($course->lecturer_name) {
                         $message .= "   👨‍🏫 Dosen: " . htmlspecialchars($course->lecturer_name) . "\n";
                     }
+                    if ($course->room) {
+                        $message .= "   📍 Ruang: " . htmlspecialchars($course->room) . "\n";
+                    }
                     $idx++;
                 }
                 $message .= "\n";

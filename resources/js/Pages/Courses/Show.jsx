@@ -20,6 +20,7 @@ import {
     FileText,
     Filter,
     Image as ImageIcon,
+    MapPin,
     Pencil,
     Plus,
     RotateCcw,
@@ -356,6 +357,7 @@ export default function CourseShow({ course }) {
         name: course.name || '',
         code: course.code || '',
         lecturer_name: course.lecturer_name || '',
+        room: course.room || '',
         day_of_week: course.day_of_week || 'Senin',
         start_time: course.start_time || '',
         end_time: course.end_time || '',
@@ -367,6 +369,7 @@ export default function CourseShow({ course }) {
             name: course.name || '',
             code: course.code || '',
             lecturer_name: course.lecturer_name || '',
+            room: course.room || '',
             day_of_week: course.day_of_week || 'Senin',
             start_time: course.start_time || '',
             end_time: course.end_time || '',
@@ -479,6 +482,15 @@ export default function CourseShow({ course }) {
                                 </span>
                                 <span>•</span>
                                 <span>Dosen: {course.lecturer_name || '-'}</span>
+                                {course.room && (
+                                    <>
+                                        <span>•</span>
+                                        <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+                                            <MapPin className="h-3.5 w-3.5" />
+                                            {course.room}
+                                        </span>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -1403,6 +1415,17 @@ export default function CourseShow({ course }) {
                                     placeholder="Nama dosen pengampu"
                                     value={editCourseForm.data.lecturer_name}
                                     onChange={(e) => editCourseForm.setData('lecturer_name', e.target.value)}
+                                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Ruangan / Tempat Kelas (Opsional)</label>
+                                <input
+                                    type="text"
+                                    placeholder="Contoh: Lab Jaringan, TEFA, atau Zoom"
+                                    value={editCourseForm.data.room}
+                                    onChange={(e) => editCourseForm.setData('room', e.target.value)}
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 />
                             </div>

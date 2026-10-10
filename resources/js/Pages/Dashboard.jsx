@@ -10,6 +10,7 @@ import {
     Clock,
     ExternalLink,
     Filter,
+    MapPin,
     Plus,
     Search,
     Send,
@@ -26,6 +27,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
         name: '',
         code: '',
         lecturer_name: '',
+        room: '',
         day_of_week: 'Senin',
         start_time: '',
         end_time: '',
@@ -483,6 +485,15 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                                 </h4>
                                                 <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-gray-500 dark:text-gray-400 mt-1.5">
                                                     <span>Dosen: {course.lecturer_name || '-'}</span>
+                                                    {course.room && (
+                                                        <>
+                                                            <span>•</span>
+                                                            <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+                                                                <MapPin className="h-3 w-3" />
+                                                                {course.room}
+                                                            </span>
+                                                        </>
+                                                    )}
                                                     {formatCourseTime(course.start_time, course.end_time) && (
                                                         <>
                                                             <span>•</span>
@@ -739,6 +750,17 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                     placeholder="Nama dosen pengampu"
                                     value={data.lecturer_name}
                                     onChange={(e) => setData('lecturer_name', e.target.value)}
+                                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Ruangan / Tempat Kelas (Opsional)</label>
+                                <input
+                                    type="text"
+                                    placeholder="Contoh: Lab Jaringan, TEFA, atau Zoom"
+                                    value={data.room}
+                                    onChange={(e) => setData('room', e.target.value)}
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
                                 />
                             </div>

@@ -155,10 +155,12 @@ class TelegramWebhookController extends Controller
                 $timeText = $this->formatCourseTime($course->start_time, $course->end_time);
                 $lecturer = $course->lecturer_name ?: 'Dosen belum diset';
                 $code = $course->code ? " ({$course->code})" : "";
+                $roomText = $course->room ? "   📍 Ruang: {$course->room}\n" : "";
 
                 $msg .= "{$no}. <b>{$course->name}</b>{$code}\n"
                       . "   ⏰ Waktu: {$timeText}\n"
-                      . "   👤 Dosen: {$lecturer}\n\n";
+                      . "   👤 Dosen: {$lecturer}\n"
+                      . $roomText . "\n";
             }
         }
 
@@ -203,10 +205,12 @@ class TelegramWebhookController extends Controller
                     $timeText = $this->formatCourseTime($course->start_time, $course->end_time);
                     $code = $course->code ? " ({$course->code})" : "";
                     $lecturer = $course->lecturer_name ?: 'Dosen belum diset';
+                    $roomText = $course->room ? "   📍 Ruang: {$course->room}\n" : "";
 
                     $msg .= "• <b>{$course->name}</b>{$code}\n"
                           . "   ⏰ Waktu: {$timeText}\n"
-                          . "   👤 Dosen: {$lecturer}\n\n";
+                          . "   👤 Dosen: {$lecturer}\n"
+                          . $roomText . "\n";
                 }
             }
         }
@@ -219,10 +223,12 @@ class TelegramWebhookController extends Controller
                     $timeText = $this->formatCourseTime($course->start_time, $course->end_time);
                     $code = $course->code ? " ({$course->code})" : "";
                     $lecturer = $course->lecturer_name ?: 'Dosen belum diset';
+                    $roomText = $course->room ? "   📍 Ruang: {$course->room}\n" : "";
 
                     $msg .= "• <b>{$course->name}</b>{$code}\n"
                           . "   ⏰ Waktu: {$timeText}\n"
-                          . "   👤 Dosen: {$lecturer}\n\n";
+                          . "   👤 Dosen: {$lecturer}\n"
+                          . $roomText . "\n";
                 }
             }
         }

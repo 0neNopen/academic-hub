@@ -35,6 +35,7 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'is_d3_ti' => 'nullable|boolean',
         ]);
 
         $user = User::create([
@@ -42,6 +43,10 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        if ($request->boolean('is_d3_ti')) {
+            \App\Services\CoursePackageService::seedD3TI($user);
+        }
 
         event(new Registered($user));
 

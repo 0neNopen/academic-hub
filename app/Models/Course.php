@@ -16,6 +16,7 @@ class Course extends Model
         'name',
         'code',
         'lecturer_name',
+        'room',
         'day_of_week',
         'start_time',
         'end_time',

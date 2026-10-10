@@ -4,7 +4,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, GraduationCap } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Register() {
@@ -15,6 +15,7 @@ export default function Register() {
         email: '',
         password: '',
         password_confirmation: '',
+        is_d3_ti: false,
     });
 
     const submit = (e) => {
@@ -150,6 +151,38 @@ export default function Register() {
                         message={errors.password_confirmation}
                         className="mt-1.5"
                     />
+                </div>
+
+                {/* Checklist Paket D3 Teknik Informatika */}
+                <div
+                    onClick={() => setData('is_d3_ti', !data.is_d3_ti)}
+                    className={`p-3.5 rounded-xl border transition cursor-pointer ${
+                        data.is_d3_ti
+                            ? 'border-blue-500 bg-blue-50/70 dark:bg-blue-950/50 dark:border-blue-700 ring-2 ring-blue-500/20'
+                            : 'border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/50 hover:bg-gray-100/60 dark:hover:bg-gray-800'
+                    }`}
+                >
+                    <div className="flex items-start gap-3 select-none">
+                        <input
+                            type="checkbox"
+                            checked={data.is_d3_ti}
+                            onChange={(e) => setData('is_d3_ti', e.target.checked)}
+                            onClick={(e) => e.stopPropagation()}
+                            className="mt-0.5 rounded border-gray-300 text-blue-600 shadow-xs focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600"
+                        />
+                        <div className="space-y-0.5 text-xs">
+                            <div className="flex items-center gap-1.5 font-bold text-gray-900 dark:text-white">
+                                <GraduationCap className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                                <span>Mahasiswa D3 Teknik Informatika</span>
+                                <span className="text-[10px] bg-blue-600 text-white font-semibold px-2 py-0.5 rounded-full">
+                                    Paket Otomatis
+                                </span>
+                            </div>
+                            <p className="text-gray-500 dark:text-gray-400 text-[11px] leading-relaxed">
+                                Otomatis isi dashboard akun Anda dengan paket lengkap 12 mata kuliah & jadwal perkuliahan Semester 3 (Kelas B).
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="pt-2">

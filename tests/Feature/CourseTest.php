@@ -20,6 +20,7 @@ class CourseTest extends TestCase
             'name' => 'Pemrograman Web',
             'code' => 'IF-101',
             'lecturer_name' => 'Dr. Budi',
+            'room' => 'Lab Mix Reality',
             'day_of_week' => 'Senin',
             'start_time' => '08:00',
             'end_time' => '10:30',
@@ -31,6 +32,7 @@ class CourseTest extends TestCase
             'user_id' => $user->id,
             'name' => 'Pemrograman Web',
             'code' => 'IF-101',
+            'room' => 'Lab Mix Reality',
         ]);
     }
 
