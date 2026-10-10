@@ -4,7 +4,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Send } from 'lucide-react';
 
 export default function ForgotPassword({ status }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -68,6 +68,16 @@ export default function ForgotPassword({ status }) {
                     />
 
                     <InputError message={errors.email} className="mt-1.5" />
+                </div>
+
+                <div className="p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 flex items-start gap-2.5">
+                    <div className="mt-0.5 p-1 rounded-lg bg-blue-600 text-white shrink-0">
+                        <Send className="h-3 w-3" />
+                    </div>
+                    <div className="text-[11px] leading-relaxed text-gray-600 dark:text-gray-300">
+                        <span className="font-semibold text-gray-900 dark:text-white">Opsi Instan:</span>
+                        {' '}Jika akun sudah terhubung ke Telegram, tautan reset akan otomatis dikirim ke bot <a href="https://t.me/academic_hub_notif_bot" target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">@academic_hub_notif_bot</a>.
+                    </div>
                 </div>
 
                 <div className="pt-2">

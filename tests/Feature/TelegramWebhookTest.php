@@ -261,4 +261,34 @@ class TelegramWebhookTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+    public function test_telegram_webhook_handles_reset_command_for_linked_user(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'novv.a2n@gmail.com',
+            'telegram_chat_id' => '12345678',
+        ]);
+
+        $telegramMock = $this->makeMock();
+        $telegramMock->shouldReceive('sendMessage')
+            ->once()
+            ->withArgs(function ($chatId, $msg, $keyboard) {
+                return $chatId == 12345678
+                    && str_contains($msg, 'Tautan Reset Kata Sandi Anda')
+                    && !empty($keyboard);
+            })
+            ->andReturn(true);
+
+        $this->app->instance(TelegramService::class, $telegramMock);
+
+        $response = $this->postJson('/telegram/webhook', [
+            'message' => [
+                'chat' => ['id' => 12345678],
+                'text' => '/reset',
+            ],
+        ]);
+
+        $response->assertStatus(200);
+    }
 }
+

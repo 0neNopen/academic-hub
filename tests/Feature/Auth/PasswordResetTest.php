@@ -71,14 +71,27 @@ class PasswordResetTest extends TestCase
         });
     }
 
+    public function test_reset_password_link_sends_to_telegram_when_user_has_chat_id(): void
+    {
+        Notification::fake();
+        $this->mock(\App\Services\TelegramService::class, function ($mock) {
+            $mock->shouldReceive('sendMessage')->once()->andReturn(true);
+        });
+
+        $user = User::factory()->create(['telegram_chat_id' => '123456789']);
+
+        $response = $this->post('/forgot-password', ['email' => $user->email]);
+
+        $response->assertSessionHas('status');
+    }
+
     public function test_reset_password_link_handles_mailer_exception_gracefully(): void
     {
-        $user = User::factory()->create();
+        Notification::fake();
+        $user = User::factory()->create(); // No telegram_chat_id
 
-        // Simulate mail exception by mocking Password broker or Notification
-        \Illuminate\Support\Facades\Password::shouldReceive('sendResetLink')
-            ->once()
-            ->with(['email' => $user->email])
+        // Mock notification to throw error
+        \Illuminate\Support\Facades\Notification::shouldReceive('send')
             ->andThrow(new \Exception('Connection to mail host timed out'));
 
         $response = $this->post('/forgot-password', ['email' => $user->email]);
@@ -86,4 +99,5 @@ class PasswordResetTest extends TestCase
         $response->assertSessionHasErrors(['email']);
     }
 }
+
 

@@ -34,30 +34,76 @@ class PasswordResetLinkController extends Controller
             'email' => 'required|email',
         ]);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        try {
-            $status = Password::sendResetLink(
-                $request->only('email')
-            );
-        } catch (\Throwable $e) {
-            Log::error('Gagal mengirim email reset kata sandi: ' . $e->getMessage(), [
-                'email' => $request->email,
-                'trace' => $e->getMessage(),
-            ]);
+        $user = \App\Models\User::where('email', $request->email)->first();
 
+        if (! $user) {
             throw ValidationException::withMessages([
-                'email' => ['Gagal mengirim email reset kata sandi. Server email (SMTP) sedang tidak dapat dijangkau atau kredensial email belum dikonfigurasi di server. Silakan periksa pengaturan email atau hubungi administrator.'],
+                'email' => [trans(Password::INVALID_USER)],
             ]);
         }
 
-        if ($status == Password::RESET_LINK_SENT) {
-            return back()->with('status', __($status));
+        // Buat token reset kata sandi resmi Laravel
+        $token = Password::broker()->createToken($user);
+        $resetUrl = url(route('password.reset', [
+            'token' => $token,
+            'email' => $user->email,
+        ], false));
+
+        $botUsername = config('services.telegram.bot_username', 'academic_hub_notif_bot');
+        $telegramSent = false;
+
+        // 1. Coba kirimkan tautan reset langsung ke akun Telegram pengguna (jika sudah terhubung)
+        if (! empty($user->telegram_chat_id)) {
+            try {
+                $telegram = app(\App\Services\TelegramService::class);
+                $telegramMessage = "🔐 <b>Permintaan Reset Kata Sandi Academic Hub</b>\n\n"
+                    . "Halo <b>" . htmlspecialchars($user->name) . "</b>,\n"
+                    . "Kami menerima permintaan untuk mengatur ulang kata sandi akun Academic Hub Anda.\n\n"
+                    . "Tautan ini berlaku selama 60 menit. Klik tombol di bawah ini atau buka tautan berikut untuk membuat kata sandi baru:\n\n"
+                    . "🔗 <a href=\"{$resetUrl}\">{$resetUrl}</a>\n\n"
+                    . "<i>Abaikan pesan ini jika Anda tidak merasa meminta pengaturan ulang kata sandi.</i>";
+
+                $telegramSent = $telegram->sendMessage(
+                    $user->telegram_chat_id,
+                    $telegramMessage,
+                    [
+                        [
+                            ['text' => '🔑 Atur Ulang Kata Sandi', 'url' => $resetUrl],
+                        ],
+                    ]
+                );
+            } catch (\Throwable $e) {
+                Log::warning('Gagal mengirimkan notifikasi reset via Telegram: ' . $e->getMessage());
+            }
         }
 
+        // 2. Coba kirimkan juga via Email (SMTP)
+        $emailSent = false;
+        try {
+            $user->sendPasswordResetNotification($token);
+            $emailSent = true;
+        } catch (\Throwable $e) {
+            Log::warning('Gagal mengirim email reset via SMTP (karena batasan port hosting Render): ' . $e->getMessage());
+        }
+
+        if ($telegramSent && $emailSent) {
+            return back()->with('status', 'Tautan reset kata sandi telah berhasil dikirimkan ke email dan bot Telegram Anda.');
+        }
+
+        if ($telegramSent) {
+            return back()->with('status', "✅ Tautan reset kata sandi telah BERHASIL dikirim langsung ke Telegram Anda (@{$botUsername})! Silakan periksa pesan Telegram Anda.");
+        }
+
+        if ($emailSent) {
+            return back()->with('status', __(Password::RESET_LINK_SENT));
+        }
+
+        // Jika email gagal terkirim dan akun belum terhubung ke Telegram
         throw ValidationException::withMessages([
-            'email' => [trans($status)],
+            'email' => [
+                "Server email (SMTP) sedang tidak dapat dijangkau di hosting Render. Buka bot Telegram @{$botUsername} dan kirim perintah /reset {$user->email} untuk menerima tautan reset kata sandi instan."
+            ],
         ]);
     }
 }
+

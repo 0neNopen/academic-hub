@@ -59,6 +59,8 @@ class TelegramWebhookController extends Controller
             $this->handleMateriCommand($chatId, $user, $appUrl);
         } elseif (str_starts_with($lowerText, '/id') || str_contains($lowerText, 'chat id')) {
             $this->handleIdCommand($chatId);
+        } elseif (str_starts_with($lowerText, '/reset') || str_starts_with($lowerText, '/lupasandi')) {
+            $this->handleResetPasswordCommand($chatId, $user, $text, $appUrl);
         } elseif (str_starts_with($lowerText, '/help') || str_starts_with($lowerText, '/bantuan') || str_contains($lowerText, 'bantuan')) {
             $this->handleHelpCommand($chatId);
         } else {
@@ -380,4 +382,48 @@ class TelegramWebhookController extends Controller
 
         $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
     }
+
+    protected function handleResetPasswordCommand(int|string $chatId, ?User $user, string $text, string $appUrl): void
+    {
+        $parts = preg_split('/\s+/', trim($text));
+        $targetEmail = $parts[1] ?? null;
+
+        $targetUser = $user;
+        if (! $targetUser && $targetEmail && filter_var($targetEmail, FILTER_VALIDATE_EMAIL)) {
+            $targetUser = User::where('email', $targetEmail)->first();
+            if ($targetUser && empty($targetUser->telegram_chat_id)) {
+                $targetUser->update(['telegram_chat_id' => (string) $chatId]);
+            }
+        }
+
+        if (! $targetUser) {
+            $msg = "🔐 <b>Atur Ulang Kata Sandi</b>\n\n"
+                 . "Akun Telegram Anda belum terhubung ke akun Academic Hub.\n\n"
+                 . "Silakan kirim perintah dengan format:\n"
+                 . "<code>/reset email_anda@kampus.ac.id</code>\n\n"
+                 . "Contoh:\n"
+                 . "<code>/reset novv.a2n@gmail.com</code>";
+            $this->telegramService->sendMessage($chatId, $msg);
+            return;
+        }
+
+        $token = \Illuminate\Support\Facades\Password::broker()->createToken($targetUser);
+        $resetUrl = url(route('password.reset', [
+            'token' => $token,
+            'email' => $targetUser->email,
+        ], false));
+
+        $msg = "🔐 <b>Tautan Reset Kata Sandi Anda</b>\n\n"
+             . "Halo <b>" . htmlspecialchars($targetUser->name) . "</b>,\n"
+             . "Berikut adalah tautan untuk mengatur ulang kata sandi akun Academic Hub Anda (berlaku selama 60 menit):\n\n"
+             . "🔗 <a href=\"{$resetUrl}\">{$resetUrl}</a>\n\n"
+             . "<i>Ketuk tombol di bawah ini untuk membuka halaman ubah sandi baru:</i>";
+
+        $this->telegramService->sendMessage($chatId, $msg, [
+            [
+                ['text' => '🔑 Atur Ulang Kata Sandi', 'url' => $resetUrl],
+            ],
+        ]);
+    }
 }
+
