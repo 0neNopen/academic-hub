@@ -157,4 +157,65 @@ class AssignmentTest extends TestCase
             'id' => $assignment->id,
         ]);
     }
+
+    public function test_user_can_create_group_assignment_with_multiple_links(): void
+    {
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['user_id' => $user->id]);
+
+        $links = [
+            ['title' => 'Form Pengumpulan', 'url' => 'https://forms.gle/kelompok1'],
+            ['title' => 'Bahan Soal Google Drive', 'url' => 'https://drive.google.com/test-drive'],
+        ];
+
+        $response = $this->actingAs($user)->post("/courses/{$course->id}/assignments", [
+            'title' => 'Proyek Akhir Semester',
+            'assignment_type' => 'group',
+            'description' => 'Kerjakan berkelompok 4 orang',
+            'deadline' => now()->addDays(7)->format('Y-m-d H:i:s'),
+            'links' => $links,
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('assignments', [
+            'course_id' => $course->id,
+            'title' => 'Proyek Akhir Semester',
+            'assignment_type' => 'group',
+            'submission_url' => 'https://forms.gle/kelompok1',
+        ]);
+
+        $created = Assignment::where('title', 'Proyek Akhir Semester')->first();
+        $this->assertTrue($created->isGroup());
+        $this->assertEquals('Kelompok', $created->type_label);
+        $this->assertCount(2, $created->all_links);
+    }
+
+    public function test_user_can_update_assignment_type_and_links(): void
+    {
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['user_id' => $user->id]);
+        $assignment = Assignment::factory()->create([
+            'course_id' => $course->id,
+            'title' => 'Tugas Awal',
+            'assignment_type' => 'individual',
+        ]);
+
+        $newLinks = [
+            ['title' => 'Google Classroom', 'url' => 'https://classroom.google.com/test'],
+        ];
+
+        $response = $this->actingAs($user)->put("/assignments/{$assignment->id}", [
+            'title' => 'Tugas Diperbarui ke Kelompok',
+            'assignment_type' => 'group',
+            'deadline' => now()->addDays(4)->format('Y-m-d H:i:s'),
+            'links' => $newLinks,
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $assignment->refresh();
+
+        $this->assertEquals('group', $assignment->assignment_type);
+        $this->assertEquals('https://classroom.google.com/test', $assignment->submission_url);
+        $this->assertCount(1, $assignment->all_links);
+    }
 }

@@ -14,6 +14,8 @@ import {
     Plus,
     Search,
     Send,
+    User,
+    Users,
     X,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -585,9 +587,20 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                                 className="rounded-xl bg-white dark:bg-gray-900 p-3.5 sm:p-4 border border-gray-100 dark:border-gray-800 shadow-xs hover:shadow-md transition space-y-2.5"
                                             >
                                                 <div className="flex items-center justify-between text-xs gap-2">
-                                                    <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-[11px] truncate font-medium">
-                                                        {task.course?.name}
-                                                    </span>
+                                                    <div className="flex items-center gap-1.5 min-w-0">
+                                                        <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-[11px] truncate font-medium">
+                                                            {task.course?.name}
+                                                        </span>
+                                                        {task.assignment_type === 'group' ? (
+                                                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shrink-0">
+                                                                <Users className="h-2.5 w-2.5" /> Kelompok
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
+                                                                <User className="h-2.5 w-2.5" /> Individu
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${urgency.badgeClass}`}>
                                                         {urgency.label}
                                                     </span>
@@ -614,9 +627,23 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                                 </div>
 
                                                 {/* Baris Tombol Aksi: Link Tugas, Detail MK, dan Tombol Tandai Selesai */}
-                                                <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs gap-2">
-                                                    <div className="flex items-center gap-2">
-                                                        {task.submission_url ? (
+                                                <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex flex-wrap items-center justify-between text-xs gap-2">
+                                                    <div className="flex flex-wrap items-center gap-1.5">
+                                                        {Array.isArray(task.all_links) && task.all_links.length > 0 ? (
+                                                            task.all_links.map((linkItem, idx) => (
+                                                                <a
+                                                                    key={idx}
+                                                                    href={linkItem.url}
+                                                                    target="_blank"
+                                                                    rel="noreferrer"
+                                                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition border border-blue-200 dark:border-blue-800"
+                                                                    title={linkItem.url}
+                                                                >
+                                                                    <ExternalLink className="h-2.5 w-2.5 shrink-0" />
+                                                                    <span className="truncate max-w-[120px]">{linkItem.title || 'Link'}</span>
+                                                                </a>
+                                                            ))
+                                                        ) : task.submission_url ? (
                                                             <a
                                                                 href={task.submission_url}
                                                                 target="_blank"
@@ -640,7 +667,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                                         type="button"
                                                         disabled={isCompleting}
                                                         onClick={() => markAssignmentCompleted(task)}
-                                                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 transition disabled:opacity-50"
+                                                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 transition disabled:opacity-50 ml-auto shrink-0"
                                                         title="Tandai tugas ini sudah selesai"
                                                     >
                                                         <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />

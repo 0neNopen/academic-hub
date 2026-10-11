@@ -347,4 +347,33 @@ class MaterialTest extends TestCase
         $deleteResponse->assertSessionHasNoErrors();
         Storage::disk('s3')->assertMissing($material->file_path);
     }
+
+    public function test_user_can_create_material_with_links_only(): void
+    {
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['user_id' => $user->id]);
+
+        $links = [
+            ['title' => 'Google Drive Materi', 'url' => 'https://drive.google.com/drive/folders/test12345'],
+            ['title' => 'Video Penjelasan YouTube', 'url' => 'https://youtube.com/watch?v=abcdef'],
+        ];
+
+        $response = $this->actingAs($user)->post("/courses/{$course->id}/materials", [
+            'title' => 'Slide & Video Pertemuan 2',
+            'meeting_number' => 2,
+            'links' => $links,
+            'notes' => 'Tonton video sebelum kuliah',
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('materials', [
+            'course_id' => $course->id,
+            'title' => 'Slide & Video Pertemuan 2',
+            'external_link' => 'https://drive.google.com/drive/folders/test12345',
+            'file_path' => null,
+        ]);
+
+        $material = Material::where('title', 'Slide & Video Pertemuan 2')->first();
+        $this->assertCount(2, $material->all_links);
+    }
 }

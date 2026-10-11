@@ -49,9 +49,37 @@ class MaterialController extends Controller
             'title' => 'required|string|max:255',
             'meeting_number' => 'nullable|integer|min:1|max:50',
             'external_link' => 'nullable|url|max:500',
+            'links' => 'nullable|array',
+            'links.*.title' => 'nullable|string|max:100',
+            'links.*.url' => 'nullable|url|max:500',
             'notes' => 'nullable|string',
             'file' => 'nullable|file|mimes:pdf,ppt,pptx,doc,docx,zip,rar,jpg,jpeg,png,webp,gif|max:20480', // Maksimal 20MB (SVG ditiadakan untuk mitigasi XSS)
         ]);
+
+        $links = [];
+        if (!empty($validated['links']) && is_array($validated['links'])) {
+            foreach ($validated['links'] as $item) {
+                $url = trim($item['url'] ?? '');
+                if ($url && filter_var($url, FILTER_VALIDATE_URL)) {
+                    $links[] = [
+                        'title' => trim($item['title'] ?? '') ?: 'Link Materi',
+                        'url' => $url,
+                    ];
+                }
+            }
+        }
+
+        $externalLink = $validated['external_link'] ?? null;
+        if (!empty($links)) {
+            $externalLink = $links[0]['url'];
+        } elseif (!empty($externalLink)) {
+            $links = [
+                [
+                    'title' => 'Link Materi',
+                    'url' => $externalLink,
+                ],
+            ];
+        }
 
         $filePath = null;
         if ($request->hasFile('file')) {
@@ -61,12 +89,13 @@ class MaterialController extends Controller
         $course->materials()->create([
             'title' => $validated['title'],
             'meeting_number' => $validated['meeting_number'] ?? null,
-            'external_link' => $validated['external_link'] ?? null,
+            'external_link' => $externalLink,
+            'links' => !empty($links) ? $links : null,
             'notes' => $validated['notes'] ?? null,
             'file_path' => $filePath,
         ]);
 
-        return redirect()->back()->with('success', 'Materi kuliah berhasil diunggah!');
+        return redirect()->back()->with('success', 'Materi kuliah berhasil disimpan!');
     }
 
     public function update(Request $request, Material $material)
@@ -77,9 +106,37 @@ class MaterialController extends Controller
             'title' => 'required|string|max:255',
             'meeting_number' => 'nullable|integer|min:1|max:50',
             'external_link' => 'nullable|url|max:500',
+            'links' => 'nullable|array',
+            'links.*.title' => 'nullable|string|max:100',
+            'links.*.url' => 'nullable|url|max:500',
             'notes' => 'nullable|string',
             'file' => 'nullable|file|mimes:pdf,ppt,pptx,doc,docx,zip,rar,jpg,jpeg,png,webp,gif|max:20480',
         ]);
+
+        $links = [];
+        if (!empty($validated['links']) && is_array($validated['links'])) {
+            foreach ($validated['links'] as $item) {
+                $url = trim($item['url'] ?? '');
+                if ($url && filter_var($url, FILTER_VALIDATE_URL)) {
+                    $links[] = [
+                        'title' => trim($item['title'] ?? '') ?: 'Link Materi',
+                        'url' => $url,
+                    ];
+                }
+            }
+        }
+
+        $externalLink = $validated['external_link'] ?? null;
+        if (!empty($links)) {
+            $externalLink = $links[0]['url'];
+        } elseif (!empty($externalLink)) {
+            $links = [
+                [
+                    'title' => 'Link Materi',
+                    'url' => $externalLink,
+                ],
+            ];
+        }
 
         if ($request->hasFile('file')) {
             $oldDisk = $this->resolveDiskForFile($material->file_path);
@@ -91,7 +148,8 @@ class MaterialController extends Controller
 
         $material->title = $validated['title'];
         $material->meeting_number = $validated['meeting_number'] ?? null;
-        $material->external_link = $validated['external_link'] ?? null;
+        $material->external_link = $externalLink;
+        $material->links = !empty($links) ? $links : null;
         if (array_key_exists('notes', $validated)) {
             $material->notes = $validated['notes'];
         }

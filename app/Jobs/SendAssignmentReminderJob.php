@@ -88,26 +88,57 @@ class SendAssignmentReminderJob implements ShouldQueue
             $descTG = "📝 <b>Keterangan:</b> <i>" . Str::limit($cleanDesc, 200) . "</i>\n";
         }
 
+        $typeTagWA = $assignment->assignment_type === 'group' ? "👥 *Tipe:* Tugas Kelompok\n" : "👤 *Tipe:* Tugas Individu\n";
+        $typeTagTG = $assignment->assignment_type === 'group' ? "👥 <b>Tipe:</b> Tugas Kelompok\n" : "👤 <b>Tipe:</b> Tugas Individu\n";
+
+        $assignmentLinks = $assignment->all_links;
+        $linksWA = '';
+        $linksTG = '';
+
+        if (!empty($assignmentLinks)) {
+            if (count($assignmentLinks) === 1) {
+                $lTitle = $assignmentLinks[0]['title'] ?? 'Link Pengumpulan';
+                $lUrl = $assignmentLinks[0]['url'];
+                $linksWA = "🔗 *{$lTitle}:* {$lUrl}\n\n";
+                $linksTG = "🔗 <b>" . htmlspecialchars($lTitle) . ":</b> <a href=\"" . htmlspecialchars($lUrl) . "\">" . htmlspecialchars($lUrl) . "</a>\n\n";
+            } else {
+                $linksWA = "🔗 *Tautan Terkait:*\n";
+                $linksTG = "🔗 <b>Tautan Terkait:</b>\n";
+                foreach ($assignmentLinks as $l) {
+                    $lTitle = $l['title'] ?? 'Link';
+                    $lUrl = $l['url'];
+                    $linksWA .= "• {$lTitle}: {$lUrl}\n";
+                    $linksTG .= "• " . htmlspecialchars($lTitle) . ": <a href=\"" . htmlspecialchars($lUrl) . "\">" . htmlspecialchars($lUrl) . "</a>\n";
+                }
+                $linksWA .= "\n";
+                $linksTG .= "\n";
+            }
+        }
+
         // Format Pesan WhatsApp
         $waMessage = "{$urgencyTitleWA}\n\n"
             . "Halo *{$user->name}*!\n"
             . "Tugas *{$assignment->title}* ({$assignment->course->name}) {$statusWaktuWA}:\n\n"
+            . $typeTagWA
             . "⏰ *Batas Pengumpulan:* {$formattedDeadline}\n"
             . "⏱️ *Sisa Waktu:* {$timeRemainingText}\n"
             . ($descWA ? "{$descWA}\n" : "\n")
-            . ($assignment->submission_url ? "🔗 *Link Pengumpulan:* {$assignment->submission_url}\n\n" : "")
+            . $linksWA
             . "Yuk segera diselesaikan agar tidak terburu-buru!";
 
         // Format Pesan Telegram (HTML + Inline Keyboard Button)
         $tgMessage = "{$urgencyTitleTG}\n\n"
             . "Halo <b>" . htmlspecialchars($user->name) . "</b>!\n"
             . "Tugas <b>" . htmlspecialchars($assignment->title) . "</b> (" . htmlspecialchars($assignment->course->name) . ") {$statusWaktuTG}:\n\n"
+            . $typeTagTG
             . "📅 <b>Batas Pengumpulan:</b> {$formattedDeadline}\n"
             . "⏱️ <b>Sisa Waktu:</b> {$timeRemainingText}\n"
             . ($descTG ? "{$descTG}\n" : "\n")
+            . $linksTG
             . "Yuk segera diselesaikan dan kumpulkan tepat waktu!";
 
-        $tgButtons = $telegramService->buildSubmissionButton($assignment->submission_url);
+        $appUrl = config('app.url', 'http://localhost');
+        $tgButtons = $telegramService->buildSubmissionButton($assignment->submission_url, $assignment->links, $appUrl);
 
         $channel = $user->notification_channel ?? 'telegram';
         $sentSuccess = false;

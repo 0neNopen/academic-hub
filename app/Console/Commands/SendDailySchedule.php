@@ -95,7 +95,8 @@ class SendDailySchedule extends Command
                     foreach ($limitTasks as $task) {
                         $dl = Carbon::parse($task->deadline)->locale('id')->timezone($tz);
                         $cName = $task->course?->name ?? 'Mata Kuliah';
-                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b> (" . htmlspecialchars($cName) . ")\n";
+                        $tType = $task->assignment_type === 'group' ? ' [👥 Kelompok]' : ' [👤 Individu]';
+                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b>{$tType} (" . htmlspecialchars($cName) . ")\n";
                         $message .= "   ⏰ Deadline: " . $dl->isoFormat('dddd, D MMM - HH:mm') . " WIB\n";
                         $tIdx++;
                     }
@@ -174,14 +175,20 @@ class SendDailySchedule extends Command
                     foreach ($todayAssignments as $task) {
                         $dl = Carbon::parse($task->deadline)->locale('id')->timezone($tz);
                         $cName = $task->course?->name ?? 'Mata Kuliah';
-                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b> ({$cName})\n";
+                        $tType = $task->assignment_type === 'group' ? ' [👥 Kelompok]' : ' [👤 Individu]';
+                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b>{$tType} ({$cName})\n";
                         $message .= "   ⏰ Jam: " . $dl->format('H:i') . " WIB\n";
                         if (!empty($task->description)) {
                             $cleanDesc = htmlspecialchars(trim($task->description));
                             $message .= "   📝 Keterangan: <i>" . Str::limit($cleanDesc, 100) . "</i>\n";
                         }
-                        if ($task->submission_url) {
-                            $message .= "   🔗 <a href=\"" . htmlspecialchars($task->submission_url) . "\">Link Pengumpulan</a>\n";
+                        $links = $task->all_links;
+                        if (!empty($links)) {
+                            foreach ($links as $l) {
+                                $lTitle = htmlspecialchars($l['title'] ?? 'Link');
+                                $lUrl = htmlspecialchars($l['url']);
+                                $message .= "   🔗 <a href=\"{$lUrl}\">{$lTitle}</a>\n";
+                            }
                         }
                         $tIdx++;
                     }
@@ -192,7 +199,8 @@ class SendDailySchedule extends Command
                     foreach ($limitTasks as $task) {
                         $dl = Carbon::parse($task->deadline)->locale('id')->timezone($tz);
                         $cName = $task->course?->name ?? 'Mata Kuliah';
-                        $message .= "• <b>" . htmlspecialchars($task->title) . "</b> ({$cName})\n";
+                        $tType = $task->assignment_type === 'group' ? ' [👥 Kelompok]' : ' [👤 Individu]';
+                        $message .= "• <b>" . htmlspecialchars($task->title) . "</b>{$tType} ({$cName})\n";
                         $message .= "   ⏰ Deadline: " . $dl->isoFormat('dddd, D MMM - HH:mm') . " WIB\n";
                     }
                     $message .= "👉 Ketik <b>/tugas</b> untuk cek semua tugas aktif.\n\n";
@@ -236,14 +244,20 @@ class SendDailySchedule extends Command
                     foreach ($todayAssignments as $task) {
                         $dl = Carbon::parse($task->deadline)->locale('id')->timezone($tz);
                         $cName = $task->course?->name ?? 'Mata Kuliah';
-                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b> ({$cName})\n";
+                        $tType = $task->assignment_type === 'group' ? ' [👥 Kelompok]' : ' [👤 Individu]';
+                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b>{$tType} ({$cName})\n";
                         $message .= "   ⏰ Jam: " . $dl->format('H:i') . " WIB\n";
                         if (!empty($task->description)) {
                             $cleanDesc = htmlspecialchars(trim($task->description));
                             $message .= "   📝 Keterangan: <i>" . Str::limit($cleanDesc, 100) . "</i>\n";
                         }
-                        if ($task->submission_url) {
-                            $message .= "   🔗 <a href=\"" . htmlspecialchars($task->submission_url) . "\">Link Pengumpulan</a>\n";
+                        $links = $task->all_links;
+                        if (!empty($links)) {
+                            foreach ($links as $l) {
+                                $lTitle = htmlspecialchars($l['title'] ?? 'Link');
+                                $lUrl = htmlspecialchars($l['url']);
+                                $message .= "   🔗 <a href=\"{$lUrl}\">{$lTitle}</a>\n";
+                            }
                         }
                         $tIdx++;
                     }

@@ -16,8 +16,35 @@ class Material extends Model
         'meeting_number',
         'file_path',
         'external_link',
+        'links',
         'notes',
     ];
+
+    protected $casts = [
+        'links' => 'array',
+    ];
+
+    protected $appends = [
+        'all_links',
+    ];
+
+    public function getAllLinksAttribute(): array
+    {
+        if (!empty($this->links) && is_array($this->links)) {
+            return $this->links;
+        }
+
+        if (!empty($this->external_link)) {
+            return [
+                [
+                    'title' => 'Link Materi',
+                    'url' => $this->external_link,
+                ],
+            ];
+        }
+
+        return [];
+    }
 
     public function course(): BelongsTo
     {

@@ -313,8 +313,9 @@ class TelegramWebhookController extends Controller
 
                 $title = htmlspecialchars($assignment->title);
                 $courseNameEscaped = htmlspecialchars($courseName);
+                $typeTag = $assignment->assignment_type === 'group' ? ' [👥 Kelompok]' : ' [👤 Individu]';
 
-                $msg .= "{$no}. <b>{$title}</b>\n"
+                $msg .= "{$no}. <b>{$title}</b>{$typeTag}\n"
                       . "   📚 {$courseNameEscaped}\n"
                       . "   ⏳ Deadline: {$formattedDeadline} WIB ({$diffText})\n";
 
@@ -324,9 +325,20 @@ class TelegramWebhookController extends Controller
                     $msg .= "   📝 Keterangan: <i>{$descPreview}</i>\n";
                 }
 
-                if (!empty($assignment->submission_url)) {
-                    $url = htmlspecialchars($assignment->submission_url);
-                    $msg .= "   🔗 <a href=\"{$url}\">Link Pengumpulan</a>\n";
+                $assignmentLinks = $assignment->all_links;
+                if (!empty($assignmentLinks)) {
+                    if (count($assignmentLinks) === 1) {
+                        $lTitle = htmlspecialchars($assignmentLinks[0]['title'] ?? 'Link Pengumpulan');
+                        $lUrl = htmlspecialchars($assignmentLinks[0]['url']);
+                        $msg .= "   🔗 <a href=\"{$lUrl}\">{$lTitle}</a>\n";
+                    } else {
+                        $msg .= "   🔗 <b>Tautan Terkait:</b>\n";
+                        foreach ($assignmentLinks as $l) {
+                            $lTitle = htmlspecialchars($l['title'] ?? 'Tautan');
+                            $lUrl = htmlspecialchars($l['url']);
+                            $msg .= "      • <a href=\"{$lUrl}\">{$lTitle}</a>\n";
+                        }
+                    }
                 }
 
                 $msg .= "\n";

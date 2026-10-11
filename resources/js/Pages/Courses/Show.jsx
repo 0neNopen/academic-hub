@@ -26,6 +26,8 @@ import {
     RotateCcw,
     Search,
     Trash2,
+    User,
+    Users,
     X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -201,9 +203,28 @@ export default function CourseShow({ course }) {
         title: '',
         meeting_number: 1,
         external_link: '',
+        links: [],
         notes: '',
         file: null,
     });
+
+    const addMaterialLink = () => {
+        materialForm.setData('links', [
+            ...(materialForm.data.links || []),
+            { title: '', url: '' },
+        ]);
+    };
+
+    const updateMaterialLink = (index, field, value) => {
+        const newLinks = [...(materialForm.data.links || [])];
+        newLinks[index] = { ...newLinks[index], [field]: value };
+        materialForm.setData('links', newLinks);
+    };
+
+    const removeMaterialLink = (index) => {
+        const newLinks = (materialForm.data.links || []).filter((_, i) => i !== index);
+        materialForm.setData('links', newLinks);
+    };
 
     const submitMaterial = (e) => {
         e.preventDefault();
@@ -211,6 +232,7 @@ export default function CourseShow({ course }) {
             onSuccess: () => {
                 materialForm.reset();
                 materialForm.setData('meeting_number', 1);
+                materialForm.setData('links', []);
                 setIsMaterialModalOpen(false);
             },
         });
@@ -222,17 +244,40 @@ export default function CourseShow({ course }) {
         title: '',
         meeting_number: 1,
         external_link: '',
+        links: [],
         notes: '',
         file: null,
     });
 
+    const addEditMaterialLink = () => {
+        editMaterialForm.setData('links', [
+            ...(editMaterialForm.data.links || []),
+            { title: '', url: '' },
+        ]);
+    };
+
+    const updateEditMaterialLink = (index, field, value) => {
+        const newLinks = [...(editMaterialForm.data.links || [])];
+        newLinks[index] = { ...newLinks[index], [field]: value };
+        editMaterialForm.setData('links', newLinks);
+    };
+
+    const removeEditMaterialLink = (index) => {
+        const newLinks = (editMaterialForm.data.links || []).filter((_, i) => i !== index);
+        editMaterialForm.setData('links', newLinks);
+    };
+
     const openEditMaterial = (item) => {
         setEditingMaterial(item);
+        const existingLinks = Array.isArray(item.links) && item.links.length > 0
+            ? item.links
+            : (item.external_link ? [{ title: 'Link Materi', url: item.external_link }] : []);
         editMaterialForm.setData({
             _method: 'put',
             title: item.title || '',
             meeting_number: item.meeting_number ?? 1,
             external_link: item.external_link || '',
+            links: existingLinks,
             notes: item.notes || '',
             file: null,
         });
@@ -337,16 +382,38 @@ export default function CourseShow({ course }) {
     // Form Tambah Tugas
     const assignmentForm = useForm({
         title: '',
+        assignment_type: 'individual',
         description: '',
         deadline: '',
         submission_url: '',
+        links: [{ title: 'Link Pengumpulan', url: '' }],
     });
+
+    const addAssignmentLink = () => {
+        assignmentForm.setData('links', [
+            ...(assignmentForm.data.links || []),
+            { title: '', url: '' },
+        ]);
+    };
+
+    const updateAssignmentLink = (index, field, value) => {
+        const newLinks = [...(assignmentForm.data.links || [])];
+        newLinks[index] = { ...newLinks[index], [field]: value };
+        assignmentForm.setData('links', newLinks);
+    };
+
+    const removeAssignmentLink = (index) => {
+        const newLinks = (assignmentForm.data.links || []).filter((_, i) => i !== index);
+        assignmentForm.setData('links', newLinks);
+    };
 
     const submitAssignment = (e) => {
         e.preventDefault();
         assignmentForm.post(route('assignments.store', course.id), {
             onSuccess: () => {
                 assignmentForm.reset();
+                assignmentForm.setData('assignment_type', 'individual');
+                assignmentForm.setData('links', [{ title: 'Link Pengumpulan', url: '' }]);
                 setIsAssignmentModalOpen(false);
             },
         });
@@ -402,18 +469,43 @@ export default function CourseShow({ course }) {
     // Form Edit Tugas Kuliah
     const editAssignmentForm = useForm({
         title: '',
+        assignment_type: 'individual',
         description: '',
         deadline: '',
         submission_url: '',
+        links: [],
     });
+
+    const addEditAssignmentLink = () => {
+        editAssignmentForm.setData('links', [
+            ...(editAssignmentForm.data.links || []),
+            { title: '', url: '' },
+        ]);
+    };
+
+    const updateEditAssignmentLink = (index, field, value) => {
+        const newLinks = [...(editAssignmentForm.data.links || [])];
+        newLinks[index] = { ...newLinks[index], [field]: value };
+        editAssignmentForm.setData('links', newLinks);
+    };
+
+    const removeEditAssignmentLink = (index) => {
+        const newLinks = (editAssignmentForm.data.links || []).filter((_, i) => i !== index);
+        editAssignmentForm.setData('links', newLinks);
+    };
 
     const openEditAssignment = (task) => {
         setEditingAssignment(task);
+        const existingLinks = Array.isArray(task.links) && task.links.length > 0
+            ? task.links
+            : (task.submission_url ? [{ title: 'Link Pengumpulan', url: task.submission_url }] : []);
         editAssignmentForm.setData({
             title: task.title || '',
+            assignment_type: task.assignment_type || 'individual',
             description: task.description || '',
             deadline: formatForDateTimeLocal(task.deadline),
             submission_url: task.submission_url || '',
+            links: existingLinks.length > 0 ? existingLinks : [{ title: 'Link Pengumpulan', url: '' }],
         });
     };
 
@@ -784,15 +876,27 @@ export default function CourseShow({ course }) {
                                                                     </a>
                                                                 </>
                                                             )}
-                                                            {item.external_link && (
-                                                                <a
-                                                                    href={item.external_link}
-                                                                    target="_blank"
-                                                                    rel="noreferrer"
-                                                                    className="inline-flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:underline font-medium"
-                                                                >
-                                                                    <ExternalLink className="h-3.5 w-3.5" /> Link Referensi
-                                                                </a>
+                                                            {/* Render Tautan Materi (Google Drive, YouTube, Web) */}
+                                                            {((item.all_links && item.all_links.length > 0) || item.external_link) && (
+                                                                <div className="flex flex-wrap items-center gap-1.5">
+                                                                    {(item.all_links && item.all_links.length > 0 ? item.all_links : [{ title: 'Link Referensi', url: item.external_link }]).map((linkItem, lIdx) => {
+                                                                        const isDrive = linkItem.url.includes('drive.google.com');
+                                                                        const isYt = linkItem.url.includes('youtube.com') || linkItem.url.includes('youtu.be');
+                                                                        return (
+                                                                            <a
+                                                                                key={lIdx}
+                                                                                href={linkItem.url}
+                                                                                target="_blank"
+                                                                                rel="noreferrer"
+                                                                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200/60 dark:border-blue-900/60 transition"
+                                                                                title={linkItem.url}
+                                                                            >
+                                                                                <ExternalLink className="h-3 w-3" />
+                                                                                <span>{linkItem.title || (isDrive ? 'Google Drive' : (isYt ? 'YouTube' : 'Link Web'))}</span>
+                                                                            </a>
+                                                                        );
+                                                                    })}
+                                                                </div>
                                                             )}
                                                         </div>
                                                     </div>
@@ -876,9 +980,20 @@ export default function CourseShow({ course }) {
                                                 className="rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-sm space-y-2.5 hover:shadow-md transition"
                                             >
                                                 <div className="flex items-start justify-between gap-2">
-                                                    <h4 className="font-bold text-sm text-gray-800 dark:text-gray-100 leading-snug">
-                                                        {task.title}
-                                                    </h4>
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <h4 className="font-bold text-sm text-gray-800 dark:text-gray-100 leading-snug">
+                                                            {task.title}
+                                                        </h4>
+                                                        {task.assignment_type === 'group' ? (
+                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 shrink-0">
+                                                                <Users className="h-3 w-3" /> Kelompok
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800/60 shrink-0">
+                                                                <User className="h-3 w-3" /> Individu
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <div className="flex items-center gap-1 shrink-0">
                                                         <button
                                                             onClick={() => openEditAssignment(task)}
@@ -926,19 +1041,26 @@ export default function CourseShow({ course }) {
                                                 </div>
 
                                                 {/* Baris Aksi: Link Pengumpulan & Tombol Tandai Selesai */}
-                                                <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs gap-2">
-                                                    {task.submission_url ? (
-                                                        <a
-                                                            href={task.submission_url}
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                            className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
-                                                        >
-                                                            Link Tugas <ExternalLink className="h-3 w-3" />
-                                                        </a>
-                                                    ) : (
-                                                        <span className="text-[11px] text-gray-400 dark:text-gray-500">Belum ada link</span>
-                                                    )}
+                                                <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex flex-wrap items-center justify-between text-xs gap-2">
+                                                    <div className="flex flex-wrap items-center gap-1.5">
+                                                        {((task.all_links && task.all_links.length > 0) || task.submission_url) ? (
+                                                            (task.all_links && task.all_links.length > 0 ? task.all_links : [{ title: 'Link Tugas', url: task.submission_url }]).map((linkItem, lIdx) => (
+                                                                <a
+                                                                    key={lIdx}
+                                                                    href={linkItem.url}
+                                                                    target="_blank"
+                                                                    rel="noreferrer"
+                                                                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-100 dark:border-blue-900/50 transition"
+                                                                    title={linkItem.url}
+                                                                >
+                                                                    <ExternalLink className="h-3 w-3" />
+                                                                    <span className="truncate max-w-[150px]">{linkItem.title || 'Link Tugas'}</span>
+                                                                </a>
+                                                            ))
+                                                        ) : (
+                                                            <span className="text-[11px] text-gray-400 dark:text-gray-500">Belum ada link</span>
+                                                        )}
+                                                    </div>
 
                                                     {/* Tombol Tandai Selesai */}
                                                     <button
@@ -987,11 +1109,20 @@ export default function CourseShow({ course }) {
                                                 >
                                                     <div className="flex items-start justify-between gap-2">
                                                         <div className="space-y-1">
-                                                            <div className="flex items-center gap-1.5">
+                                                            <div className="flex flex-wrap items-center gap-1.5">
                                                                 <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                                                                     <CheckCircle2 className="h-2.5 w-2.5" />
                                                                     Selesai
                                                                 </span>
+                                                                {task.assignment_type === 'group' ? (
+                                                                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60">
+                                                                        <Users className="h-2.5 w-2.5" /> Kelompok
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800/60">
+                                                                        <User className="h-2.5 w-2.5" /> Individu
+                                                                    </span>
+                                                                )}
                                                                 <h4 className="font-semibold text-xs text-gray-700 dark:text-gray-400 line-through">
                                                                     {task.title}
                                                                 </h4>
@@ -1039,7 +1170,7 @@ export default function CourseShow({ course }) {
                                                         </div>
                                                     </div>
 
-                                                    <div className="text-[11px] text-gray-400 dark:text-gray-500 flex items-center justify-between pt-1 border-t border-gray-50 dark:border-gray-800">
+                                                    <div className="text-[11px] text-gray-400 dark:text-gray-500 flex flex-wrap items-center justify-between pt-1 border-t border-gray-50 dark:border-gray-800 gap-1.5">
                                                         <span>
                                                             Tenggat: {new Date(task.deadline).toLocaleDateString('id-ID', {
                                                                 day: 'numeric',
@@ -1048,16 +1179,21 @@ export default function CourseShow({ course }) {
                                                                 minute: '2-digit',
                                                             })} WIB
                                                         </span>
-                                                        {task.submission_url && (
-                                                            <a
-                                                                href={task.submission_url}
-                                                                target="_blank"
-                                                                rel="noreferrer"
-                                                                className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                                                            >
-                                                                Link Tugas <ExternalLink className="h-2.5 w-2.5" />
-                                                            </a>
-                                                        )}
+                                                        <div className="flex flex-wrap items-center gap-1.5">
+                                                            {((task.all_links && task.all_links.length > 0) || task.submission_url) && (
+                                                                (task.all_links && task.all_links.length > 0 ? task.all_links : [{ title: 'Link Tugas', url: task.submission_url }]).map((linkItem, lIdx) => (
+                                                                    <a
+                                                                        key={lIdx}
+                                                                        href={linkItem.url}
+                                                                        target="_blank"
+                                                                        rel="noreferrer"
+                                                                        className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                                                                    >
+                                                                        {linkItem.title || 'Link'} <ExternalLink className="h-2.5 w-2.5" />
+                                                                    </a>
+                                                                ))
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}
@@ -1105,39 +1241,90 @@ export default function CourseShow({ course }) {
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Upload Dokumen / Foto (PDF, Gambar PNG/JPG, PPT, DOCX, ZIP)</label>
-                                <input
-                                    type="file"
-                                    accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.doc,.docx,.ppt,.pptx,.zip,.rar"
-                                    onChange={(e) => materialForm.setData('file', e.target.files[0])}
-                                    className="mt-1 block w-full text-xs text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 dark:file:bg-blue-950/60 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/60"
-                                />
-                                {materialForm.progress && (
-                                    <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden mt-2">
-                                        <div
-                                            className="bg-blue-600 h-1.5 rounded-full transition-all duration-200"
-                                            style={{ width: `${materialForm.progress.percentage}%` }}
-                                        />
-                                        <p className="text-[11px] text-blue-600 dark:text-blue-400 font-medium text-right mt-1">
-                                            Mengunggah: {materialForm.progress.percentage}%
-                                        </p>
-                                    </div>
-                                )}
-                                <p className="mt-1.5 text-[11px] text-gray-500 dark:text-gray-400 leading-tight">
-                                    Mendukung berkas PDF, foto/gambar (PNG, JPG, JPEG), slide PPT, dokumen Word, dan arsip ZIP (Maks. 20MB).
-                                </p>
-                            </div>
+                            <div className="space-y-3 bg-gray-50/70 dark:bg-gray-800/40 p-3.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                        Upload Dokumen / Foto (PDF, Gambar PNG/JPG, PPT, DOCX, ZIP)
+                                    </label>
+                                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-1.5">
+                                        Maks. 20MB. Kosongkan jika materi hanya berupa tautan internet / Google Drive.
+                                    </p>
+                                    <input
+                                        type="file"
+                                        accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.doc,.docx,.ppt,.pptx,.zip,.rar"
+                                        onChange={(e) => materialForm.setData('file', e.target.files[0])}
+                                        className="mt-1 block w-full text-xs text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 dark:file:bg-blue-950/60 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/60"
+                                    />
+                                    {materialForm.progress && (
+                                        <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden mt-2">
+                                            <div
+                                                className="bg-blue-600 h-1.5 rounded-full transition-all duration-200"
+                                                style={{ width: `${materialForm.progress.percentage}%` }}
+                                            />
+                                            <p className="text-[11px] text-blue-600 dark:text-blue-400 font-medium text-right mt-1">
+                                                Mengunggah: {materialForm.progress.percentage}%
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
 
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Link Eksternal (Drive / YouTube / Web)</label>
-                                <input
-                                    type="url"
-                                    placeholder="https://..."
-                                    value={materialForm.data.external_link}
-                                    onChange={(e) => materialForm.setData('external_link', e.target.value)}
-                                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                />
+                                <div className="pt-2 border-t border-gray-200/60 dark:border-gray-700/60">
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                            Tautan Materi (Google Drive / YouTube / Web)
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={addMaterialLink}
+                                            className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                                        >
+                                            <Plus className="h-3 w-3" /> Tambah Link
+                                        </button>
+                                    </div>
+
+                                    {materialForm.data.links && materialForm.data.links.length > 0 ? (
+                                        <div className="space-y-2">
+                                            {materialForm.data.links.map((linkItem, idx) => (
+                                                <div key={idx} className="flex items-center gap-2 bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-200 dark:border-gray-700 shadow-2xs">
+                                                    <div className="w-1/3">
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Judul (Drive/YT)"
+                                                            value={linkItem.title}
+                                                            onChange={(e) => updateMaterialLink(idx, 'title', e.target.value)}
+                                                            className="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2.5 py-1.5 focus:border-blue-500 focus:ring-blue-500"
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <input
+                                                            type="url"
+                                                            placeholder="https://..."
+                                                            value={linkItem.url}
+                                                            onChange={(e) => updateMaterialLink(idx, 'url', e.target.value)}
+                                                            className="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2.5 py-1.5 focus:border-blue-500 focus:ring-blue-500"
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeMaterialLink(idx)}
+                                                        className="text-gray-400 hover:text-red-500 transition p-1 shrink-0"
+                                                        title="Hapus Link Ini"
+                                                    >
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={addMaterialLink}
+                                            className="w-full py-2 px-3 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-xs text-gray-500 dark:text-gray-400 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 flex items-center justify-center gap-1.5 transition bg-white/50 dark:bg-gray-800/50"
+                                        >
+                                            <Plus className="h-3.5 w-3.5" /> Tambah Tautan Eksternal (Drive, YouTube, LMS, dll)
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="flex justify-end gap-2 pt-3 border-t border-gray-100 dark:border-gray-800">
@@ -1196,43 +1383,92 @@ export default function CourseShow({ course }) {
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                    Ganti Berkas / Foto (Opsional)
-                                </label>
-                                {editingMaterial.file_path && (
-                                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-1">
-                                        Berkas saat ini tersimpan: <span className="font-semibold text-gray-700 dark:text-gray-200">{editingMaterial.file_path.split('/').pop()}</span>. Biarkan kosong jika tidak ingin mengganti berkas.
-                                    </p>
-                                )}
-                                <input
-                                    type="file"
-                                    accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.doc,.docx,.ppt,.pptx,.zip,.rar"
-                                    onChange={(e) => editMaterialForm.setData('file', e.target.files[0])}
-                                    className="mt-1 block w-full text-xs text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 dark:file:bg-blue-950/60 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/60"
-                                />
-                                {editMaterialForm.progress && (
-                                    <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden mt-2">
-                                        <div
-                                            className="bg-blue-600 h-1.5 rounded-full transition-all duration-200"
-                                            style={{ width: `${editMaterialForm.progress.percentage}%` }}
-                                        />
-                                        <p className="text-[11px] text-blue-600 dark:text-blue-400 font-medium text-right mt-1">
-                                            Mengunggah: {editMaterialForm.progress.percentage}%
+                            <div className="space-y-3 bg-gray-50/70 dark:bg-gray-800/40 p-3.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                        Ganti Berkas / Foto (Opsional)
+                                    </label>
+                                    {editingMaterial.file_path && (
+                                        <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-1">
+                                            Berkas saat ini: <span className="font-semibold text-gray-700 dark:text-gray-200">{editingMaterial.file_path.split('/').pop()}</span>. Biarkan kosong jika tidak ingin mengganti berkas.
                                         </p>
-                                    </div>
-                                )}
-                            </div>
+                                    )}
+                                    <input
+                                        type="file"
+                                        accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.doc,.docx,.ppt,.pptx,.zip,.rar"
+                                        onChange={(e) => editMaterialForm.setData('file', e.target.files[0])}
+                                        className="mt-1 block w-full text-xs text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 dark:file:bg-blue-950/60 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/60"
+                                    />
+                                    {editMaterialForm.progress && (
+                                        <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden mt-2">
+                                            <div
+                                                className="bg-blue-600 h-1.5 rounded-full transition-all duration-200"
+                                                style={{ width: `${editMaterialForm.progress.percentage}%` }}
+                                            />
+                                            <p className="text-[11px] text-blue-600 dark:text-blue-400 font-medium text-right mt-1">
+                                                Mengunggah: {editMaterialForm.progress.percentage}%
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
 
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Link Eksternal (Drive / YouTube / Web)</label>
-                                <input
-                                    type="url"
-                                    placeholder="https://..."
-                                    value={editMaterialForm.data.external_link}
-                                    onChange={(e) => editMaterialForm.setData('external_link', e.target.value)}
-                                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                />
+                                <div className="pt-2 border-t border-gray-200/60 dark:border-gray-700/60">
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                            Tautan Materi (Google Drive / YouTube / Web)
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={addEditMaterialLink}
+                                            className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                                        >
+                                            <Plus className="h-3 w-3" /> Tambah Link
+                                        </button>
+                                    </div>
+
+                                    {editMaterialForm.data.links && editMaterialForm.data.links.length > 0 ? (
+                                        <div className="space-y-2">
+                                            {editMaterialForm.data.links.map((linkItem, idx) => (
+                                                <div key={idx} className="flex items-center gap-2 bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-200 dark:border-gray-700 shadow-2xs">
+                                                    <div className="w-1/3">
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Judul (Drive/YT)"
+                                                            value={linkItem.title}
+                                                            onChange={(e) => updateEditMaterialLink(idx, 'title', e.target.value)}
+                                                            className="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2.5 py-1.5 focus:border-blue-500 focus:ring-blue-500"
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <input
+                                                            type="url"
+                                                            placeholder="https://..."
+                                                            value={linkItem.url}
+                                                            onChange={(e) => updateEditMaterialLink(idx, 'url', e.target.value)}
+                                                            className="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2.5 py-1.5 focus:border-blue-500 focus:ring-blue-500"
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeEditMaterialLink(idx)}
+                                                        className="text-gray-400 hover:text-red-500 transition p-1 shrink-0"
+                                                        title="Hapus Link Ini"
+                                                    >
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={addEditMaterialLink}
+                                            className="w-full py-2 px-3 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-xs text-gray-500 dark:text-gray-400 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 flex items-center justify-center gap-1.5 transition bg-white/50 dark:bg-gray-800/50"
+                                        >
+                                            <Plus className="h-3.5 w-3.5" /> Tambah Tautan Eksternal (Drive, YouTube, LMS, dll)
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             <div>
@@ -1276,6 +1512,39 @@ export default function CourseShow({ course }) {
                     <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 border border-transparent dark:border-gray-800 p-6 shadow-xl max-h-[90vh] overflow-y-auto">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Tambah Tugas Kuliah</h3>
                         <form onSubmit={submitAssignment} className="space-y-4">
+                            {/* Jenis Tugas */}
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                                    Jenis Tugas *
+                                </label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => assignmentForm.setData('assignment_type', 'individual')}
+                                        className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold border transition ${
+                                            assignmentForm.data.assignment_type === 'individual'
+                                                ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:border-blue-500 dark:text-blue-300 shadow-2xs font-bold'
+                                                : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
+                                        }`}
+                                    >
+                                        <User className="h-4 w-4" />
+                                        <span>Tugas Individu</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => assignmentForm.setData('assignment_type', 'group')}
+                                        className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold border transition ${
+                                            assignmentForm.data.assignment_type === 'group'
+                                                ? 'border-purple-600 bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:border-purple-500 dark:text-purple-300 shadow-2xs font-bold'
+                                                : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
+                                        }`}
+                                    >
+                                        <Users className="h-4 w-4" />
+                                        <span>Tugas Kelompok</span>
+                                    </button>
+                                </div>
+                            </div>
+
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Nama Tugas *</label>
                                 <input
@@ -1286,6 +1555,9 @@ export default function CourseShow({ course }) {
                                     onChange={(e) => assignmentForm.setData('title', e.target.value)}
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 />
+                                {assignmentForm.errors.title && (
+                                    <p className="text-xs text-red-500 mt-1">{assignmentForm.errors.title}</p>
+                                )}
                             </div>
 
                             <div>
@@ -1297,17 +1569,73 @@ export default function CourseShow({ course }) {
                                     onChange={(e) => assignmentForm.setData('deadline', e.target.value)}
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 />
+                                {assignmentForm.errors.deadline && (
+                                    <p className="text-xs text-red-500 mt-1">{assignmentForm.errors.deadline}</p>
+                                )}
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Link Pengumpulan (Google Form / LMS)</label>
-                                <input
-                                    type="url"
-                                    placeholder="https://forms.gle/... atau link LMS"
-                                    value={assignmentForm.data.submission_url}
-                                    onChange={(e) => assignmentForm.setData('submission_url', e.target.value)}
-                                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                />
+                            {/* Multi-links Builder */}
+                            <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                            Tautan Tugas / Pengumpulan
+                                        </label>
+                                        <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                                            Bisa menambah lebih dari 1 link (Form, Drive, LMS, dll)
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={addAssignmentLink}
+                                        className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 shrink-0"
+                                    >
+                                        <Plus className="h-3 w-3" /> Tambah Link
+                                    </button>
+                                </div>
+
+                                {assignmentForm.data.links && assignmentForm.data.links.length > 0 ? (
+                                    <div className="space-y-2 mt-2">
+                                        {assignmentForm.data.links.map((linkItem, idx) => (
+                                            <div key={idx} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/80 p-2 rounded-xl border border-gray-200 dark:border-gray-700">
+                                                <div className="w-1/3">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Label (Form/LMS)"
+                                                        value={linkItem.title}
+                                                        onChange={(e) => updateAssignmentLink(idx, 'title', e.target.value)}
+                                                        className="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2.5 py-1.5 focus:border-blue-500 focus:ring-blue-500"
+                                                    />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <input
+                                                        type="url"
+                                                        placeholder="https://..."
+                                                        value={linkItem.url}
+                                                        onChange={(e) => updateAssignmentLink(idx, 'url', e.target.value)}
+                                                        className="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2.5 py-1.5 focus:border-blue-500 focus:ring-blue-500"
+                                                    />
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeAssignmentLink(idx)}
+                                                    className="text-gray-400 hover:text-red-500 transition p-1 shrink-0"
+                                                    title="Hapus Link Ini"
+                                                >
+                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={addAssignmentLink}
+                                        className="w-full py-2 px-3 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-xs text-gray-500 dark:text-gray-400 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 flex items-center justify-center gap-1.5 transition bg-white/50 dark:bg-gray-800/50 mt-1"
+                                    >
+                                        <Plus className="h-3.5 w-3.5" /> Tambah Tautan (Google Form, LMS, Sheet, dll)
+                                    </button>
+                                )}
                             </div>
 
                             <div>
@@ -1468,6 +1796,39 @@ export default function CourseShow({ course }) {
                     <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 border border-transparent dark:border-gray-800 p-6 shadow-xl max-h-[90vh] overflow-y-auto">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Edit Tugas Kuliah</h3>
                         <form onSubmit={submitEditAssignment} className="space-y-4">
+                            {/* Jenis Tugas */}
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                                    Jenis Tugas *
+                                </label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => editAssignmentForm.setData('assignment_type', 'individual')}
+                                        className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold border transition ${
+                                            editAssignmentForm.data.assignment_type === 'individual'
+                                                ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:border-blue-500 dark:text-blue-300 shadow-2xs font-bold'
+                                                : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
+                                        }`}
+                                    >
+                                        <User className="h-4 w-4" />
+                                        <span>Tugas Individu</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => editAssignmentForm.setData('assignment_type', 'group')}
+                                        className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold border transition ${
+                                            editAssignmentForm.data.assignment_type === 'group'
+                                                ? 'border-purple-600 bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:border-purple-500 dark:text-purple-300 shadow-2xs font-bold'
+                                                : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
+                                        }`}
+                                    >
+                                        <Users className="h-4 w-4" />
+                                        <span>Tugas Kelompok</span>
+                                    </button>
+                                </div>
+                            </div>
+
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Nama Tugas *</label>
                                 <input
@@ -1497,15 +1858,68 @@ export default function CourseShow({ course }) {
                                 )}
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Link Pengumpulan (Google Form / LMS)</label>
-                                <input
-                                    type="url"
-                                    placeholder="https://forms.gle/... atau link LMS"
-                                    value={editAssignmentForm.data.submission_url}
-                                    onChange={(e) => editAssignmentForm.setData('submission_url', e.target.value)}
-                                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                />
+                            {/* Multi-links Builder */}
+                            <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                            Tautan Tugas / Pengumpulan
+                                        </label>
+                                        <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                                            Bisa menambah lebih dari 1 link (Form, Drive, LMS, dll)
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={addEditAssignmentLink}
+                                        className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 shrink-0"
+                                    >
+                                        <Plus className="h-3 w-3" /> Tambah Link
+                                    </button>
+                                </div>
+
+                                {editAssignmentForm.data.links && editAssignmentForm.data.links.length > 0 ? (
+                                    <div className="space-y-2 mt-2">
+                                        {editAssignmentForm.data.links.map((linkItem, idx) => (
+                                            <div key={idx} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/80 p-2 rounded-xl border border-gray-200 dark:border-gray-700">
+                                                <div className="w-1/3">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Label (Form/LMS)"
+                                                        value={linkItem.title}
+                                                        onChange={(e) => updateEditAssignmentLink(idx, 'title', e.target.value)}
+                                                        className="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2.5 py-1.5 focus:border-blue-500 focus:ring-blue-500"
+                                                    />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <input
+                                                        type="url"
+                                                        placeholder="https://..."
+                                                        value={linkItem.url}
+                                                        onChange={(e) => updateEditAssignmentLink(idx, 'url', e.target.value)}
+                                                        className="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2.5 py-1.5 focus:border-blue-500 focus:ring-blue-500"
+                                                    />
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeEditAssignmentLink(idx)}
+                                                    className="text-gray-400 hover:text-red-500 transition p-1 shrink-0"
+                                                    title="Hapus Link Ini"
+                                                >
+                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={addEditAssignmentLink}
+                                        className="w-full py-2 px-3 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-xs text-gray-500 dark:text-gray-400 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 flex items-center justify-center gap-1.5 transition bg-white/50 dark:bg-gray-800/50 mt-1"
+                                    >
+                                        <Plus className="h-3.5 w-3.5" /> Tambah Tautan (Google Form, LMS, Sheet, dll)
+                                    </button>
+                                )}
                             </div>
 
                             <div>

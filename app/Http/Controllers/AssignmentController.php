@@ -16,12 +16,48 @@ class AssignmentController extends Controller
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'assignment_type' => 'nullable|string|in:individual,group',
             'description' => 'nullable|string',
             'deadline' => 'required|date',
             'submission_url' => 'nullable|url|max:500',
+            'links' => 'nullable|array',
+            'links.*.title' => 'nullable|string|max:100',
+            'links.*.url' => 'nullable|url|max:500',
         ]);
 
-        $course->assignments()->create($validated);
+        $links = [];
+        if (!empty($validated['links']) && is_array($validated['links'])) {
+            foreach ($validated['links'] as $item) {
+                $url = trim($item['url'] ?? '');
+                if ($url && filter_var($url, FILTER_VALIDATE_URL)) {
+                    $links[] = [
+                        'title' => trim($item['title'] ?? '') ?: 'Link Terkait',
+                        'url' => $url,
+                    ];
+                }
+            }
+        }
+
+        $submissionUrl = $validated['submission_url'] ?? null;
+        if (!empty($links)) {
+            $submissionUrl = $links[0]['url'];
+        } elseif (!empty($submissionUrl)) {
+            $links = [
+                [
+                    'title' => 'Link Pengumpulan',
+                    'url' => $submissionUrl,
+                ],
+            ];
+        }
+
+        $course->assignments()->create([
+            'title' => $validated['title'],
+            'assignment_type' => $validated['assignment_type'] ?? 'individual',
+            'description' => $validated['description'] ?? null,
+            'deadline' => $validated['deadline'],
+            'submission_url' => $submissionUrl,
+            'links' => !empty($links) ? $links : null,
+        ]);
 
         return redirect()->back()->with('success', 'Tugas berhasil ditambahkan!');
     }
@@ -32,10 +68,39 @@ class AssignmentController extends Controller
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'assignment_type' => 'nullable|string|in:individual,group',
             'description' => 'nullable|string',
             'deadline' => 'required|date',
             'submission_url' => 'nullable|url|max:500',
+            'links' => 'nullable|array',
+            'links.*.title' => 'nullable|string|max:100',
+            'links.*.url' => 'nullable|url|max:500',
         ]);
+
+        $links = [];
+        if (!empty($validated['links']) && is_array($validated['links'])) {
+            foreach ($validated['links'] as $item) {
+                $url = trim($item['url'] ?? '');
+                if ($url && filter_var($url, FILTER_VALIDATE_URL)) {
+                    $links[] = [
+                        'title' => trim($item['title'] ?? '') ?: 'Link Terkait',
+                        'url' => $url,
+                    ];
+                }
+            }
+        }
+
+        $submissionUrl = $validated['submission_url'] ?? null;
+        if (!empty($links)) {
+            $submissionUrl = $links[0]['url'];
+        } elseif (!empty($submissionUrl)) {
+            $links = [
+                [
+                    'title' => 'Link Pengumpulan',
+                    'url' => $submissionUrl,
+                ],
+            ];
+        }
 
         // Cek jika waktu deadline diubah: reset reminder agar dapat terkirim kembali
         $oldDeadline = Carbon::parse($assignment->deadline)->format('Y-m-d H:i');
@@ -46,7 +111,12 @@ class AssignmentController extends Controller
             $assignment->reminder_h3_sent_at = null;
         }
 
-        $assignment->fill($validated);
+        $assignment->title = $validated['title'];
+        $assignment->assignment_type = $validated['assignment_type'] ?? 'individual';
+        $assignment->description = $validated['description'] ?? null;
+        $assignment->deadline = $validated['deadline'];
+        $assignment->submission_url = $submissionUrl;
+        $assignment->links = !empty($links) ? $links : null;
         $assignment->save();
 
         return redirect()->back()->with('success', 'Tugas berhasil diperbarui!');

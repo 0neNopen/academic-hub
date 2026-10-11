@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class TelegramService
 {
@@ -185,21 +186,95 @@ class TelegramService
     }
 
     /**
-     * Helper untuk format Inline Keyboard Button pengumpulan tugas.
+     * Helper untuk format Inline Keyboard Button pengumpulan tugas (backward-compatible).
      */
-    public function buildSubmissionButton(?string $url): ?array
+    public function buildSubmissionButton(?string $url = null, ?array $links = null, ?string $appUrl = null): ?array
     {
-        if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
+        return $this->buildAssignmentButtons($url, $links, $appUrl);
+    }
+
+    /**
+     * Helper untuk format Inline Keyboard Button tugas (mendukung multi-link).
+     */
+    public function buildAssignmentButtons(?string $primaryUrl = null, ?array $links = null, ?string $appUrl = null): ?array
+    {
+        $validLinks = [];
+
+        if (!empty($links) && is_array($links)) {
+            foreach ($links as $item) {
+                $u = $item['url'] ?? '';
+                if ($u && filter_var($u, FILTER_VALIDATE_URL)) {
+                    $validLinks[] = [
+                        'title' => trim($item['title'] ?? '') ?: 'Link Tugas',
+                        'url' => $u,
+                    ];
+                }
+            }
+        }
+
+        if (empty($validLinks) && !empty($primaryUrl) && filter_var($primaryUrl, FILTER_VALIDATE_URL)) {
+            $validLinks[] = [
+                'title' => 'Kumpul Tugas di Sini',
+                'url' => $primaryUrl,
+            ];
+        }
+
+        if (empty($validLinks)) {
             return null;
         }
 
-        return [
-            [
+        if (count($validLinks) === 1) {
+            $title = $validLinks[0]['title'];
+            $label = str_starts_with($title, 'Link') ? "🚀 {$title}" : "🚀 {$title}";
+            return [
                 [
-                    'text' => '🚀 Kumpul Tugas di Sini',
-                    'url' => $url,
+                    [
+                        'text' => Str::limit($label, 30),
+                        'url' => $validLinks[0]['url'],
+                    ],
                 ],
+            ];
+        }
+
+        if (count($validLinks) === 2) {
+            return [
+                [
+                    [
+                        'text' => '🚀 ' . Str::limit($validLinks[0]['title'], 25),
+                        'url' => $validLinks[0]['url'],
+                    ],
+                ],
+                [
+                    [
+                        'text' => '🔗 ' . Str::limit($validLinks[1]['title'], 25),
+                        'url' => $validLinks[1]['url'],
+                    ],
+                ],
+            ];
+        }
+
+        $btnRows = [];
+        $btnRows[] = [
+            [
+                'text' => '🚀 ' . Str::limit($validLinks[0]['title'], 25),
+                'url' => $validLinks[0]['url'],
             ],
         ];
+        $btnRows[] = [
+            [
+                'text' => '🔗 ' . Str::limit($validLinks[1]['title'], 25),
+                'url' => $validLinks[1]['url'],
+            ],
+        ];
+        if ($appUrl) {
+            $btnRows[] = [
+                [
+                    'text' => '🌐 Buka di Academic Hub',
+                    'url' => "{$appUrl}/dashboard",
+                ],
+            ];
+        }
+
+        return $btnRows;
     }
 }
