@@ -36,6 +36,33 @@ class CourseTest extends TestCase
         ]);
     }
 
+    public function test_user_can_create_a_course_with_pj_and_attendance_url(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post('/courses', [
+            'name' => 'Jaringan Komputer',
+            'code' => 'IF-102',
+            'lecturer_name' => 'Dr. Budi',
+            'room' => 'Lab Jaringan',
+            'pj_name' => 'Ahmad Reza',
+            'pj_phone' => '08123456789',
+            'attendance_url' => 'https://presensi.kampus.ac.id/jarkom',
+            'day_of_week' => 'Selasa',
+            'start_time' => '09:00',
+            'end_time' => '11:30',
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('courses', [
+            'user_id' => $user->id,
+            'name' => 'Jaringan Komputer',
+            'pj_name' => 'Ahmad Reza',
+            'pj_phone' => '08123456789',
+            'attendance_url' => 'https://presensi.kampus.ac.id/jarkom',
+        ]);
+    }
+
     public function test_user_can_view_their_own_course(): void
     {
         $user = User::factory()->create();
@@ -85,6 +112,32 @@ class CourseTest extends TestCase
             'id' => $course->id,
             'name' => 'Nama Baru',
             'code' => 'IF-202',
+        ]);
+    }
+
+    public function test_user_can_update_course_with_pj_and_attendance_url(): void
+    {
+        $user = User::factory()->create();
+        $course = Course::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Nama Lama',
+        ]);
+
+        $response = $this->actingAs($user)->put("/courses/{$course->id}", [
+            'name' => 'Nama Baru',
+            'code' => 'IF-202',
+            'pj_name' => 'Siti Nurhaliza',
+            'pj_phone' => '08987654321',
+            'attendance_url' => 'https://presensi.kampus.ac.id/update',
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('courses', [
+            'id' => $course->id,
+            'name' => 'Nama Baru',
+            'pj_name' => 'Siti Nurhaliza',
+            'pj_phone' => '08987654321',
+            'attendance_url' => 'https://presensi.kampus.ac.id/update',
         ]);
     }
 

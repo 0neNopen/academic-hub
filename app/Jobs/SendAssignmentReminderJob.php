@@ -73,9 +73,9 @@ class SendAssignmentReminderJob implements ShouldQueue
 
         $formattedDeadline = $deadline->isoFormat('dddd, D MMMM YYYY - HH:mm') . ' WIB';
 
-        $urgencyTitleWA = $this->isH3 ? "🚨 *PERINGATAN MENDESAK: DEADLINE < 3 JAM!* 🚨" : "⏳ *PENGINGAT DEADLINE KULIAH*";
-        $urgencyTitleTG = $this->isH3 ? "🚨 <b>PERINGATAN MENDESAK: DEADLINE &lt; 3 JAM!</b> 🚨" : "⏳ <b>PENGINGAT DEADLINE KULIAH</b>";
-        $timeRemainingText = $this->isH3 ? "tinggal {$diffInMinutes} menit lagi!" : "sekitar {$hoursLeft} jam lagi";
+        $urgencyTitleWA = $this->isH3 ? "🚨 *PERINGATAN MENDESAK: DEADLINE SEGERA BERAKHIR!* 🚨" : "⏳ *PENGINGAT DEADLINE KULIAH*";
+        $urgencyTitleTG = $this->isH3 ? "🚨 <b>PERINGATAN MENDESAK: DEADLINE SEGERA BERAKHIR!</b> 🚨" : "⏳ <b>PENGINGAT DEADLINE KULIAH</b>";
+        $timeRemainingText = ($diffInMinutes <= 90) ? "tinggal {$diffInMinutes} menit lagi!" : "sekitar {$hoursLeft} jam lagi";
 
         $descWA = '';
         if (!empty($assignment->description)) {

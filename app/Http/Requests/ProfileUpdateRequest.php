@@ -34,6 +34,11 @@ class ProfileUpdateRequest extends FormRequest
                 'max:50',
                 Rule::unique(User::class, 'telegram_chat_id')->ignore($this->user()->id),
             ],
+            'schedule_reminder_time' => ['nullable', 'string', 'regex:/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/'],
+            'task_reminder_early' => ['nullable', 'string', 'in:48,24,12,0'],
+            'task_reminder_late' => ['nullable', 'string', 'in:5,3,1,0'],
+            'campus_name' => ['nullable', 'string', 'max:100'],
+            'campus_portal_url' => ['nullable', 'url', 'max:500'],
         ];
     }
 

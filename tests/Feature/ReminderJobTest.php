@@ -99,4 +99,32 @@ class ReminderJobTest extends TestCase
         $assignment->refresh();
         $this->assertNotNull($assignment->reminder_h3_sent_at);
     }
+
+    public function test_scheduler_respects_custom_early_reminder_hours(): void
+    {
+        Queue::fake();
+
+        $user = User::factory()->create([
+            'telegram_chat_id' => '12345678',
+            'notification_channel' => 'telegram',
+            'task_reminder_early' => '48', // Custom H-48 Jam
+        ]);
+        $course = Course::factory()->create(['user_id' => $user->id]);
+
+        // Tugas dengan deadline 36 jam lagi (di atas 24 jam tapi di bawah 48 jam)
+        $assignment = Assignment::factory()->create([
+            'course_id' => $course->id,
+            'status' => 'pending',
+            'deadline' => Carbon::now()->addHours(36),
+            'reminder_h24_sent_at' => null,
+            'reminder_h3_sent_at' => null,
+        ]);
+
+        $this->artisan('assignments:send-reminders')
+            ->assertSuccessful();
+
+        Queue::assertPushed(SendAssignmentReminderJob::class, function ($job) use ($assignment) {
+            return $job->assignmentId === $assignment->id && $job->isH3 === false;
+        });
+    }
 }

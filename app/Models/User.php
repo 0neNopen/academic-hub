@@ -25,6 +25,11 @@ class User extends Authenticatable
         'password',
         'whatsapp_number',
         'notification_channel',
+        'schedule_reminder_time',
+        'task_reminder_early',
+        'task_reminder_late',
+        'campus_name',
+        'campus_portal_url',
         'telegram_chat_id',
         'telegram_connect_token',
     ];

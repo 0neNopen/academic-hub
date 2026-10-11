@@ -69,9 +69,14 @@ export default function AuthenticatedLayout({ header, children }) {
 
                                     <Dropdown.Content>
                                         <Dropdown.Link
-                                            href={route('profile.edit')}
+                                            href={route('profile.edit', { tab: 'profile' })}
                                         >
-                                            Pengaturan Profil
+                                            Profil Akun
+                                        </Dropdown.Link>
+                                        <Dropdown.Link
+                                            href={route('profile.edit', { tab: 'settings' })}
+                                        >
+                                            Pengaturan Notifikasi & Bot
                                         </Dropdown.Link>
                                         <Dropdown.Link
                                             href={route('logout')}
@@ -156,8 +161,11 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>
-                                Pengaturan Profil
+                            <ResponsiveNavLink href={route('profile.edit', { tab: 'profile' })}>
+                                Profil Akun
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('profile.edit', { tab: 'settings' })}>
+                                Pengaturan Notifikasi & Bot
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 method="post"

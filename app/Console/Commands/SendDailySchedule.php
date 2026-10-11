@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 class SendDailySchedule extends Command
 {
-    protected $signature = 'courses:send-daily-schedule {--user= : ID user spesifik (opsional)} {--day= : Nama hari spesifik (opsional, contoh: Senin)}';
+    protected $signature = 'courses:send-daily-schedule {--user= : ID user spesifik (opsional)} {--day= : Nama hari spesifik (opsional, contoh: Senin)} {--check-time : Hanya kirim ke user dengan waktu reminder yang cocok dengan jam saat ini}';
     protected $description = 'Kirim ringkasan jadwal kuliah dan deadline tugas hari ini via Telegram';
 
     public function handle(TelegramService $telegramService): void
@@ -53,6 +53,16 @@ class SendDailySchedule extends Command
         $sentCount = 0;
 
         foreach ($users as $user) {
+            // Jika opsi --check-time aktif, periksa jam reminder user (default '06:00')
+            if ($this->option('check-time')) {
+                $userTime = $user->schedule_reminder_time ?: '06:00';
+                $userHour = explode(':', $userTime)[0];
+                $currentHour = $now->format('H');
+                if ($userHour !== $currentHour) {
+                    continue;
+                }
+            }
+
             $allCourses = $user->courses;
             $todayCourses = $allCourses->filter(function ($c) use ($todayDay) {
                 return strcasecmp($c->day_of_week, $todayDay) === 0;
@@ -233,6 +243,20 @@ class SendDailySchedule extends Command
                     if ($course->room) {
                         $message .= "   📍 Ruang: " . htmlspecialchars($course->room) . "\n";
                     }
+                    if ($course->pj_name) {
+                        $pjPhone = '';
+                        if ($course->pj_phone) {
+                            $cleanPhone = preg_replace('/[^0-9]/', '', $course->pj_phone);
+                            if (str_starts_with($cleanPhone, '0')) {
+                                $cleanPhone = '62' . substr($cleanPhone, 1);
+                            }
+                            $pjPhone = " (<a href=\"https://wa.me/{$cleanPhone}\">WhatsApp</a>)";
+                        }
+                        $message .= "   👤 PJ: " . htmlspecialchars($course->pj_name) . "{$pjPhone}\n";
+                    }
+                    if ($course->attendance_url) {
+                        $message .= "   📝 Presensi: <a href=\"" . htmlspecialchars($course->attendance_url) . "\">Link Presensi</a>\n";
+                    }
                     $idx++;
                 }
                 $message .= "\n";
@@ -262,6 +286,11 @@ class SendDailySchedule extends Command
                         $tIdx++;
                     }
                     $message .= "\n";
+                }
+
+                if ($user->campus_portal_url) {
+                    $campusName = $user->campus_name ? htmlspecialchars($user->campus_name) : 'Portal Kampus / Presensi';
+                    $message .= "🏛️ <b>{$campusName}:</b> <a href=\"" . htmlspecialchars($user->campus_portal_url) . "\">Buka Portal</a>\n\n";
                 }
 
                 $message .= "🔗 Dashboard: {$appUrl}/dashboard";

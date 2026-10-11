@@ -425,6 +425,9 @@ export default function CourseShow({ course }) {
         code: course.code || '',
         lecturer_name: course.lecturer_name || '',
         room: course.room || '',
+        pj_name: course.pj_name || '',
+        pj_phone: course.pj_phone || '',
+        attendance_url: course.attendance_url || '',
         day_of_week: course.day_of_week || 'Senin',
         start_time: course.start_time || '',
         end_time: course.end_time || '',
@@ -437,6 +440,9 @@ export default function CourseShow({ course }) {
             code: course.code || '',
             lecturer_name: course.lecturer_name || '',
             room: course.room || '',
+            pj_name: course.pj_name || '',
+            pj_phone: course.pj_phone || '',
+            attendance_url: course.attendance_url || '',
             day_of_week: course.day_of_week || 'Senin',
             start_time: course.start_time || '',
             end_time: course.end_time || '',
@@ -584,6 +590,41 @@ export default function CourseShow({ course }) {
                                     </>
                                 )}
                             </div>
+
+                            {/* Baris Informasi PJ & Presensi jika tersedia */}
+                            {(course.pj_name || course.attendance_url) && (
+                                <div className="flex flex-wrap items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                                    {course.pj_name && (
+                                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-900/40 text-xs">
+                                            <span className="font-semibold text-blue-900 dark:text-blue-300">
+                                                PJ: {course.pj_name}
+                                            </span>
+                                            {course.pj_phone && (
+                                                <a
+                                                    href={`https://wa.me/${course.pj_phone.replace(/[^0-9]/g, '').replace(/^0/, '62')}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/80 px-2 py-0.5 rounded shadow-2xs hover:bg-emerald-200 dark:hover:bg-emerald-900 transition"
+                                                    title="Hubungi PJ via WhatsApp"
+                                                >
+                                                    💬 Chat WhatsApp
+                                                </a>
+                                            )}
+                                        </div>
+                                    )}
+                                    {course.attendance_url && (
+                                        <a
+                                            href={course.attendance_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/70 dark:border-emerald-900/40 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900 transition shadow-2xs"
+                                        >
+                                            <ExternalLink className="h-3 w-3" />
+                                            Presensi Kuliah
+                                        </a>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -1757,6 +1798,43 @@ export default function CourseShow({ course }) {
                                     onChange={(e) => editCourseForm.setData('room', e.target.value)}
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">PJ Matkul (Opsional)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Nama PJ / Koordinator"
+                                        value={editCourseForm.data.pj_name}
+                                        onChange={(e) => editCourseForm.setData('pj_name', e.target.value)}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">No. WhatsApp PJ (Opsional)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Contoh: 08123456789"
+                                        value={editCourseForm.data.pj_phone}
+                                        onChange={(e) => editCourseForm.setData('pj_phone', e.target.value)}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Tautan Presensi Kuliah (Opsional)</label>
+                                <input
+                                    type="url"
+                                    placeholder="https://presensi.kampus.ac.id/..."
+                                    value={editCourseForm.data.attendance_url}
+                                    onChange={(e) => editCourseForm.setData('attendance_url', e.target.value)}
+                                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                />
+                                <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
+                                    Link presensi khusus mata kuliah ini (akan otomatis disertakan di notifikasi Telegram).
+                                </p>
                             </div>
 
                             <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800">

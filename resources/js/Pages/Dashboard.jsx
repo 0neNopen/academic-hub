@@ -32,6 +32,9 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
         code: '',
         lecturer_name: '',
         room: '',
+        pj_name: '',
+        pj_phone: '',
+        attendance_url: '',
         day_of_week: 'Senin',
         start_time: '',
         end_time: '',
@@ -367,7 +370,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
 
                         {/* 4. Notifikasi Bot Telegram */}
                         <Link
-                            href={route('profile.edit')}
+                            href={route('profile.edit', { tab: 'settings' })}
                             className="group rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-3.5 sm:p-4 shadow-xs hover:shadow-md hover:border-sky-200 dark:hover:border-sky-800 transition-all text-left flex flex-col justify-between active:scale-[0.98]"
                         >
                             <div className="flex items-center justify-between w-full">
@@ -541,38 +544,47 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                             href={route('courses.show', course.id)}
                                             className="group rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-xs hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition overflow-hidden flex flex-col justify-between"
                                         >
-                                            <div className="p-4 sm:p-5">
-                                                <div className="flex items-center justify-between mb-2.5">
-                                                    <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300">
-                                                        {course.code || 'MK'}
-                                                    </span>
-                                                    <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 font-medium">
-                                                        <Calendar className="h-3 w-3 text-gray-400" />
-                                                        {course.day_of_week || 'Jadwal fleksibel'}
-                                                    </span>
+                                            <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
+                                                <div>
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300">
+                                                            {course.code || 'MK'}
+                                                        </span>
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 font-medium">
+                                                            <Calendar className="h-3 w-3 text-gray-400" />
+                                                            {course.day_of_week || 'Jadwal fleksibel'}
+                                                        </span>
+                                                    </div>
+                                                    <h4 className="font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition text-sm sm:text-base line-clamp-1">
+                                                        {course.name}
+                                                    </h4>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
+                                                        <span className="font-medium text-gray-700 dark:text-gray-300">Dosen:</span> {course.lecturer_name || '-'}
+                                                    </p>
                                                 </div>
-                                                <h4 className="font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition text-sm sm:text-base">
-                                                    {course.name}
-                                                </h4>
-                                                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-gray-500 dark:text-gray-400 mt-1.5">
-                                                    <span>Dosen: {course.lecturer_name || '-'}</span>
-                                                    {course.room && (
-                                                        <>
-                                                            <span>•</span>
-                                                            <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-                                                                <MapPin className="h-3 w-3" />
-                                                                {course.room}
-                                                            </span>
-                                                        </>
+
+                                                <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-2.5 border-t border-gray-100 dark:border-gray-800 text-[11px]">
+                                                    {course.room ? (
+                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-medium border border-emerald-100 dark:border-emerald-900/40">
+                                                            <MapPin className="h-3 w-3 text-emerald-500 shrink-0" />
+                                                            <span className="truncate max-w-[120px]">{course.room}</span>
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-medium border border-gray-100 dark:border-gray-700/60">
+                                                            <MapPin className="h-3 w-3 text-gray-400 shrink-0" />
+                                                            Ruang -
+                                                        </span>
                                                     )}
-                                                    {formatCourseTime(course.start_time, course.end_time) && (
-                                                        <>
-                                                            <span>•</span>
-                                                            <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
-                                                                <Clock className="h-3 w-3" />
-                                                                {formatCourseTime(course.start_time, course.end_time)}
-                                                            </span>
-                                                        </>
+                                                    {formatCourseTime(course.start_time, course.end_time) ? (
+                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-medium border border-amber-100 dark:border-amber-900/40">
+                                                            <Clock className="h-3 w-3 text-amber-500 shrink-0" />
+                                                            <span>{formatCourseTime(course.start_time, course.end_time)}</span>
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-medium border border-gray-100 dark:border-gray-700/60">
+                                                            <Clock className="h-3 w-3 text-gray-400 shrink-0" />
+                                                            Fleksibel
+                                                        </span>
                                                     )}
                                                 </div>
                                             </div>
@@ -888,6 +900,43 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                     onChange={(e) => setData('room', e.target.value)}
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
                                 />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">PJ Matkul (Opsional)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Nama PJ / Koordinator"
+                                        value={data.pj_name}
+                                        onChange={(e) => setData('pj_name', e.target.value)}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">No. WhatsApp PJ (Opsional)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Contoh: 08123456789"
+                                        value={data.pj_phone}
+                                        onChange={(e) => setData('pj_phone', e.target.value)}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Tautan Presensi Kuliah (Opsional)</label>
+                                <input
+                                    type="url"
+                                    placeholder="https://presensi.kampus.ac.id/..."
+                                    value={data.attendance_url}
+                                    onChange={(e) => setData('attendance_url', e.target.value)}
+                                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
+                                />
+                                <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
+                                    Link presensi khusus mata kuliah ini (akan otomatis disertakan di notifikasi Telegram).
+                                </p>
                             </div>
 
                             <div className="flex justify-end gap-2 pt-3 border-t border-gray-100 dark:border-gray-800">

@@ -22,7 +22,7 @@ class SendAssignmentReminders extends Command
         $assignments = Assignment::with(['course.user'])
             ->where('status', '!=', 'completed')
             ->where('deadline', '>', $now)
-            ->where('deadline', '<=', $now->copy()->addDay())
+            ->where('deadline', '<=', $now->copy()->addDays(2))
             ->where(function ($query) {
                 $query->whereNull('reminder_h24_sent_at')
                       ->orWhereNull('reminder_h3_sent_at');
@@ -45,21 +45,31 @@ class SendAssignmentReminders extends Command
                 continue;
             }
 
-            // Evaluasi Kategori Pengingat:
-            // 1. Pengingat Rutin H-24 (antara 180 s/d 1440 menit)
-            $isH24 = ($diffInMinutes <= 1440 && $diffInMinutes > 180 && is_null($assignment->reminder_h24_sent_at));
-            // 2. Peringatan Mendesak H-3 (<= 180 menit)
-            $isH3 = ($diffInMinutes <= 180 && is_null($assignment->reminder_h3_sent_at));
+            // Ambil batas preferensi jam pengingat user (0 berarti dinonaktifkan)
+            $earlyHours = ($user->task_reminder_early !== null && is_numeric($user->task_reminder_early))
+                ? (int) $user->task_reminder_early
+                : 24;
+            $lateHours = ($user->task_reminder_late !== null && is_numeric($user->task_reminder_late))
+                ? (int) $user->task_reminder_late
+                : 3;
 
-            if (!$isH24 && !$isH3) {
+            $earlyLimitMinutes = $earlyHours * 60;
+            $lateLimitMinutes = $lateHours * 60;
+
+            // 1. Pengingat Rutin Awal (H-Early, default H-24 Jam)
+            $isEarly = ($earlyLimitMinutes > 0 && $diffInMinutes <= $earlyLimitMinutes && $diffInMinutes > $lateLimitMinutes && is_null($assignment->reminder_h24_sent_at));
+            // 2. Peringatan Mendesak Akhir (H-Late, default H-3 Jam)
+            $isLate = ($lateLimitMinutes > 0 && $diffInMinutes <= $lateLimitMinutes && is_null($assignment->reminder_h3_sent_at));
+
+            if (!$isEarly && !$isLate) {
                 continue;
             }
 
             // Kirim job ke antrean background worker (non-blocking)
-            SendAssignmentReminderJob::dispatch($assignment->id, $isH3);
+            SendAssignmentReminderJob::dispatch($assignment->id, $isLate);
             $dispatchedCount++;
 
-            $type = $isH3 ? 'H-3 Jam' : 'H-24 Jam';
+            $type = $isLate ? "H-{$lateHours} Jam" : "H-{$earlyHours} Jam";
             $this->info("[Antrean Dipicu] Tugas '{$assignment->title}' ({$type}) dijadwalkan untuk {$user->name}.");
         }
 

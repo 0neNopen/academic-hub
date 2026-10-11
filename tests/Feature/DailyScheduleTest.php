@@ -236,4 +236,89 @@ class DailyScheduleTest extends TestCase
             '--day' => 'Senin',
         ])->assertExitCode(0);
     }
+
+    public function test_daily_schedule_includes_pj_and_attendance_url_and_campus_portal(): void
+    {
+        $user = User::factory()->create([
+            'name' => 'Budi Utomo',
+            'telegram_chat_id' => '111222333',
+            'campus_name' => 'Universitas Sebelas Maret',
+            'campus_portal_url' => 'https://ocw.uns.ac.id',
+        ]);
+
+        Course::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Pemrograman Internet',
+            'day_of_week' => 'Senin',
+            'start_time' => '08:00:00',
+            'end_time' => '10:30:00',
+            'pj_name' => 'Rian Hidayat',
+            'pj_phone' => '08123456789',
+            'attendance_url' => 'https://presensi.kampus.ac.id/pi',
+        ]);
+
+        $telegramMock = Mockery::mock(TelegramService::class);
+        $telegramMock->shouldReceive('sendMessage')
+            ->once()
+            ->with('111222333', Mockery::on(function ($message) {
+                return str_contains($message, 'Pemrograman Internet')
+                    && str_contains($message, 'PJ: Rian Hidayat')
+                    && str_contains($message, 'wa.me/628123456789')
+                    && str_contains($message, 'https://presensi.kampus.ac.id/pi')
+                    && str_contains($message, 'Universitas Sebelas Maret')
+                    && str_contains($message, 'https://ocw.uns.ac.id');
+            }))
+            ->andReturn(true);
+
+        $this->app->instance(TelegramService::class, $telegramMock);
+
+        $this->artisan('courses:send-daily-schedule', [
+            '--user' => $user->id,
+            '--day' => 'Senin',
+        ])->assertExitCode(0);
+    }
+
+    public function test_daily_schedule_check_time_filters_users_by_configured_hour(): void
+    {
+        $currentHour = now(config('app.timezone', 'Asia/Jakarta'))->format('H');
+        $differentHour = sprintf('%02d', ($currentHour + 3) % 24);
+
+        $matchingUser = User::factory()->create([
+            'name' => 'User Matching',
+            'telegram_chat_id' => '444555666',
+            'schedule_reminder_time' => "{$currentHour}:00",
+        ]);
+
+        $nonMatchingUser = User::factory()->create([
+            'name' => 'User Non Matching',
+            'telegram_chat_id' => '777888999',
+            'schedule_reminder_time' => "{$differentHour}:00",
+        ]);
+
+        Course::factory()->create([
+            'user_id' => $matchingUser->id,
+            'name' => 'Kalkulus',
+            'day_of_week' => 'Senin',
+        ]);
+
+        Course::factory()->create([
+            'user_id' => $nonMatchingUser->id,
+            'name' => 'Fisika',
+            'day_of_week' => 'Senin',
+        ]);
+
+        $telegramMock = Mockery::mock(TelegramService::class);
+        // Only matchingUser receives the message
+        $telegramMock->shouldReceive('sendMessage')
+            ->once()
+            ->with('444555666', Mockery::any())
+            ->andReturn(true);
+
+        $this->app->instance(TelegramService::class, $telegramMock);
+
+        $this->artisan('courses:send-daily-schedule', [
+            '--day' => 'Senin',
+            '--check-time' => true,
+        ])->assertExitCode(0);
+    }
 }

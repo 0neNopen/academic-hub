@@ -163,4 +163,36 @@ class ProfileTest extends TestCase
         $this->assertSame('Updated Name', $user->fresh()->name);
         $this->assertSame('999888777', $user->fresh()->telegram_chat_id);
     }
+
+    public function test_user_can_update_notification_and_campus_settings(): void
+    {
+        $user = User::factory()->create([
+            'schedule_reminder_time' => '06:00',
+            'task_reminder_early' => '24',
+            'task_reminder_late' => '3',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'schedule_reminder_time' => '07:00',
+                'task_reminder_early' => '48',
+                'task_reminder_late' => '5',
+                'campus_name' => 'Universitas Sebelas Maret',
+                'campus_portal_url' => 'https://ocw.uns.ac.id',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $user->refresh();
+        $this->assertSame('07:00', $user->schedule_reminder_time);
+        $this->assertSame('48', $user->task_reminder_early);
+        $this->assertSame('5', $user->task_reminder_late);
+        $this->assertSame('Universitas Sebelas Maret', $user->campus_name);
+        $this->assertSame('https://ocw.uns.ac.id', $user->campus_portal_url);
+    }
 }
