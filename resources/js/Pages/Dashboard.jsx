@@ -14,6 +14,7 @@ import {
     Plus,
     Search,
     Send,
+    Trash2,
     User,
     Users,
     X,
@@ -22,6 +23,7 @@ import { useState } from 'react';
 
 export default function Dashboard({ auth, courses, upcomingAssignments }) {
     const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
+    const [isAddAssignmentModalOpen, setIsAddAssignmentModalOpen] = useState(false);
     const [mobileTab, setMobileTab] = useState('courses');
 
     // Form Tambah Mata Kuliah
@@ -42,6 +44,62 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
             onSuccess: () => {
                 reset();
                 setIsAddCourseModalOpen(false);
+            },
+        });
+    };
+
+    // Form Tambah Tugas Cepat (Quick Add Assignment) dari Dashboard
+    const assignmentForm = useForm({
+        course_id: courses.length > 0 ? courses[0].id : '',
+        title: '',
+        assignment_type: 'individual',
+        description: '',
+        deadline: '',
+        submission_url: '',
+        links: [{ title: 'Link Pengumpulan', url: '' }],
+    });
+
+    const openAddAssignmentModal = (defaultCourseId = null) => {
+        const targetCourseId = defaultCourseId || (courses.length > 0 ? courses[0].id : '');
+        assignmentForm.setData({
+            course_id: targetCourseId,
+            title: '',
+            assignment_type: 'individual',
+            description: '',
+            deadline: '',
+            submission_url: '',
+            links: [{ title: 'Link Pengumpulan', url: '' }],
+        });
+        setIsAddAssignmentModalOpen(true);
+    };
+
+    const addAssignmentLink = () => {
+        assignmentForm.setData('links', [
+            ...(assignmentForm.data.links || []),
+            { title: '', url: '' },
+        ]);
+    };
+
+    const updateAssignmentLink = (index, field, value) => {
+        const newLinks = [...(assignmentForm.data.links || [])];
+        newLinks[index] = { ...newLinks[index], [field]: value };
+        assignmentForm.setData('links', newLinks);
+    };
+
+    const removeAssignmentLink = (index) => {
+        const newLinks = (assignmentForm.data.links || []).filter((_, i) => i !== index);
+        assignmentForm.setData('links', newLinks);
+    };
+
+    const submitAssignment = (e) => {
+        e.preventDefault();
+        if (!assignmentForm.data.course_id) {
+            return;
+        }
+        assignmentForm.post(route('assignments.store', assignmentForm.data.course_id), {
+            onSuccess: () => {
+                assignmentForm.reset();
+                setIsAddAssignmentModalOpen(false);
             },
         });
     };
@@ -184,13 +242,24 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                             Pantau perkuliahan, jadwal harian, dan tugas Anda dalam satu tempat.
                         </p>
                     </div>
-                    <button
-                        onClick={() => setIsAddCourseModalOpen(true)}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow hover:bg-blue-700 transition self-start sm:self-auto"
-                    >
-                        <Plus className="h-4 w-4" />
-                        Tambah Mata Kuliah
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                        <button
+                            type="button"
+                            onClick={() => openAddAssignmentModal()}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-blue-600/40 dark:border-blue-500/40 bg-blue-50/80 dark:bg-blue-950/40 px-3.5 py-2 text-xs font-semibold text-blue-700 dark:text-blue-300 shadow-2xs hover:bg-blue-100 dark:hover:bg-blue-900/60 transition"
+                        >
+                            <CheckSquare className="h-4 w-4" />
+                            Tambah Tugas
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setIsAddCourseModalOpen(true)}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Tambah Mata Kuliah
+                        </button>
+                    </div>
                 </div>
             }
         >
@@ -529,9 +598,18 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                     <Clock className="h-4 w-4 text-amber-500" />
                                     Deadline Terdekat
                                 </h3>
-                                <span className="text-xs font-semibold px-2 py-0.5 bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 rounded-full border border-amber-200 dark:border-amber-800">
-                                    {upcomingAssignments.length}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => openAddAssignmentModal()}
+                                        className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 py-1 px-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/50 transition"
+                                    >
+                                        <Plus className="h-3 w-3" /> Tambah Tugas
+                                    </button>
+                                    <span className="text-xs font-semibold px-2 py-0.5 bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 rounded-full border border-amber-200 dark:border-amber-800">
+                                        {upcomingAssignments.length}
+                                    </span>
+                                </div>
                             </div>
 
                             {/* Filter Rentang Waktu Deadline */}
@@ -558,23 +636,43 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                             )}
 
                             {upcomingAssignments.length === 0 ? (
-                                <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 text-center text-gray-500 shadow-xs">
-                                    <CheckCircle2 className="mx-auto h-7 w-7 text-emerald-500 mb-2" />
-                                    <p className="font-semibold text-gray-800 dark:text-gray-200 text-xs">Semua tugas beres!</p>
-                                    <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">
-                                        Tidak ada tugas aktif yang menunggu. Riwayat tugas selesai tersimpan di halaman matkul.
-                                    </p>
+                                <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 text-center text-gray-500 shadow-xs space-y-3">
+                                    <CheckCircle2 className="mx-auto h-7 w-7 text-emerald-500" />
+                                    <div>
+                                        <p className="font-semibold text-gray-800 dark:text-gray-200 text-xs">Semua tugas beres!</p>
+                                        <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">
+                                            Tidak ada tugas aktif yang menunggu. Ada tugas baru dari dosen?
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => openAddAssignmentModal()}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-xs transition"
+                                    >
+                                        <Plus className="h-3.5 w-3.5" /> Catat Tugas Baru
+                                    </button>
                                 </div>
                             ) : displayedDeadlines.length === 0 ? (
-                                <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 text-center text-gray-500 shadow-xs">
-                                    <Clock className="mx-auto h-6 w-6 text-gray-400 dark:text-gray-500 mb-1" />
+                                <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 text-center text-gray-500 shadow-xs space-y-2">
+                                    <Clock className="mx-auto h-6 w-6 text-gray-400 dark:text-gray-500" />
                                     <p className="text-xs text-gray-600 dark:text-gray-300 font-medium">Tidak ada tugas pada filter ini.</p>
-                                    <button
-                                        onClick={() => setDeadlineFilter('all')}
-                                        className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold hover:underline mt-1"
-                                    >
-                                        Tampilkan Semua Deadline
-                                    </button>
+                                    <div className="flex items-center justify-center gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setDeadlineFilter('all')}
+                                            className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                                        >
+                                            Tampilkan Semua Deadline
+                                        </button>
+                                        <span className="text-gray-300 dark:text-gray-700">•</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => openAddAssignmentModal()}
+                                            className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                                        >
+                                            + Tambah Tugas
+                                        </button>
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="space-y-3">
@@ -809,6 +907,239 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Tambah Tugas Cepat (Quick Add Assignment) dari Dashboard */}
+            {isAddAssignmentModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/75 backdrop-blur-xs p-4">
+                    <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 border border-transparent dark:border-gray-800 p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Tambah Tugas Kuliah</h3>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    Catat tugas baru untuk memantau deadline otomatis
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsAddAssignmentModalOpen(false)}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        {courses.length === 0 ? (
+                            <div className="text-center py-6 space-y-3">
+                                <BookOpen className="mx-auto h-10 w-10 text-gray-400 dark:text-gray-500" />
+                                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                    Belum Ada Mata Kuliah
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    Tambahkan mata kuliah terlebih dahulu sebelum mencatat tugas kuliah.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsAddAssignmentModalOpen(false);
+                                        setIsAddCourseModalOpen(true);
+                                    }}
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition"
+                                >
+                                    <Plus className="h-4 w-4" /> Tambah Mata Kuliah Dulu
+                                </button>
+                            </div>
+                        ) : (
+                            <form onSubmit={submitAssignment} className="space-y-4">
+                                {/* Pilihan Mata Kuliah */}
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                        Pilih Mata Kuliah *
+                                    </label>
+                                    <select
+                                        required
+                                        value={assignmentForm.data.course_id}
+                                        onChange={(e) => assignmentForm.setData('course_id', e.target.value)}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500 cursor-pointer"
+                                    >
+                                        <option value="" disabled>-- Pilih Mata Kuliah --</option>
+                                        {courses.map((c) => (
+                                            <option key={c.id} value={c.id}>
+                                                {c.name} ({c.day_of_week}{c.start_time ? ` • ${c.start_time}` : ''})
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {assignmentForm.errors.course_id && (
+                                        <p className="text-xs text-red-500 mt-1">{assignmentForm.errors.course_id}</p>
+                                    )}
+                                </div>
+
+                                {/* Jenis Tugas */}
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                                        Jenis Tugas *
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => assignmentForm.setData('assignment_type', 'individual')}
+                                            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold border transition ${
+                                                assignmentForm.data.assignment_type === 'individual'
+                                                    ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:border-blue-500 dark:text-blue-300 shadow-2xs font-bold'
+                                                    : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
+                                            }`}
+                                        >
+                                            <User className="h-4 w-4" />
+                                            <span>Tugas Individu</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => assignmentForm.setData('assignment_type', 'group')}
+                                            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold border transition ${
+                                                assignmentForm.data.assignment_type === 'group'
+                                                    ? 'border-purple-600 bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:border-purple-500 dark:text-purple-300 shadow-2xs font-bold'
+                                                    : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
+                                            }`}
+                                        >
+                                            <Users className="h-4 w-4" />
+                                            <span>Tugas Kelompok</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Nama Tugas */}
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                        Nama Tugas *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="Contoh: Tugas 1 - Resume Materi"
+                                        value={assignmentForm.data.title}
+                                        onChange={(e) => assignmentForm.setData('title', e.target.value)}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                    {assignmentForm.errors.title && (
+                                        <p className="text-xs text-red-500 mt-1">{assignmentForm.errors.title}</p>
+                                    )}
+                                </div>
+
+                                {/* Tenggat Waktu (Deadline) */}
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                        Tenggat Waktu (Deadline) *
+                                    </label>
+                                    <input
+                                        type="datetime-local"
+                                        required
+                                        value={assignmentForm.data.deadline}
+                                        onChange={(e) => assignmentForm.setData('deadline', e.target.value)}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                    {assignmentForm.errors.deadline && (
+                                        <p className="text-xs text-red-500 mt-1">{assignmentForm.errors.deadline}</p>
+                                    )}
+                                </div>
+
+                                {/* Tautan Tugas (Multi-link) */}
+                                <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                                Tautan Tugas / Pengumpulan
+                                            </label>
+                                            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                                                Bisa menambah lebih dari 1 link (Form, Drive, LMS, dll)
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={addAssignmentLink}
+                                            className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 shrink-0"
+                                        >
+                                            <Plus className="h-3 w-3" /> Tambah Link
+                                        </button>
+                                    </div>
+
+                                    {assignmentForm.data.links && assignmentForm.data.links.length > 0 ? (
+                                        <div className="space-y-2 mt-2">
+                                            {assignmentForm.data.links.map((linkItem, idx) => (
+                                                <div key={idx} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/80 p-2 rounded-xl border border-gray-200 dark:border-gray-700">
+                                                    <div className="w-1/3">
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Label (Form/LMS)"
+                                                            value={linkItem.title}
+                                                            onChange={(e) => updateAssignmentLink(idx, 'title', e.target.value)}
+                                                            className="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2.5 py-1.5 focus:border-blue-500 focus:ring-blue-500"
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <input
+                                                            type="url"
+                                                            placeholder="https://..."
+                                                            value={linkItem.url}
+                                                            onChange={(e) => updateAssignmentLink(idx, 'url', e.target.value)}
+                                                            className="w-full text-xs rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2.5 py-1.5 focus:border-blue-500 focus:ring-blue-500"
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeAssignmentLink(idx)}
+                                                        className="text-gray-400 hover:text-red-500 transition p-1 shrink-0"
+                                                        title="Hapus Link Ini"
+                                                    >
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={addAssignmentLink}
+                                            className="w-full py-2 px-3 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-xs text-gray-500 dark:text-gray-400 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 flex items-center justify-center gap-1.5 transition bg-white/50 dark:bg-gray-800/50 mt-1"
+                                        >
+                                            <Plus className="h-3.5 w-3.5" /> Tambah Tautan (Google Form, LMS, Sheet, dll)
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Deskripsi */}
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                        Deskripsi / Instruksi (Opsional)
+                                    </label>
+                                    <textarea
+                                        rows="3"
+                                        placeholder="Format berkas PDF, kelompok 4 orang, dll..."
+                                        value={assignmentForm.data.description}
+                                        onChange={(e) => assignmentForm.setData('description', e.target.value)}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500"
+                                    ></textarea>
+                                </div>
+
+                                <div className="flex justify-end gap-2 pt-3 border-t border-gray-100 dark:border-gray-800">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsAddAssignmentModalOpen(false)}
+                                        className="rounded-lg px-4 py-2 text-xs font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                                    >
+                                        Batal
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={assignmentForm.processing}
+                                        className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition"
+                                    >
+                                        {assignmentForm.processing ? 'Menyimpan...' : 'Simpan Tugas'}
+                                    </button>
+                                </div>
+                            </form>
+                        )}
                     </div>
                 </div>
             )}
