@@ -137,15 +137,43 @@ class TelegramWebhookController extends Controller
         $todayName = $now->locale('id')->isoFormat('dddd');
         $todayDate = $now->locale('id')->isoFormat('D MMMM YYYY');
 
+        $allUserCoursesCount = $user->courses()->count();
+        if ($allUserCoursesCount === 0) {
+            $msg = "📅 <b>Jadwal Kuliah Hari Ini ({$todayName}, {$todayDate})</b>\n\n"
+                 . "Halo <b>" . htmlspecialchars($user->name) . "</b>!\n\n"
+                 . "📌 <b>Jadwal Kuliah Belum Terdaftar:</b>\n"
+                 . "Akun Academic Hub kamu saat ini belum memiliki daftar mata kuliah.\n\n"
+                 . "Yuk lengkapi jadwal kuliah semester ini melalui website agar bot dapat menampilkan jadwal harianmu:\n"
+                 . "🔗 <a href=\"{$appUrl}/dashboard\">Buka Dashboard Academic Hub</a>";
+            $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
+            return;
+        }
+
         $courses = $user->courses()
             ->whereRaw('LOWER(day_of_week) = ?', [strtolower($todayName)])
             ->orderBy('start_time', 'asc')
             ->get();
 
+        $isWeekend = in_array(strtolower($todayName), ['sabtu', 'minggu']);
+
         if ($courses->isEmpty()) {
-            $msg = "📅 <b>Jadwal Kuliah Hari Ini ({$todayName}, {$todayDate})</b>\n\n"
-                 . "🎉 <i>Tidak ada jadwal perkuliahan untuk hari ini. Selamat beristirahat atau belajar mandiri!</i>\n\n"
-                 . "💡 Ketuk <b>Semua Jadwal</b> untuk melihat jadwal hari lain.";
+            if ($isWeekend) {
+                $weekendGreeting = strtolower($todayName) === 'sabtu'
+                    ? "🌴 <b>Happy Weekend! (Sabtu Santai)</b>"
+                    : "☕ <b>Selamat Hari Minggu!</b>";
+                $msg = "📅 <b>Jadwal Kuliah Hari Ini ({$todayName}, {$todayDate})</b>\n\n"
+                     . "{$weekendGreeting}\n"
+                     . "Halo <b>" . htmlspecialchars($user->name) . "</b>! Tidak ada jadwal perkuliahan hari ini 🥳\n"
+                     . "Manfaatkan akhir pekanmu untuk istirahat, refreshing, atau bersantai.\n\n"
+                     . "💡 <b>Aksi Cepat:</b>\n"
+                     . "• <b>/tugas</b> - Cek status tugas aktif\n"
+                     . "• <b>/semua_jadwal</b> - Intip jadwal kuliah sepekan";
+            } else {
+                $msg = "📅 <b>Jadwal Kuliah Hari Ini ({$todayName}, {$todayDate})</b>\n\n"
+                     . "🎉 <b>Hari Bebas Kuliah (Free Day)!</b>\n"
+                     . "<i>Tidak ada jadwal perkuliahan untuk hari ini. Selamat beristirahat atau belajar mandiri!</i>\n\n"
+                     . "💡 Ketuk <b>/tugas</b> untuk cek tugas aktif atau <b>/semua_jadwal</b> untuk melihat jadwal hari lain.";
+            }
         } else {
             $msg = "📅 <b>Jadwal Kuliah Hari Ini ({$todayName}, {$todayDate})</b>\n"
                  . "Halo <b>{$user->name}</b>, berikut agenda perkuliahanmu hari ini:\n\n";
