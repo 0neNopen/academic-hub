@@ -71,23 +71,6 @@ export default function UpdateProfileInformation({
                         />
                         <InputError className="mt-2" message={errors.email} />
                     </div>
-
-                    {/* Nomor WhatsApp Kontak */}
-                    <div className="sm:col-span-2">
-                        <InputLabel htmlFor="whatsapp_number" value="Nomor WhatsApp (Kontak Mahasiswa)" />
-                        <TextInput
-                            id="whatsapp_number"
-                            type="text"
-                            className="mt-1 block w-full shadow-xs"
-                            value={data.whatsapp_number}
-                            onChange={(e) => setData("whatsapp_number", e.target.value)}
-                            placeholder="Contoh: 081234567890 atau 6281234567890"
-                        />
-                        <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
-                            Nomor telepon aktif Anda untuk keperluan kontak profil mahasiswa.
-                        </p>
-                        <InputError className="mt-2" message={errors.whatsapp_number} />
-                    </div>
                 </div>
 
                 {/* Pengaturan Kanal Notifikasi Bot */}
