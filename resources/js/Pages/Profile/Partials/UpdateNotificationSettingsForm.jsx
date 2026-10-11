@@ -80,47 +80,76 @@ export default function UpdateNotificationSettingsForm({ className = "" }) {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 pt-1">
-                        {[
-                            { value: "05:00", label: "05:00 WIB", note: "Subuh / Awal" },
-                            { value: "06:00", label: "06:00 WIB", note: "Standar (Paling Ideal)", popular: true },
-                            { value: "07:00", label: "07:00 WIB", note: "Sebelum Kuliah" },
-                            { value: "08:00", label: "08:00 WIB", note: "Awal Perkuliahan" },
-                            { value: "09:00", label: "09:00 WIB", note: "Jadwal Siang" },
-                        ].map((item) => (
-                            <button
-                                key={item.value}
-                                type="button"
-                                onClick={() => setData("schedule_reminder_time", item.value)}
-                                className={`relative p-3 rounded-xl border text-left transition flex flex-col justify-between ${
-                                    data.schedule_reminder_time === item.value
-                                        ? "border-blue-600 bg-blue-600 text-white shadow-xs font-semibold ring-2 ring-blue-500/20"
-                                        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:border-blue-300 dark:hover:border-blue-800"
-                                }`}
-                            >
-                                {item.popular && (
-                                    <span
-                                        className={`absolute -top-2 right-2 text-[9px] font-bold px-1.5 py-0.2 rounded-full ${
-                                            data.schedule_reminder_time === item.value
-                                                ? "bg-white text-blue-700"
-                                                : "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                    <div className="space-y-4 pt-1">
+                        {/* Input Waktu Utama (Bebas Diedit Mahasiswa) */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-white dark:bg-gray-800/90 border border-blue-200/80 dark:border-blue-900/60 shadow-xs">
+                            <div className="space-y-1">
+                                <label
+                                    htmlFor="schedule_reminder_time"
+                                    className="block text-xs font-bold text-gray-900 dark:text-white"
+                                >
+                                    Pilih Jam Pengingat (Format 24 Jam)
+                                </label>
+                                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                                    Atur jam dan menit sesuka Anda (Default: 06:00 pagi).
+                                </p>
+                            </div>
+
+                            <div className="flex items-center gap-2.5">
+                                <input
+                                    id="schedule_reminder_time"
+                                    type="time"
+                                    value={data.schedule_reminder_time || "06:00"}
+                                    onChange={(e) => setData("schedule_reminder_time", e.target.value)}
+                                    className="text-lg font-bold font-mono tracking-wider px-3.5 py-2 rounded-xl border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-blue-600 dark:text-blue-400 shadow-2xs focus:border-blue-500 focus:ring-blue-500 cursor-pointer"
+                                />
+                                <span className="text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-100/80 dark:bg-blue-950/80 px-2.5 py-2 rounded-xl border border-blue-200/60 dark:border-blue-900/40">
+                                    WIB
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Tombol Pintas / Quick Selection Chips */}
+                        <div className="space-y-1.5">
+                            <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-400">
+                                Pilihan Cepat (Klik untuk langsung setel):
+                            </span>
+                            <div className="flex flex-wrap items-center gap-2">
+                                {[
+                                    { time: "05:00", label: "05:00 Subuh" },
+                                    { time: "05:30", label: "05:30 Pagi Awal" },
+                                    { time: "06:00", label: "06:00 Standar (Default) ⭐" },
+                                    { time: "06:30", label: "06:30 Sarapan" },
+                                    { time: "07:00", label: "07:00 Sebelum Kelas" },
+                                    { time: "08:00", label: "08:00 Awal Kuliah" },
+                                    { time: "09:00", label: "09:00 Kuliah Siang" },
+                                ].map((preset) => (
+                                    <button
+                                        key={preset.time}
+                                        type="button"
+                                        onClick={() => setData("schedule_reminder_time", preset.time)}
+                                        className={`text-xs px-2.5 py-1 rounded-lg border font-medium transition ${
+                                            data.schedule_reminder_time === preset.time
+                                                ? "border-blue-600 bg-blue-600 text-white shadow-2xs font-bold ring-2 ring-blue-500/20"
+                                                : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:border-blue-300 dark:hover:border-blue-700"
                                         }`}
                                     >
-                                        Rekomendasi ⭐
-                                    </span>
-                                )}
-                                <div className="text-sm font-bold">{item.label}</div>
-                                <div
-                                    className={`text-[10px] mt-1 ${
-                                        data.schedule_reminder_time === item.value
-                                            ? "text-blue-100"
-                                            : "text-gray-500 dark:text-gray-400"
-                                    }`}
-                                >
-                                    {item.note}
-                                </div>
-                            </button>
-                        ))}
+                                        {preset.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Banner Konfirmasi Waktu Aktif */}
+                        <div className="p-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 text-xs text-blue-900 dark:text-blue-300 flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                            <span>
+                                Bot Telegram akan mengirimkan rekap kuliah & deadline tugas setiap hari pukul{" "}
+                                <strong className="font-mono font-bold text-blue-700 dark:text-blue-200">
+                                    {data.schedule_reminder_time || "06:00"} WIB
+                                </strong>.
+                            </span>
+                        </div>
                     </div>
                     <InputError message={errors.schedule_reminder_time} />
                 </div>

@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Services\TelegramService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class SendDailySchedule extends Command
@@ -53,12 +54,24 @@ class SendDailySchedule extends Command
         $sentCount = 0;
 
         foreach ($users as $user) {
-            // Jika opsi --check-time aktif, periksa jam reminder user (default '06:00')
+            // Jika opsi --check-time aktif, periksa jam & menit reminder user (default '06:00')
             if ($this->option('check-time')) {
+                $cacheKey = "daily_schedule_sent_{$user->id}_{$now->toDateString()}";
+                if (Cache::has($cacheKey)) {
+                    continue;
+                }
+
                 $userTime = $user->schedule_reminder_time ?: '06:00';
-                $userHour = explode(':', $userTime)[0];
-                $currentHour = $now->format('H');
-                if ($userHour !== $currentHour) {
+                $parts = explode(':', $userTime);
+                $userHour = (int) ($parts[0] ?? 6);
+                $userMinute = (int) ($parts[1] ?? 0);
+
+                $todayUserTime = $now->copy()->setTime($userHour, $userMinute, 0);
+                $diffMinutes = $todayUserTime->diffInMinutes($now, false);
+
+                // Kirim jika waktu sekarang sudah mencapai jam reminder user hari ini,
+                // dan belum lewat lebih dari 60 menit (agar tidak terlambat berjam-jam)
+                if ($diffMinutes < 0 || $diffMinutes > 60) {
                     continue;
                 }
             }
@@ -299,6 +312,9 @@ class SendDailySchedule extends Command
             $success = $telegramService->sendMessage($user->telegram_chat_id, $message);
             if ($success) {
                 $sentCount++;
+                if ($this->option('check-time')) {
+                    Cache::put("daily_schedule_sent_{$user->id}_{$now->toDateString()}", true, $now->copy()->endOfDay());
+                }
                 $this->info("✓ Jadwal harian terkirim ke: {$user->name} ({$user->email})");
             } else {
                 $this->warn("✗ Gagal mengirim jadwal harian ke: {$user->name}");

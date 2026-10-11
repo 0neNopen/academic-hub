@@ -321,4 +321,42 @@ class DailyScheduleTest extends TestCase
             '--check-time' => true,
         ])->assertExitCode(0);
     }
+
+    public function test_daily_schedule_does_not_send_twice_on_same_day_when_cached(): void
+    {
+        $currentHour = now(config('app.timezone', 'Asia/Jakarta'))->format('H');
+
+        $user = User::factory()->create([
+            'name' => 'User Sekali Sehari',
+            'telegram_chat_id' => '12121212',
+            'schedule_reminder_time' => "{$currentHour}:00",
+        ]);
+
+        Course::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Statistika',
+            'day_of_week' => 'Senin',
+        ]);
+
+        $telegramMock = Mockery::mock(TelegramService::class);
+        // Only sent once even if command is called twice
+        $telegramMock->shouldReceive('sendMessage')
+            ->once()
+            ->with('12121212', Mockery::any())
+            ->andReturn(true);
+
+        $this->app->instance(TelegramService::class, $telegramMock);
+
+        // Run 1: Should send
+        $this->artisan('courses:send-daily-schedule', [
+            '--day' => 'Senin',
+            '--check-time' => true,
+        ])->assertExitCode(0);
+
+        // Run 2: Should be skipped because of cache lock
+        $this->artisan('courses:send-daily-schedule', [
+            '--day' => 'Senin',
+            '--check-time' => true,
+        ])->assertExitCode(0);
+    }
 }

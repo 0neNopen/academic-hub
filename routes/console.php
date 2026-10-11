@@ -15,10 +15,9 @@ Schedule::command('assignments:send-weekly-digest')
     ->timezone('Asia/Jakarta')
     ->withoutOverlapping();
 
-// Jadwalkan Ringkasan Jadwal Kuliah Harian (menyesuaikan jam pengingat pilihan user: 05:00 - 11:00 WIB)
+// Jadwalkan Ringkasan Jadwal Kuliah Harian (setiap 15 menit agar presisi sesuai jam bebas pilihan mahasiswa)
 Schedule::command('courses:send-daily-schedule --check-time')
-    ->hourly()
-    ->between('05:00', '11:00')
+    ->everyFifteenMinutes()
     ->timezone('Asia/Jakarta')
     ->withoutOverlapping();
 
