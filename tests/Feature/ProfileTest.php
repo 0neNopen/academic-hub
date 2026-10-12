@@ -195,4 +195,58 @@ class ProfileTest extends TestCase
         $this->assertSame('Universitas Sebelas Maret', $user->campus_name);
         $this->assertSame('https://ocw.uns.ac.id', $user->campus_portal_url);
     }
+
+    public function test_user_can_update_multiple_campus_portals(): void
+    {
+        $user = User::factory()->create();
+
+        $portals = [
+            ['name' => 'SIAKAD Utama', 'url' => 'https://siakad.kampus.ac.id'],
+            ['name' => 'LMS Moodle', 'url' => 'https://lms.kampus.ac.id'],
+            ['name' => 'Presensi Online', 'url' => 'https://presensi.kampus.ac.id'],
+        ];
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'campus_name' => 'Politeknik Negeri',
+                'campus_portals' => $portals,
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $user->refresh();
+        $this->assertSame('Politeknik Negeri', $user->campus_name);
+        $this->assertCount(3, $user->campus_portals);
+        $this->assertSame('SIAKAD Utama', $user->campus_portals[0]['name']);
+        $this->assertSame('https://siakad.kampus.ac.id', $user->campus_portals[0]['url']);
+        $this->assertCount(3, $user->all_campus_portals);
+    }
+
+    public function test_empty_campus_portals_are_filtered_out(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'campus_portals' => [
+                    ['name' => '', 'url' => ''],
+                    ['name' => '   ', 'url' => ''],
+                ],
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $user->refresh();
+        $this->assertEmpty($user->campus_portals);
+    }
 }

@@ -10,16 +10,29 @@ import {
     CheckCircle2,
     Clock,
     ExternalLink,
+    Globe,
     GraduationCap,
     Info,
     MessageSquare,
+    Plus,
     Send,
     ShieldAlert,
     Sparkles,
+    Trash2,
 } from "lucide-react";
 
 export default function UpdateNotificationSettingsForm({ className = "" }) {
     const user = usePage().props.auth.user;
+
+    const initialPortals = () => {
+        if (user.campus_portals && Array.isArray(user.campus_portals) && user.campus_portals.length > 0) {
+            return user.campus_portals;
+        }
+        if (user.campus_portal_url) {
+            return [{ name: "Portal SIAKAD", url: user.campus_portal_url }];
+        }
+        return [{ name: "SIAKAD", url: "" }];
+    };
 
     const { data, setData, patch, errors, processing, recentlySuccessful } =
         useForm({
@@ -36,12 +49,36 @@ export default function UpdateNotificationSettingsForm({ className = "" }) {
                     : "3",
             campus_name: user.campus_name || "",
             campus_portal_url: user.campus_portal_url || "",
+            campus_portals: initialPortals(),
             notification_channel: "telegram",
             telegram_chat_id: user.telegram_chat_id || "",
         });
 
+    const updatePortal = (index, field, value) => {
+        const updated = [...data.campus_portals];
+        updated[index] = { ...updated[index], [field]: value };
+        setData("campus_portals", updated);
+    };
+
+    const addPortal = () => {
+        if (data.campus_portals.length < 5) {
+            setData("campus_portals", [...data.campus_portals, { name: "", url: "" }]);
+        }
+    };
+
+    const removePortal = (index) => {
+        if (data.campus_portals.length === 1) {
+            setData("campus_portals", [{ name: "", url: "" }]);
+        } else {
+            const updated = data.campus_portals.filter((_, i) => i !== index);
+            setData("campus_portals", updated);
+        }
+    };
+
     const submit = (e) => {
         e.preventDefault();
+        const firstValid = data.campus_portals.find((p) => p.url && p.url.trim() !== "");
+        data.campus_portal_url = firstValid ? firstValid.url.trim() : "";
         patch(route("profile.update"));
     };
 
@@ -96,14 +133,17 @@ export default function UpdateNotificationSettingsForm({ className = "" }) {
                             </div>
 
                             <div className="flex items-center gap-2.5">
-                                <input
-                                    id="schedule_reminder_time"
-                                    type="time"
-                                    value={data.schedule_reminder_time || "06:00"}
-                                    onChange={(e) => setData("schedule_reminder_time", e.target.value)}
-                                    className="text-lg font-bold font-mono tracking-wider px-3.5 py-2 rounded-xl border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-blue-600 dark:text-blue-400 shadow-2xs focus:border-blue-500 focus:ring-blue-500 cursor-pointer"
-                                />
-                                <span className="text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-100/80 dark:bg-blue-950/80 px-2.5 py-2 rounded-xl border border-blue-200/60 dark:border-blue-900/40">
+                                <div className="relative flex items-center">
+                                    <Clock className="absolute left-3.5 h-4 w-4 text-blue-600 dark:text-sky-400 pointer-events-none" />
+                                    <input
+                                        id="schedule_reminder_time"
+                                        type="time"
+                                        value={data.schedule_reminder_time || "06:00"}
+                                        onChange={(e) => setData("schedule_reminder_time", e.target.value)}
+                                        className="pl-10 pr-3.5 py-2 text-lg font-extrabold font-mono tracking-wider rounded-xl border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-blue-600 dark:text-sky-300 [color-scheme:light] dark:[color-scheme:dark] shadow-xs focus:border-blue-500 focus:ring-blue-500 cursor-pointer [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-80 hover:[&::-webkit-calendar-picker-indicator]:opacity-100"
+                                    />
+                                </div>
+                                <span className="text-xs font-bold text-blue-700 dark:text-sky-200 bg-blue-100/90 dark:bg-blue-950/90 px-3 py-2.5 rounded-xl border border-blue-200/80 dark:border-blue-800/80 shadow-2xs">
                                     WIB
                                 </span>
                             </div>
@@ -215,54 +255,153 @@ export default function UpdateNotificationSettingsForm({ className = "" }) {
                     </div>
                 </div>
 
-                {/* 3. INFORMASI KAMPUS & TAUTAN PORTAL / PRESENSI UNIVERSAL */}
-                <div className="p-5 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xs space-y-4">
+                {/* 3. INFORMASI KAMPUS & TAUTAN PORTAL / PRESENSI MULTI-LINK */}
+                <div className="p-5 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xs space-y-5">
                     <div className="flex items-center gap-2.5">
                         <div className="p-1.5 rounded-lg bg-emerald-600 text-white shadow-xs">
                             <GraduationCap className="h-4 w-4" />
                         </div>
                         <div>
                             <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-                                Informasi Kampus & Portal Presensi
+                                Informasi Kampus & Tautan Portal / SIAKAD / LMS
                             </h3>
                             <p className="text-xs text-gray-600 dark:text-gray-400">
-                                Mendukung seluruh universitas! Tautan ini akan disertakan pada notifikasi Telegram pagi.
+                                Mendukung seluruh universitas & politeknik! Tautan akan dikirimkan rapi pada notifikasi Telegram harian.
                             </p>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                        <div>
-                            <InputLabel htmlFor="campus_name" value="Nama Perguruan Tinggi / Kampus (Opsional)" />
-                            <TextInput
-                                id="campus_name"
-                                type="text"
-                                className="mt-1 block w-full shadow-xs text-sm"
-                                placeholder="Contoh: Universitas Sebelas Maret, ITB, UI, dll"
-                                value={data.campus_name}
-                                onChange={(e) => setData("campus_name", e.target.value)}
-                            />
-                            <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
-                                Nama institusi kampus Anda.
-                            </p>
-                            <InputError message={errors.campus_name} />
+                    {/* Nama Kampus */}
+                    <div>
+                        <InputLabel htmlFor="campus_name" value="Nama Perguruan Tinggi / Kampus (Opsional)" />
+                        <TextInput
+                            id="campus_name"
+                            type="text"
+                            className="mt-1 block w-full shadow-xs text-sm"
+                            placeholder="Contoh: Universitas Anda, Institut Teknologi..., Politeknik..."
+                            value={data.campus_name}
+                            onChange={(e) => setData("campus_name", e.target.value)}
+                        />
+                        <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
+                            Nama institusi kampus Anda (akan ditampilkan sebagai label tautan di bot Telegram).
+                        </p>
+                        <InputError message={errors.campus_name} />
+                    </div>
+
+                    {/* Multi-Portal Links */}
+                    <div className="space-y-3 pt-2 border-t border-gray-100 dark:border-gray-800">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-900 dark:text-white">
+                                    Tautan Portal Kampus, LMS & Presensi (Bisa Lebih Dari 1)
+                                </label>
+                                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                                    Sertakan portal penting seperti SIAKAD, E-learning (Moodle), atau Presensi Online.
+                                </p>
+                            </div>
+                            {data.campus_portals.length < 5 && (
+                                <button
+                                    type="button"
+                                    onClick={addPortal}
+                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800/80 transition shadow-2xs cursor-pointer"
+                                >
+                                    <Plus className="h-3.5 w-3.5" />
+                                    Tambah Portal
+                                </button>
+                            )}
                         </div>
 
-                        <div>
-                            <InputLabel htmlFor="campus_portal_url" value="Tautan Portal / Presensi / LMS (Opsional)" />
-                            <TextInput
-                                id="campus_portal_url"
-                                type="url"
-                                className="mt-1 block w-full shadow-xs text-sm"
-                                placeholder="https://ocw.uns.ac.id atau https://siakad.kampus.ac.id"
-                                value={data.campus_portal_url}
-                                onChange={(e) => setData("campus_portal_url", e.target.value)}
-                            />
-                            <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
-                                URL web portal presensi atau SIAKAD kampus Anda.
-                            </p>
-                            <InputError message={errors.campus_portal_url} />
+                        <div className="space-y-3">
+                            {data.campus_portals.map((portal, index) => (
+                                <div
+                                    key={index}
+                                    className="p-3.5 rounded-xl bg-gray-50/80 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700/80 space-y-2.5 transition"
+                                >
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                                            <Globe className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                                            Portal #{index + 1}
+                                        </span>
+                                        {data.campus_portals.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removePortal(index)}
+                                                className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40 p-1.5 rounded-md transition cursor-pointer"
+                                                title="Hapus portal ini"
+                                            >
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
+                                        <div className="sm:col-span-2">
+                                            <label className="block text-[11px] font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                                                Label Portal
+                                            </label>
+                                            <TextInput
+                                                type="text"
+                                                className="block w-full text-xs py-1.5"
+                                                placeholder="Misal: SIAKAD, LMS, Presensi"
+                                                value={portal.name}
+                                                onChange={(e) => updatePortal(index, "name", e.target.value)}
+                                            />
+                                            {/* Preset tags */}
+                                            <div className="flex items-center gap-1.5 mt-1.5">
+                                                <span className="text-[10px] text-gray-400">Pilih:</span>
+                                                {["SIAKAD", "LMS", "Presensi"].map((tag) => (
+                                                    <button
+                                                        key={tag}
+                                                        type="button"
+                                                        onClick={() => updatePortal(index, "name", tag)}
+                                                        className="text-[10px] px-1.5 py-0.5 rounded bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-blue-400 cursor-pointer"
+                                                    >
+                                                        +{tag}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <InputError message={errors[`campus_portals.${index}.name`]} />
+                                        </div>
+
+                                        <div className="sm:col-span-3">
+                                            <label className="block text-[11px] font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                                                Alamat URL Web (Harus diawali https://)
+                                            </label>
+                                            <TextInput
+                                                type="url"
+                                                className="block w-full text-xs py-1.5"
+                                                placeholder="https://siakad.nama-kampus.ac.id"
+                                                value={portal.url}
+                                                onChange={(e) => updatePortal(index, "url", e.target.value)}
+                                            />
+                                            <InputError message={errors[`campus_portals.${index}.url`]} />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
+
+                        <InputError message={errors.campus_portals} />
+
+                        {/* Live Preview Box */}
+                        {data.campus_portals.some((p) => p.name || p.url) && (
+                            <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-900/40 text-xs space-y-1.5">
+                                <span className="font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
+                                    <Sparkles className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                                    Preview Tampilan di Pesan Telegram:
+                                </span>
+                                <p className="font-mono text-[11px] text-gray-800 dark:text-gray-200 bg-white/80 dark:bg-gray-900/80 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-900/40">
+                                    🏛️ <b>{data.campus_name || "Portal Kampus"}:</b>{" "}
+                                    {data.campus_portals
+                                        .filter((p) => p.url && p.url.trim() !== "")
+                                        .map((p) => p.name || "Buka Portal")
+                                        .join(" • ") || "(Belum ada URL portal yang valid)"}
+                                </p>
+                                <p className="text-[10px] text-emerald-700 dark:text-emerald-400">
+                                    Tampilan di Telegram tetap 1 baris ringkas, rapi, dan langsung bisa diklik mahasiswa tanpa memicu spam chat.
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
 

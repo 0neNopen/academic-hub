@@ -229,6 +229,18 @@ class SendDailySchedule extends Command
                     $message .= "👉 Ketik <b>/tugas</b> untuk cek semua tugas aktif.\n\n";
                 }
 
+                $portals = $user->all_campus_portals;
+                if (!empty($portals)) {
+                    $campusLabel = $user->campus_name ? htmlspecialchars($user->campus_name) : 'Portal Kampus';
+                    $portalLinks = [];
+                    foreach ($portals as $portal) {
+                        $pName = !empty($portal['name']) ? htmlspecialchars($portal['name']) : 'Buka Portal';
+                        $pUrl = htmlspecialchars($portal['url']);
+                        $portalLinks[] = "<a href=\"{$pUrl}\">{$pName}</a>";
+                    }
+                    $message .= "🏛️ <b>{$campusLabel}:</b> " . implode(' • ', $portalLinks) . "\n\n";
+                }
+
                 $message .= "🔗 Dashboard: {$appUrl}/dashboard";
             }
             // KASUS 5: ADA KELAS HARI INI (Termasuk jika ada kelas di hari Sabtu/Minggu)
@@ -301,9 +313,16 @@ class SendDailySchedule extends Command
                     $message .= "\n";
                 }
 
-                if ($user->campus_portal_url) {
-                    $campusName = $user->campus_name ? htmlspecialchars($user->campus_name) : 'Portal Kampus / Presensi';
-                    $message .= "🏛️ <b>{$campusName}:</b> <a href=\"" . htmlspecialchars($user->campus_portal_url) . "\">Buka Portal</a>\n\n";
+                $portals = $user->all_campus_portals;
+                if (!empty($portals)) {
+                    $campusLabel = $user->campus_name ? htmlspecialchars($user->campus_name) : 'Portal Kampus';
+                    $portalLinks = [];
+                    foreach ($portals as $portal) {
+                        $pName = !empty($portal['name']) ? htmlspecialchars($portal['name']) : 'Buka Portal';
+                        $pUrl = htmlspecialchars($portal['url']);
+                        $portalLinks[] = "<a href=\"{$pUrl}\">{$pName}</a>";
+                    }
+                    $message .= "🏛️ <b>{$campusLabel}:</b> " . implode(' • ', $portalLinks) . "\n\n";
                 }
 
                 $message .= "🔗 Dashboard: {$appUrl}/dashboard";

@@ -30,6 +30,7 @@ class User extends Authenticatable
         'task_reminder_late',
         'campus_name',
         'campus_portal_url',
+        'campus_portals',
         'telegram_chat_id',
         'telegram_connect_token',
     ];
@@ -54,7 +55,33 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'campus_portals' => 'array',
         ];
+    }
+
+    /**
+     * Get normalized list of campus portals for backward compatibility.
+     *
+     * @return array<int, array{name: string, url: string}>
+     */
+    public function getAllCampusPortalsAttribute(): array
+    {
+        if (!empty($this->campus_portals) && is_array($this->campus_portals)) {
+            return array_values(array_filter($this->campus_portals, function ($p) {
+                return is_array($p) && !empty($p['url']);
+            }));
+        }
+
+        if (!empty($this->campus_portal_url)) {
+            return [
+                [
+                    'name' => 'Portal Kampus',
+                    'url' => $this->campus_portal_url,
+                ],
+            ];
+        }
+
+        return [];
     }
 
     public function courses(): HasMany

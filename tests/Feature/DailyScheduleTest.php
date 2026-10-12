@@ -278,6 +278,46 @@ class DailyScheduleTest extends TestCase
         ])->assertExitCode(0);
     }
 
+    public function test_daily_schedule_formats_multiple_campus_portals_with_bullet_links(): void
+    {
+        $user = User::factory()->create([
+            'name' => 'Siti Aminah',
+            'telegram_chat_id' => '123987456',
+            'campus_name' => 'Institut Teknologi',
+            'campus_portals' => [
+                ['name' => 'SIAKAD', 'url' => 'https://siakad.it.ac.id'],
+                ['name' => 'LMS Spada', 'url' => 'https://spada.it.ac.id'],
+                ['name' => 'Presensi', 'url' => 'https://presensi.it.ac.id'],
+            ],
+        ]);
+
+        Course::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Struktur Data',
+            'day_of_week' => 'Senin',
+            'start_time' => '09:00:00',
+        ]);
+
+        $telegramMock = Mockery::mock(TelegramService::class);
+        $telegramMock->shouldReceive('sendMessage')
+            ->once()
+            ->with('123987456', Mockery::on(function ($message) {
+                return str_contains($message, 'Institut Teknologi')
+                    && str_contains($message, '<a href="https://siakad.it.ac.id">SIAKAD</a>')
+                    && str_contains($message, '<a href="https://spada.it.ac.id">LMS Spada</a>')
+                    && str_contains($message, '<a href="https://presensi.it.ac.id">Presensi</a>')
+                    && str_contains($message, ' • ');
+            }))
+            ->andReturn(true);
+
+        $this->app->instance(TelegramService::class, $telegramMock);
+
+        $this->artisan('courses:send-daily-schedule', [
+            '--user' => $user->id,
+            '--day' => 'Senin',
+        ])->assertExitCode(0);
+    }
+
     public function test_daily_schedule_check_time_filters_users_by_configured_hour(): void
     {
         $currentHour = now(config('app.timezone', 'Asia/Jakarta'))->format('H');
