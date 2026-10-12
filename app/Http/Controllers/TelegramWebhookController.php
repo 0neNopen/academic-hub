@@ -23,7 +23,42 @@ class TelegramWebhookController extends Controller
     {
         $payload = $request->all();
 
-        // Ambil payload pesan dari Telegram
+        $appUrl = config('app.url', 'https://academic-hub-ocw2.onrender.com');
+        if (empty($appUrl) || str_contains($appUrl, 'localhost')) {
+            $appUrl = 'https://academic-hub-ocw2.onrender.com';
+        }
+
+        // 1. Penanganan Callback Query dari tombol Inline Keyboard
+        $callbackQuery = $payload['callback_query'] ?? null;
+        if ($callbackQuery) {
+            $callbackId = $callbackQuery['id'] ?? '';
+            $chatId = $callbackQuery['message']['chat']['id'] ?? $callbackQuery['from']['id'] ?? null;
+            $messageId = $callbackQuery['message']['message_id'] ?? null;
+            $data = trim((string) ($callbackQuery['data'] ?? ''));
+
+            if ($callbackId) {
+                $this->telegramService->answerCallbackQuery($callbackId);
+            }
+
+            if (!$chatId) {
+                return response()->json(['status' => 'no_chat_id']);
+            }
+
+            $user = User::where('telegram_chat_id', (string) $chatId)->first();
+
+            if (str_starts_with($data, 'materi_course:')) {
+                $courseId = (int) substr($data, strlen('materi_course:'));
+                $this->handleMateriDetail($chatId, $user, $courseId, $appUrl, $messageId);
+                return response()->json(['status' => 'ok']);
+            } elseif ($data === 'materi_list') {
+                $this->handleMateriCommand($chatId, $user, $appUrl, $messageId);
+                return response()->json(['status' => 'ok']);
+            }
+
+            return response()->json(['status' => 'callback_handled']);
+        }
+
+        // 2. Ambil payload pesan dari Telegram
         $message = $payload['message'] ?? $payload['edited_message'] ?? null;
         if (!$message) {
             return response()->json(['status' => 'ignored']);
@@ -36,11 +71,6 @@ class TelegramWebhookController extends Controller
 
         if (!$chatId) {
             return response()->json(['status' => 'no_chat_id']);
-        }
-
-        $appUrl = config('app.url', 'https://academic-hub-ocw2.onrender.com');
-        if (empty($appUrl) || str_contains($appUrl, 'localhost')) {
-            $appUrl = 'https://academic-hub-ocw2.onrender.com';
         }
 
         // Cari user berdasarkan telegram_chat_id
@@ -56,7 +86,11 @@ class TelegramWebhookController extends Controller
         } elseif (str_starts_with($lowerText, '/tugas') || str_contains($lowerText, 'tugas aktif')) {
             $this->handleTugasCommand($chatId, $user, $appUrl);
         } elseif (str_starts_with($lowerText, '/materi') || str_contains($lowerText, 'materi')) {
-            $this->handleMateriCommand($chatId, $user, $appUrl);
+            if (preg_match('/^\/materi[_ ](\d+)$/i', $text, $matches)) {
+                $this->handleMateriDetail($chatId, $user, (int) $matches[1], $appUrl);
+            } else {
+                $this->handleMateriCommand($chatId, $user, $appUrl);
+            }
         } elseif (str_starts_with($lowerText, '/portal') || str_contains($lowerText, 'portal kampus') || str_contains($lowerText, 'portal')) {
             $this->handlePortalCommand($chatId, $user, $appUrl);
         } elseif (str_starts_with($lowerText, '/id') || str_contains($lowerText, 'chat id')) {
@@ -358,7 +392,7 @@ class TelegramWebhookController extends Controller
         $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
     }
 
-    protected function handleMateriCommand(int|string $chatId, ?User $user, string $appUrl): void
+    protected function handleMateriCommand(int|string $chatId, ?User $user, string $appUrl, ?int $messageId = null): void
     {
         if (!$user) {
             $this->telegramService->sendMessage(
@@ -379,9 +413,10 @@ class TelegramWebhookController extends Controller
         }
 
         $msg = "📑 <b>Arsip Berkas Materi Perkuliahan</b>\n"
-             . "Halo <b>{$user->name}</b>, berikut ringkasan berkas materi kuliah Anda:\n\n";
+             . "Halo <b>" . htmlspecialchars($user->name) . "</b>, berikut ringkasan berkas materi kuliah Anda:\n\n";
 
         $totalMaterials = 0;
+        $buttons = [];
         foreach ($courses as $course) {
             $count = (int) $course->materials_count;
             $totalMaterials += $count;
@@ -391,12 +426,151 @@ class TelegramWebhookController extends Controller
             $latestText = ($latest && $latest->meeting_number) ? " <i>(P{$latest->meeting_number})</i>" : "";
 
             $msg .= "• <b>{$course->name}</b>: {$statusText}{$latestText}\n";
+
+            // Tombol interaktif per matkul: HANYA TEKS BERSIH DAN RAPI (TANPA EMOJI)
+            $btnLabel = $course->name . ($count > 0 ? " ({$count} berkas)" : " (0 berkas)");
+            $buttons[] = [
+                [
+                    'text' => Str::limit($btnLabel, 35),
+                    'callback_data' => "materi_course:{$course->id}",
+                ],
+            ];
         }
 
         $msg .= "\n📊 <b>Total Materi:</b> {$totalMaterials} berkas tersimpan\n\n"
-              . "🌐 <a href=\"{$appUrl}/dashboard\">Buka Website untuk Pratinjau & Unduh Berkas</a>";
+              . "💡 <i>Ketuk tombol mata kuliah di bawah untuk membuka rincian berkas, dokumen, dan tautan materi secara detail.</i>";
 
-        $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
+        $buttons[] = [
+            [
+                'text' => 'Buka Dashboard di Website',
+                'url' => "{$appUrl}/dashboard",
+            ],
+        ];
+
+        if ($messageId) {
+            $success = $this->telegramService->editMessageText($chatId, $messageId, $msg, $buttons);
+            if (!$success) {
+                $this->telegramService->sendMessage($chatId, $msg, $buttons);
+            }
+        } else {
+            $this->telegramService->sendMessage($chatId, $msg, $buttons);
+        }
+    }
+
+    protected function handleMateriDetail(int|string $chatId, ?User $user, int $courseId, string $appUrl, ?int $messageId = null): void
+    {
+        if (!$user) {
+            $this->telegramService->sendMessage(
+                $chatId,
+                "⚠️ Akun Telegram Anda belum terhubung ke akun Academic Hub.\n\nSilakan hubungkan Chat ID Anda <code>{$chatId}</code> di profil web: <a href=\"{$appUrl}/profile\">{$appUrl}/profile</a>"
+            );
+            return;
+        }
+
+        $course = $user->courses()
+            ->with(['materials' => function ($q) {
+                $q->orderBy('meeting_number', 'asc')->orderBy('created_at', 'asc');
+            }])
+            ->find($courseId);
+
+        if (!$course) {
+            $msg = "⚠️ Mata kuliah tidak ditemukan atau Anda tidak memiliki akses.";
+            $buttons = [
+                [
+                    ['text' => 'Kembali ke Daftar Matkul', 'callback_data' => 'materi_list'],
+                ],
+            ];
+            if ($messageId) {
+                $this->telegramService->editMessageText($chatId, $messageId, $msg, $buttons);
+            } else {
+                $this->telegramService->sendMessage($chatId, $msg, $buttons);
+            }
+            return;
+        }
+
+        $courseName = htmlspecialchars($course->name);
+        $courseCode = $course->code ? ' (' . htmlspecialchars($course->code) . ')' : '';
+        $lecturer = $course->lecturer_name ? htmlspecialchars($course->lecturer_name) : 'Dosen belum diset';
+        $materials = $course->materials;
+        $total = $materials->count();
+
+        $msg = "📚 <b>Materi Kuliah: {$courseName}</b>{$courseCode}\n"
+             . "👤 <b>Dosen:</b> {$lecturer}\n"
+             . "📊 <b>Total Materi:</b> {$total} berkas tersimpan\n"
+             . "──────────────────────────────\n\n";
+
+        if ($materials->isEmpty()) {
+            $msg .= "📭 <i>Belum ada berkas atau tautan materi yang diunggah untuk mata kuliah ini.</i>\n\n"
+                  . "💡 <i>Anda dapat mengunggah berkas slide, PDF, atau tautan Drive/LMS melalui website Academic Hub.</i>\n";
+        } else {
+            foreach ($materials as $index => $material) {
+                $no = $index + 1;
+                $title = htmlspecialchars($material->title);
+                $meetingText = $material->meeting_number ? "Pertemuan ke-{$material->meeting_number}" : "Materi Umum";
+                $createdDate = $material->created_at ? $material->created_at->locale('id')->isoFormat('D MMMM YYYY') : '-';
+
+                $msg .= "<b>{$no}. {$title}</b>\n"
+                      . "   🏷️ <i>{$meetingText}</i>\n"
+                      . "   📅 Diunggah: {$createdDate}\n";
+
+                if (!empty($material->file_path)) {
+                    $ext = strtolower(pathinfo($material->file_path, PATHINFO_EXTENSION));
+                    $icon = match ($ext) {
+                        'pdf' => '📄',
+                        'ppt', 'pptx' => '📊',
+                        'doc', 'docx' => '📝',
+                        'zip', 'rar' => '🗂️',
+                        'jpg', 'jpeg', 'png', 'webp' => '🖼️',
+                        default => '📎',
+                    };
+                    $fileTypeLabel = strtoupper($ext) ?: 'FILE';
+                    $cleanFilename = htmlspecialchars(basename($material->file_path));
+                    $msg .= "   {$icon} Berkas: <code>{$cleanFilename}</code> ({$fileTypeLabel})\n";
+                }
+
+                $links = $material->all_links;
+                if (!empty($links)) {
+                    if (count($links) === 1) {
+                        $lTitle = htmlspecialchars($links[0]['title'] ?? 'Tautan Materi');
+                        $lUrl = htmlspecialchars($links[0]['url']);
+                        $msg .= "   🔗 <a href=\"{$lUrl}\">{$lTitle}</a>\n";
+                    } else {
+                        $msg .= "   🔗 <b>Tautan Terkait:</b>\n";
+                        foreach ($links as $l) {
+                            $lTitle = htmlspecialchars($l['title'] ?? 'Tautan');
+                            $lUrl = htmlspecialchars($l['url']);
+                            $msg .= "      • <a href=\"{$lUrl}\">{$lTitle}</a>\n";
+                        }
+                    }
+                }
+
+                if (!empty($material->notes)) {
+                    $cleanNotes = htmlspecialchars(trim($material->notes));
+                    $msg .= "   📝 Catatan: <i>" . Str::limit($cleanNotes, 160) . "</i>\n";
+                }
+
+                $msg .= "\n";
+            }
+        }
+
+        // Tombol aksi: TANPA EMOJI, TEKS BERSIH & RAPI
+        $buttons = [
+            [
+                ['text' => 'Kembali ke Daftar Matkul', 'callback_data' => 'materi_list'],
+            ],
+            [
+                ['text' => 'Buka Mata Kuliah di Website', 'url' => "{$appUrl}/courses/{$course->id}"],
+            ],
+        ];
+
+        if ($messageId) {
+            $success = $this->telegramService->editMessageText($chatId, $messageId, $msg, $buttons);
+            if (!$success) {
+                $this->telegramService->sendMessage($chatId, $msg, $buttons);
+            }
+        } else {
+            $this->telegramService->sendMessage($chatId, $msg, $buttons);
+        }
     }
 
     protected function handleIdCommand(int|string $chatId): void

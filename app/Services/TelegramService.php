@@ -146,6 +146,33 @@ class TelegramService
     }
 
     /**
+     * Menjawab callback query Telegram agar loading spinner di tombol hilang.
+     */
+    public function answerCallbackQuery(string $callbackQueryId, ?string $text = null, bool $showAlert = false): bool
+    {
+        if (empty($this->botToken) || empty($callbackQueryId)) {
+            return false;
+        }
+
+        $payload = [
+            'callback_query_id' => $callbackQueryId,
+        ];
+
+        if ($text !== null) {
+            $payload['text'] = $text;
+            $payload['show_alert'] = $showAlert;
+        }
+
+        try {
+            $response = Http::timeout(5)->post("{$this->apiUrl}/answerCallbackQuery", $payload);
+            return $response->successful();
+        } catch (\Throwable $e) {
+            Log::error('Telegram Service answerCallbackQuery Exception: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Menghilangkan tombol keyboard bawah agar tampilan bersih dan hanya menyisakan tombol Menu biru di kiri bawah.
      */
     public function removeKeyboardMarkup(): array

@@ -20,6 +20,8 @@ class TelegramWebhookTest extends TestCase
         $mock = Mockery::mock(TelegramService::class);
         $mock->shouldReceive('removeKeyboardMarkup')->byDefault()->andReturn(['remove_keyboard' => true]);
         $mock->shouldReceive('buildMainKeyboard')->byDefault()->andReturn([]);
+        $mock->shouldReceive('answerCallbackQuery')->byDefault()->andReturn(true);
+        $mock->shouldReceive('editMessageText')->byDefault()->andReturn(true);
         return $mock;
     }
 
@@ -411,6 +413,160 @@ class TelegramWebhookTest extends TestCase
         ]);
 
         $response->assertStatus(200);
+    }
+
+    public function test_telegram_webhook_handles_materi_callback_for_course_detail(): void
+    {
+        $user = User::factory()->create([
+            'telegram_chat_id' => '12345678',
+        ]);
+
+        $course = Course::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Aplikasi Mobile',
+            'code' => 'IF201',
+            'lecturer_name' => 'Pak Budi',
+        ]);
+
+        \App\Models\Material::factory()->create([
+            'course_id' => $course->id,
+            'title' => 'Pengenalan Flutter',
+            'meeting_number' => 1,
+            'file_path' => 'materials/intro_flutter.pdf',
+            'notes' => 'Pelajari widget dasar',
+            'links' => [
+                ['title' => 'Google Drive Modul', 'url' => 'https://drive.google.com/test'],
+            ],
+        ]);
+
+        $telegramMock = $this->makeMock();
+        $telegramMock->shouldReceive('answerCallbackQuery')
+            ->once()
+            ->with('cb_999')
+            ->andReturn(true);
+
+        $telegramMock->shouldReceive('editMessageText')
+            ->once()
+            ->withArgs(function ($chatId, $messageId, $msg, $buttons) {
+                return $chatId == 12345678
+                    && $messageId == 321
+                    && str_contains($msg, 'Materi Kuliah: Aplikasi Mobile')
+                    && str_contains($msg, 'Pengenalan Flutter')
+                    && str_contains($msg, 'Pertemuan ke-1')
+                    && str_contains($msg, 'intro_flutter.pdf')
+                    && str_contains($msg, 'Google Drive Modul')
+                    && str_contains($msg, 'Pelajari widget dasar')
+                    && !empty($buttons)
+                    && $buttons[0][0]['text'] === 'Kembali ke Daftar Matkul';
+            })
+            ->andReturn(true);
+
+        $this->app->instance(TelegramService::class, $telegramMock);
+
+        $response = $this->postJson('/telegram/webhook', [
+            'callback_query' => [
+                'id' => 'cb_999',
+                'from' => ['id' => 12345678],
+                'message' => [
+                    'message_id' => 321,
+                    'chat' => ['id' => 12345678],
+                ],
+                'data' => "materi_course:{$course->id}",
+            ],
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['status' => 'ok']);
+    }
+
+    public function test_telegram_webhook_handles_materi_callback_for_back_to_list(): void
+    {
+        $user = User::factory()->create([
+            'telegram_chat_id' => '12345678',
+        ]);
+
+        $course = Course::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Aplikasi Mobile',
+        ]);
+
+        $telegramMock = $this->makeMock();
+        $telegramMock->shouldReceive('answerCallbackQuery')
+            ->once()
+            ->with('cb_888')
+            ->andReturn(true);
+
+        $telegramMock->shouldReceive('editMessageText')
+            ->once()
+            ->withArgs(function ($chatId, $messageId, $msg, $buttons) {
+                return $chatId == 12345678
+                    && $messageId == 321
+                    && str_contains($msg, 'Arsip Berkas Materi Perkuliahan')
+                    && str_contains($msg, 'Aplikasi Mobile')
+                    && !empty($buttons)
+                    && $buttons[0][0]['text'] === 'Aplikasi Mobile (0 berkas)'
+                    && $buttons[0][0]['callback_data'] !== null;
+            })
+            ->andReturn(true);
+
+        $this->app->instance(TelegramService::class, $telegramMock);
+
+        $response = $this->postJson('/telegram/webhook', [
+            'callback_query' => [
+                'id' => 'cb_888',
+                'from' => ['id' => 12345678],
+                'message' => [
+                    'message_id' => 321,
+                    'chat' => ['id' => 12345678],
+                ],
+                'data' => 'materi_list',
+            ],
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['status' => 'ok']);
+    }
+
+    public function test_telegram_webhook_handles_parameterized_materi_command(): void
+    {
+        $user = User::factory()->create([
+            'telegram_chat_id' => '12345678',
+        ]);
+
+        $course = Course::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Pemrograman Web',
+        ]);
+
+        \App\Models\Material::factory()->create([
+            'course_id' => $course->id,
+            'title' => 'React Basics',
+            'meeting_number' => 2,
+        ]);
+
+        $telegramMock = $this->makeMock();
+        $telegramMock->shouldReceive('sendMessage')
+            ->once()
+            ->withArgs(function ($chatId, $msg, $buttons) use ($course) {
+                return $chatId == 12345678
+                    && str_contains($msg, 'Materi Kuliah: Pemrograman Web')
+                    && str_contains($msg, 'React Basics')
+                    && str_contains($msg, 'Pertemuan ke-2')
+                    && !empty($buttons);
+            })
+            ->andReturn(true);
+
+        $this->app->instance(TelegramService::class, $telegramMock);
+
+        $response = $this->postJson('/telegram/webhook', [
+            'message' => [
+                'chat' => ['id' => 12345678],
+                'text' => "/materi {$course->id}",
+            ],
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['status' => 'ok']);
     }
 }
 
