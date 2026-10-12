@@ -324,5 +324,93 @@ class TelegramWebhookTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+    public function test_telegram_webhook_handles_help_command_for_linked_user_with_custom_preferences(): void
+    {
+        $user = User::factory()->create([
+            'telegram_chat_id' => '12345678',
+            'schedule_reminder_time' => '06:30',
+            'task_reminder_early' => '24',
+            'task_reminder_late' => '5',
+        ]);
+
+        $telegramMock = $this->makeMock();
+        $telegramMock->shouldReceive('sendMessage')
+            ->once()
+            ->withArgs(function ($chatId, $msg) {
+                return $chatId == 12345678
+                    && str_contains($msg, 'Panduan Perintah Academic Hub Bot')
+                    && str_contains($msg, 'deadline tugas (H-24 & H-5)')
+                    && str_contains($msg, 'pukul 06:30 WIB');
+            })
+            ->andReturn(true);
+
+        $this->app->instance(TelegramService::class, $telegramMock);
+
+        $response = $this->postJson('/telegram/webhook', [
+            'message' => [
+                'chat' => ['id' => 12345678],
+                'text' => '/help',
+            ],
+        ]);
+
+        $response->assertStatus(200);
+    }
+
+    public function test_telegram_webhook_handles_help_command_when_reminders_disabled(): void
+    {
+        $user = User::factory()->create([
+            'telegram_chat_id' => '12345678',
+            'schedule_reminder_time' => '07:00',
+            'task_reminder_early' => '0',
+            'task_reminder_late' => '0',
+        ]);
+
+        $telegramMock = $this->makeMock();
+        $telegramMock->shouldReceive('sendMessage')
+            ->once()
+            ->withArgs(function ($chatId, $msg) {
+                return $chatId == 12345678
+                    && str_contains($msg, 'deadline tugas (pengingat dinonaktifkan)')
+                    && str_contains($msg, 'pukul 07:00 WIB');
+            })
+            ->andReturn(true);
+
+        $this->app->instance(TelegramService::class, $telegramMock);
+
+        $response = $this->postJson('/telegram/webhook', [
+            'message' => [
+                'chat' => ['id' => 12345678],
+                'text' => '/help',
+            ],
+        ]);
+
+        $response->assertStatus(200);
+    }
+
+    public function test_telegram_webhook_handles_help_command_for_unlinked_user(): void
+    {
+        $telegramMock = $this->makeMock();
+        $telegramMock->shouldReceive('sendMessage')
+            ->once()
+            ->withArgs(function ($chatId, $msg) {
+                return $chatId == 998877
+                    && str_contains($msg, 'Panduan Perintah Academic Hub Bot')
+                    && str_contains($msg, 'deadline tugas (H-24 & H-3)')
+                    && str_contains($msg, 'pukul 06:00 WIB (dapat disesuaikan di profil web)');
+            })
+            ->andReturn(true);
+
+        $this->app->instance(TelegramService::class, $telegramMock);
+
+        $response = $this->postJson('/telegram/webhook', [
+            'message' => [
+                'chat' => ['id' => 998877],
+                'text' => '/help',
+            ],
+        ]);
+
+        $response->assertStatus(200);
+    }
 }
 

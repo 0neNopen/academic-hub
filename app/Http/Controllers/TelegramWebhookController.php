@@ -64,7 +64,7 @@ class TelegramWebhookController extends Controller
         } elseif (str_starts_with($lowerText, '/reset') || str_starts_with($lowerText, '/lupasandi')) {
             $this->handleResetPasswordCommand($chatId, $user, $text, $appUrl);
         } elseif (str_starts_with($lowerText, '/help') || str_starts_with($lowerText, '/bantuan') || str_contains($lowerText, 'bantuan')) {
-            $this->handleHelpCommand($chatId);
+            $this->handleHelpCommand($chatId, $user);
         } else {
             $this->handleDefaultMessage($chatId, $user);
         }
@@ -408,8 +408,37 @@ class TelegramWebhookController extends Controller
         $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
     }
 
-    protected function handleHelpCommand(int|string $chatId): void
+    protected function handleHelpCommand(int|string $chatId, ?User $user = null): void
     {
+        if ($user) {
+            $reminderTime = $user->schedule_reminder_time ?: '06:00';
+
+            $earlyHours = ($user->task_reminder_early !== null && is_numeric($user->task_reminder_early))
+                ? (int) $user->task_reminder_early
+                : 24;
+            $lateHours = ($user->task_reminder_late !== null && is_numeric($user->task_reminder_late))
+                ? (int) $user->task_reminder_late
+                : 3;
+
+            $stages = [];
+            if ($earlyHours > 0) {
+                $stages[] = "H-{$earlyHours}";
+            }
+            if ($lateHours > 0) {
+                $stages[] = "H-{$lateHours}";
+            }
+
+            if (!empty($stages)) {
+                $deadlineText = "deadline tugas (" . implode(' & ', $stages) . ")";
+            } else {
+                $deadlineText = "deadline tugas (pengingat dinonaktifkan)";
+            }
+
+            $reminderNote = "<i>Bot akan otomatis mengingatkan {$deadlineText} serta menyapa jadwal kuliah setiap pagi pukul {$reminderTime} WIB.</i>";
+        } else {
+            $reminderNote = "<i>Bot akan otomatis mengingatkan deadline tugas (H-24 & H-3) serta menyapa jadwal kuliah setiap pagi pukul 06:00 WIB (dapat disesuaikan di profil web).</i>";
+        }
+
         $msg = "🤖 <b>Panduan Perintah Academic Hub Bot</b>\n\n"
              . "Ketuk tombol biru <b>[ Menu ]</b> di pojok kiri bawah atau kirim perintah berikut:\n\n"
              . "• 📅 <b>/jadwal</b> - Jadwal kuliah hari ini\n"
@@ -420,7 +449,7 @@ class TelegramWebhookController extends Controller
              . "• 🔐 <b>/reset</b> - Atur ulang kata sandi akun Anda\n"
              . "• 🔢 <b>/id</b> - Melihat nomor Chat ID Telegram Anda\n"
              . "• ℹ️ <b>/help</b> - Panduan & bantuan perintah bot\n\n"
-             . "<i>Bot akan otomatis mengingatkan deadline tugas (H-24 & H-3) serta menyapa jadwal kuliah setiap pagi pukul 06.00 WIB.</i>";
+             . $reminderNote;
 
         $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
     }
