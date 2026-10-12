@@ -18,7 +18,7 @@ export default function Edit({ mustVerifyEmail, status }) {
 
     return (
         <AuthenticatedLayout
-            maxWidth="max-w-6xl"
+            maxWidth="max-w-[1720px]"
             header={
                 <div>
                     <h2 className="text-xl font-bold leading-tight text-gray-900 dark:text-white">
@@ -43,7 +43,7 @@ export default function Edit({ mustVerifyEmail, status }) {
             />
 
             <div className="py-8">
-                <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-[1720px] px-4 sm:px-6 lg:px-8 xl:px-10">
                     {/* Tab Navigation Segmented Control */}
                     <div className="flex border-b border-gray-200 dark:border-gray-800 mb-6 gap-2">
                         <button
@@ -100,11 +100,7 @@ export default function Edit({ mustVerifyEmail, status }) {
 
                     {/* Konten Tab 2: Pengaturan Notifikasi & Kampus */}
                     {activeTab === "settings" && (
-                        <div className="space-y-6">
-                            <div className="bg-white dark:bg-gray-900 p-6 sm:p-8 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-xs">
-                                <UpdateNotificationSettingsForm />
-                            </div>
-                        </div>
+                        <UpdateNotificationSettingsForm />
                     )}
                 </div>
             </div>
