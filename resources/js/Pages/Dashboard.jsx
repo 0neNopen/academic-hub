@@ -289,9 +289,9 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                             </div>
                             <div className="mt-2">
                                 <div className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                                    {courses.length} <span className="text-xs font-medium text-gray-400 font-normal">Matkul</span>
+                                    {courses.length} <span className="text-xs sm:text-sm font-medium text-gray-400 font-normal">Matkul</span>
                                 </div>
-                                <span className="text-[11px] text-gray-400 dark:text-gray-500 mt-1 block truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                <span className="text-xs text-gray-400 dark:text-gray-500 mt-1 block truncate font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                                     Lihat semua matkul →
                                 </span>
                             </div>
@@ -314,10 +314,10 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                             </div>
                             <div className="mt-2">
                                 <div className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                                    {upcomingAssignments.length} <span className="text-xs font-medium text-gray-400 font-normal">Tugas</span>
+                                    {upcomingAssignments.length} <span className="text-xs sm:text-sm font-medium text-gray-400 font-normal">Tugas</span>
                                 </div>
                                 <span
-                                    className={`text-[11px] font-medium mt-1 block truncate ${
+                                    className={`text-xs font-medium mt-1 block truncate ${
                                         urgentAssignmentsCount > 0
                                             ? 'text-rose-600 dark:text-rose-400 font-bold'
                                             : upcomingAssignments.length > 0
@@ -341,7 +341,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                 setSelectedDayFilter('Hari Ini');
                                 setMobileTab('courses');
                             }}
-                            className="group rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-3.5 sm:p-4 shadow-xs hover:shadow-md hover:border-emerald-200 dark:hover:border-emerald-800 transition-all text-left flex flex-col justify-between active:scale-[0.98]"
+                            className="group rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-3.5 sm:p-4 shadow-xs hover:shadow-md hover:border-emerald-200 dark:border-emerald-800 transition-all text-left flex flex-col justify-between active:scale-[0.98]"
                         >
                             <div className="flex items-center justify-between w-full">
                                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Jadwal Hari Ini</span>
@@ -352,13 +352,13 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                             <div className="mt-2">
                                 <div className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                                     {todayCourses.length > 0 ? (
-                                        <span>{todayCourses.length} <span className="text-xs font-medium text-gray-400 font-normal">Kelas</span></span>
+                                        <span>{todayCourses.length} <span className="text-xs sm:text-sm font-medium text-gray-400 font-normal">Kelas</span></span>
                                     ) : (
                                         <span className="text-xl sm:text-2xl text-emerald-600 dark:text-emerald-400 font-bold">Libur</span>
                                     )}
                                 </div>
                                 <span
-                                    className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 block truncate font-medium group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors"
+                                    className="text-xs text-gray-500 dark:text-gray-400 mt-1 block truncate font-medium group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors"
                                     title={todayCourses.map((c) => c.name).join(', ') || 'Tidak ada kelas'}
                                 >
                                     {todayCourses.length === 0
@@ -392,7 +392,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                         {isTelegramActive ? 'Telegram Aktif' : 'Belum Terhubung'}
                                     </span>
                                 </div>
-                                <span className="text-[11px] text-sky-600 dark:text-sky-400 group-hover:underline mt-1 block font-medium truncate">
+                                <span className="text-xs text-sky-600 dark:text-sky-400 group-hover:underline mt-1 block font-medium truncate">
                                     {isTelegramActive ? 'Pengingat H-1 & H-3 jam →' : 'Hubungkan sekarang →'}
                                 </span>
                             </div>
@@ -412,7 +412,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                         >
                             <BookOpen className="w-4 h-4" />
                             <span>Mata Kuliah</span>
-                            <span className="text-[10px] px-1.5 py-0.2 bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 rounded-full font-bold">
+                            <span className="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 rounded-full font-bold">
                                 {courses.length}
                             </span>
                         </button>
@@ -428,7 +428,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                             <Clock className="w-4 h-4" />
                             <span>Deadline Tugas</span>
                             {upcomingAssignments.length > 0 && (
-                                <span className="text-[10px] px-1.5 py-0.2 bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 rounded-full font-bold">
+                                <span className="text-xs px-2 py-0.5 bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 rounded-full font-bold">
                                     {upcomingAssignments.length}
                                 </span>
                             )}
@@ -452,21 +452,21 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
 
                                 {/* Kotak Pencarian Instan */}
                                 {courses.length > 0 && (
-                                    <div className="relative w-full sm:w-60">
-                                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                                    <div className="relative w-full sm:w-64">
+                                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                         <input
                                             type="text"
                                             value={courseSearch}
                                             onChange={(e) => setCourseSearch(e.target.value)}
                                             placeholder="Cari matkul, kode, dosen..."
-                                            className="w-full pl-8 pr-7 py-1 text-xs rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-blue-500 shadow-xs placeholder-gray-400 dark:placeholder-gray-500"
+                                            className="w-full pl-9 pr-7 py-1.5 text-xs sm:text-sm rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-blue-500 shadow-xs placeholder-gray-400 dark:placeholder-gray-500"
                                         />
                                         {courseSearch && (
                                             <button
                                                 onClick={() => setCourseSearch('')}
-                                                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
                                             >
-                                                <X className="h-3 w-3" />
+                                                <X className="h-3.5 w-3.5" />
                                             </button>
                                         )}
                                     </div>
@@ -475,9 +475,9 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
 
                             {/* Filter Hari Kuliah (Pills Horisontal) */}
                             {courses.length > 0 && (
-                                <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 pr-4 text-xs no-scrollbar">
-                                    <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 shrink-0 mr-1 flex items-center gap-1">
-                                        <Filter className="h-3 w-3" /> Hari:
+                                <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pr-4 text-xs no-scrollbar">
+                                    <span className="text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 shrink-0 mr-1 flex items-center gap-1.5">
+                                        <Filter className="h-3.5 w-3.5" /> Hari:
                                     </span>
                                     {dayFilterOptions.map((day) => {
                                         const isSelected = selectedDayFilter === day;
@@ -486,7 +486,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                             <button
                                                 key={day}
                                                 onClick={() => setSelectedDayFilter(day)}
-                                                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold shrink-0 transition ${
+                                                className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold shrink-0 transition ${
                                                     isSelected
                                                         ? 'bg-blue-600 text-white shadow-xs'
                                                         : isToday && todayCourses.length > 0
@@ -496,7 +496,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                             >
                                                 {day}
                                                 {isToday && todayCourses.length > 0 && (
-                                                    <span className="ms-1 px-1 py-0.2 bg-blue-200 dark:bg-blue-800 text-blue-900 dark:text-blue-100 rounded-full text-[9px]">
+                                                    <span className="ms-1.5 px-2 py-0.5 bg-blue-200 dark:bg-blue-800 text-blue-900 dark:text-blue-100 rounded-full text-xs font-bold">
                                                         {todayCourses.length}
                                                     </span>
                                                 )}
@@ -547,11 +547,11 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                             <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
                                                 <div>
                                                     <div className="flex items-center justify-between mb-2">
-                                                        <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300">
+                                                        <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300">
                                                             {course.code || 'MK'}
                                                         </span>
                                                         <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 font-medium">
-                                                            <Calendar className="h-3 w-3 text-gray-400" />
+                                                            <Calendar className="h-3.5 w-3.5 text-gray-400" />
                                                             {course.day_of_week || 'Jadwal fleksibel'}
                                                         </span>
                                                     </div>
@@ -559,30 +559,30 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                                         {course.name}
                                                     </h4>
                                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
-                                                        <span className="font-medium text-gray-700 dark:text-gray-300">Dosen:</span> {course.lecturer_name || '-'}
+                                                        <span className="font-semibold text-gray-700 dark:text-gray-300">Dosen:</span> {course.lecturer_name || '-'}
                                                     </p>
                                                 </div>
 
-                                                <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-2.5 border-t border-gray-100 dark:border-gray-800 text-[11px]">
+                                                <div className="flex flex-wrap items-center gap-2 mt-3 pt-2.5 border-t border-gray-100 dark:border-gray-800 text-xs">
                                                     {course.room ? (
-                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-medium border border-emerald-100 dark:border-emerald-900/40">
-                                                            <MapPin className="h-3 w-3 text-emerald-500 shrink-0" />
-                                                            <span className="truncate max-w-[120px]">{course.room}</span>
+                                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold border border-emerald-100 dark:border-emerald-900/40">
+                                                            <MapPin className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                                                            <span className="truncate max-w-[130px]">{course.room}</span>
                                                         </span>
                                                     ) : (
-                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-medium border border-gray-100 dark:border-gray-700/60">
-                                                            <MapPin className="h-3 w-3 text-gray-400 shrink-0" />
+                                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-medium border border-gray-100 dark:border-gray-700/60">
+                                                            <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
                                                             Ruang -
                                                         </span>
                                                     )}
                                                     {formatCourseTime(course.start_time, course.end_time) ? (
-                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-medium border border-amber-100 dark:border-amber-900/40">
-                                                            <Clock className="h-3 w-3 text-amber-500 shrink-0" />
+                                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-semibold border border-amber-100 dark:border-amber-900/40">
+                                                            <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                                                             <span>{formatCourseTime(course.start_time, course.end_time)}</span>
                                                         </span>
                                                     ) : (
-                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-medium border border-gray-100 dark:border-gray-700/60">
-                                                            <Clock className="h-3 w-3 text-gray-400 shrink-0" />
+                                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-medium border border-gray-100 dark:border-gray-700/60">
+                                                            <Clock className="h-3.5 w-3.5 text-gray-400 shrink-0" />
                                                             Fleksibel
                                                         </span>
                                                     )}
@@ -614,11 +614,11 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                     <button
                                         type="button"
                                         onClick={() => openAddAssignmentModal()}
-                                        className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 py-1 px-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/50 transition"
+                                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 py-1 px-2.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/50 transition"
                                     >
-                                        <Plus className="h-3 w-3" /> Tambah Tugas
+                                        <Plus className="h-3.5 w-3.5" /> Tambah Tugas
                                     </button>
-                                    <span className="text-xs font-semibold px-2 py-0.5 bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 rounded-full border border-amber-200 dark:border-amber-800">
+                                    <span className="text-xs font-semibold px-2.5 py-0.5 bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 rounded-full border border-amber-200 dark:border-amber-800">
                                         {upcomingAssignments.length}
                                     </span>
                                 </div>
@@ -626,7 +626,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
 
                             {/* Filter Rentang Waktu Deadline */}
                             {upcomingAssignments.length > 0 && (
-                                <div className="flex items-center gap-1 bg-gray-100/80 dark:bg-gray-800/80 p-0.5 rounded-lg text-xs">
+                                <div className="flex items-center gap-1 bg-gray-100/80 dark:bg-gray-800/80 p-1 rounded-xl text-xs">
                                     {[
                                         { id: 'all', label: 'Semua' },
                                         { id: 'urgent', label: 'Mendesak' },
@@ -635,7 +635,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                         <button
                                             key={tab.id}
                                             onClick={() => setDeadlineFilter(tab.id)}
-                                            className={`flex-1 py-1 rounded-md text-[11px] font-semibold transition ${
+                                            className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition ${
                                                 deadlineFilter === tab.id
                                                     ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-xs'
                                                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
@@ -651,8 +651,8 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                 <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 text-center text-gray-500 shadow-xs space-y-3">
                                     <CheckCircle2 className="mx-auto h-7 w-7 text-emerald-500" />
                                     <div>
-                                        <p className="font-semibold text-gray-800 dark:text-gray-200 text-xs">Semua tugas beres!</p>
-                                        <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">
+                                        <p className="font-semibold text-gray-800 dark:text-gray-200 text-xs sm:text-sm">Semua tugas beres!</p>
+                                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                                             Tidak ada tugas aktif yang menunggu. Ada tugas baru dari dosen?
                                         </p>
                                     </div>
@@ -672,7 +672,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                         <button
                                             type="button"
                                             onClick={() => setDeadlineFilter('all')}
-                                            className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                                            className="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline"
                                         >
                                             Tampilkan Semua Deadline
                                         </button>
@@ -680,7 +680,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                         <button
                                             type="button"
                                             onClick={() => openAddAssignmentModal()}
-                                            className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                                            className="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline"
                                         >
                                             + Tambah Tugas
                                         </button>
@@ -698,20 +698,20 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                             >
                                                 <div className="flex items-center justify-between text-xs gap-2">
                                                     <div className="flex items-center gap-1.5 min-w-0">
-                                                        <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-[11px] truncate font-medium">
+                                                        <span className="px-2.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs truncate font-medium">
                                                             {task.course?.name}
                                                         </span>
                                                         {task.assignment_type === 'group' ? (
-                                                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shrink-0">
-                                                                <Users className="h-2.5 w-2.5" /> Kelompok
+                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shrink-0">
+                                                                <Users className="h-3 w-3" /> Kelompok
                                                             </span>
                                                         ) : (
-                                                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
-                                                                <User className="h-2.5 w-2.5" /> Individu
+                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
+                                                                <User className="h-3 w-3" /> Individu
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${urgency.badgeClass}`}>
+                                                    <span className={`px-2.5 py-0.5 rounded-md text-xs font-semibold border ${urgency.badgeClass}`}>
                                                         {urgency.label}
                                                     </span>
                                                 </div>
@@ -723,8 +723,8 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                                     )}
                                                 </div>
 
-                                                <div className="flex items-center gap-1.5 text-[11px]">
-                                                    <Clock className="h-3 w-3 text-gray-400" />
+                                                <div className="flex items-center gap-1.5 text-xs">
+                                                    <Clock className="h-3.5 w-3.5 text-gray-400" />
                                                     <span className={urgency.textClass}>
                                                         {new Date(task.deadline).toLocaleDateString('id-ID', {
                                                             weekday: 'short',
@@ -746,11 +746,11 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                                                     href={linkItem.url}
                                                                     target="_blank"
                                                                     rel="noreferrer"
-                                                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition border border-blue-200 dark:border-blue-800"
+                                                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition border border-blue-200 dark:border-blue-800"
                                                                     title={linkItem.url}
                                                                 >
-                                                                    <ExternalLink className="h-2.5 w-2.5 shrink-0" />
-                                                                    <span className="truncate max-w-[120px]">{linkItem.title || 'Link'}</span>
+                                                                    <ExternalLink className="h-3 w-3 shrink-0" />
+                                                                    <span className="truncate max-w-[130px]">{linkItem.title || 'Link'}</span>
                                                                 </a>
                                                             ))
                                                         ) : task.submission_url ? (
@@ -758,14 +758,14 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                                                 href={task.submission_url}
                                                                 target="_blank"
                                                                 rel="noreferrer"
-                                                                className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 font-medium hover:underline text-[11px]"
+                                                                className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 font-medium hover:underline text-xs"
                                                             >
-                                                                Link Tugas <ExternalLink className="h-2.5 w-2.5" />
+                                                                Link Tugas <ExternalLink className="h-3 w-3" />
                                                             </a>
                                                         ) : (
                                                             <Link
                                                                 href={route('courses.show', task.course_id)}
-                                                                className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium text-[11px]"
+                                                                className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium text-xs"
                                                             >
                                                                 Detail MK →
                                                             </Link>
@@ -777,7 +777,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                                         type="button"
                                                         disabled={isCompleting}
                                                         onClick={() => markAssignmentCompleted(task)}
-                                                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 transition disabled:opacity-50 ml-auto shrink-0"
+                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 transition disabled:opacity-50 ml-auto shrink-0"
                                                         title="Tandai tugas ini sudah selesai"
                                                     >
                                                         <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -808,45 +808,6 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                             )}
                                         </button>
                                     )}
-                                </div>
-                            )}
-
-                            {/* Mini Agenda: Jadwal Kuliah Hari Ini */}
-                            {sortedTodayCourses.length > 0 && (
-                                <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 sm:p-5 shadow-xs space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <h4 className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-                                            <Calendar className="h-3.5 w-3.5 text-emerald-500" />
-                                            Jadwal Kuliah Hari Ini ({todayDay})
-                                        </h4>
-                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                            {sortedTodayCourses.length} Kelas
-                                        </span>
-                                    </div>
-                                    <div className="space-y-2">
-                                        {sortedTodayCourses.map((c) => (
-                                            <Link
-                                                key={c.id}
-                                                href={route('courses.show', c.id)}
-                                                className="block p-3 rounded-xl bg-gray-50/80 dark:bg-gray-800/60 hover:bg-blue-50/60 dark:hover:bg-blue-950/40 border border-gray-100 dark:border-gray-800 transition group"
-                                            >
-                                                <div className="flex items-center justify-between text-xs mb-1">
-                                                    <span className="font-bold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 truncate">
-                                                        {c.name}
-                                                    </span>
-                                                    {c.room && (
-                                                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100/70 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 shrink-0">
-                                                            {c.room}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div className="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400">
-                                                    <span>{c.start_time ? `${c.start_time.slice(0, 5)} - ${c.end_time ? c.end_time.slice(0, 5) : ''} WIB` : 'Waktu fleksibel'}</span>
-                                                    <span className="group-hover:translate-x-0.5 transition-transform text-blue-600 dark:text-blue-400 font-semibold">Buka MK →</span>
-                                                </div>
-                                            </Link>
-                                        ))}
-                                    </div>
                                 </div>
                             )}
 
@@ -1000,7 +961,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                     onChange={(e) => setData('attendance_url', e.target.value)}
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
                                 />
-                                <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
+                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                     Link presensi khusus mata kuliah ini (akan otomatis disertakan di notifikasi Telegram).
                                 </p>
                             </div>
@@ -1166,16 +1127,16 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                             <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">
                                                 Tautan Tugas / Pengumpulan
                                             </label>
-                                            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">
                                                 Bisa menambah lebih dari 1 link (Form, Drive, LMS, dll)
                                             </p>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={addAssignmentLink}
-                                            className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 shrink-0"
+                                            className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 shrink-0"
                                         >
-                                            <Plus className="h-3 w-3" /> Tambah Link
+                                            <Plus className="h-3.5 w-3.5" /> Tambah Link
                                         </button>
                                     </div>
 
