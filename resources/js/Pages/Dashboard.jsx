@@ -604,7 +604,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                         </div>
 
                         {/* Kolom Kanan (4): Deadline Tugas Terdekat (Sidebar Agenda + Aksi Selesai Cepat) */}
-                        <div id="deadlines-section" className={`${mobileTab === 'deadlines' ? 'block' : 'hidden'} lg:block lg:col-span-5 xl:col-span-4 space-y-3`}>
+                        <div id="deadlines-section" className={`${mobileTab === 'deadlines' ? 'block' : 'hidden'} lg:block lg:col-span-5 xl:col-span-4 space-y-4 lg:sticky lg:top-6 self-start`}>
                             <div className="flex items-center justify-between">
                                 <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                     <Clock className="h-4 w-4 text-amber-500" />
@@ -808,6 +808,72 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                             )}
                                         </button>
                                     )}
+                                </div>
+                            )}
+
+                            {/* Mini Agenda: Jadwal Kuliah Hari Ini */}
+                            {sortedTodayCourses.length > 0 && (
+                                <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 sm:p-5 shadow-xs space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                            <Calendar className="h-3.5 w-3.5 text-emerald-500" />
+                                            Jadwal Kuliah Hari Ini ({todayDay})
+                                        </h4>
+                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                            {sortedTodayCourses.length} Kelas
+                                        </span>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {sortedTodayCourses.map((c) => (
+                                            <Link
+                                                key={c.id}
+                                                href={route('courses.show', c.id)}
+                                                className="block p-3 rounded-xl bg-gray-50/80 dark:bg-gray-800/60 hover:bg-blue-50/60 dark:hover:bg-blue-950/40 border border-gray-100 dark:border-gray-800 transition group"
+                                            >
+                                                <div className="flex items-center justify-between text-xs mb-1">
+                                                    <span className="font-bold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 truncate">
+                                                        {c.name}
+                                                    </span>
+                                                    {c.room && (
+                                                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100/70 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 shrink-0">
+                                                            {c.room}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400">
+                                                    <span>{c.start_time ? `${c.start_time.slice(0, 5)} - ${c.end_time ? c.end_time.slice(0, 5) : ''} WIB` : 'Waktu fleksibel'}</span>
+                                                    <span className="group-hover:translate-x-0.5 transition-transform text-blue-600 dark:text-blue-400 font-semibold">Buka MK →</span>
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Akses Cepat Portal Kampus (Jika Dikonfigurasi) */}
+                            {((auth.user.campus_portals && auth.user.campus_portals.length > 0) || auth.user.campus_portal_url) && (
+                                <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 sm:p-5 shadow-xs space-y-3">
+                                    <h4 className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                                        <ExternalLink className="h-3.5 w-3.5 text-blue-500" />
+                                        Akses Cepat Portal Kampus
+                                    </h4>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {(auth.user.campus_portals && auth.user.campus_portals.length > 0
+                                            ? auth.user.campus_portals
+                                            : [{ name: auth.user.campus_name || 'Portal Kampus', url: auth.user.campus_portal_url }]
+                                        ).map((portal, idx) => (
+                                            <a
+                                                key={idx}
+                                                href={portal.url}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-600 dark:hover:text-blue-400 border border-gray-200/70 dark:border-gray-700/60 transition shadow-2xs"
+                                            >
+                                                <span>{portal.name || 'Portal'}</span>
+                                                <ExternalLink className="h-3 w-3 opacity-60" />
+                                            </a>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>

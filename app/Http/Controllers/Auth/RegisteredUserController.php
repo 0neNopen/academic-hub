@@ -47,6 +47,10 @@ class RegisteredUserController extends Controller
             'generator.email', 'tempmailaddress.com', 'guerrillamail.net', 'guerrillamail.org',
             'guerrillamail.biz', 'spam4.me', 'mytemp.email', 'trashmail.net',
             'nada.ltd', 'emailfake.com', 'disposablemail.com', 'yopmail.fr', 'yopmail.net',
+            'maildrop.cc', 'tempail.com', 'mintemail.com', 'mailcatch.com', 'mytempemail.com',
+            'trashmail.org', 'trashmail.me', 'yopmail.gq', 'harakirimail.com', 'getairmail.com',
+            'guerrillamail.de', 'guerrillamail.info', 'chacuo.net', 'tempinbox.com', 'fakemail.net',
+            'emailfake.ml', 'tempr.email', 'discard.email', 'spambog.com', 'crazymailing.net',
         ];
 
         $emailDomain = strtolower(substr(strrchr($request->email, "@"), 1));
