@@ -43,7 +43,10 @@ class RegisteredUserController extends Controller
             'yopmail.com', 'dispostable.com', 'trashmail.com', 'getnada.com',
             'dropmail.me', 'fakemailgenerator.com', 'temp-mail.org', 'throwawaymail.com',
             'mohmal.com', 'sharklasers.com', 'guerrillamailblock.com', 'grr.la',
-            'inboxkitten.com', 'crazymailing.com', 'emailondeck.com',
+            'inboxkitten.com', 'crazymailing.com', 'emailondeck.com', 'burnermail.io',
+            'generator.email', 'tempmailaddress.com', 'guerrillamail.net', 'guerrillamail.org',
+            'guerrillamail.biz', 'spam4.me', 'mytemp.email', 'trashmail.net',
+            'nada.ltd', 'emailfake.com', 'disposablemail.com', 'yopmail.fr', 'yopmail.net',
         ];
 
         $emailDomain = strtolower(substr(strrchr($request->email, "@"), 1));
@@ -57,6 +60,7 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'email_verified_at' => now(),
         ]);
 
         if ($request->boolean('is_d3_ti')) {

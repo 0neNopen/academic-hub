@@ -78,12 +78,23 @@ class RegistrationTest extends TestCase
         $this->assertGuest();
     }
 
-    public function test_unverified_user_is_redirected_to_verify_email(): void
+    public function test_new_users_are_auto_verified_and_can_access_dashboard(): void
     {
-        $user = \App\Models\User::factory()->unverified()->create();
+        $response = $this->post('/register', [
+            'name' => 'Verified Student',
+            'email' => 'student.verified@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
 
-        $response = $this->actingAs($user)->get('/dashboard');
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('dashboard', absolute: false));
 
-        $response->assertRedirect('/verify-email');
+        $user = \App\Models\User::where('email', 'student.verified@example.com')->first();
+        $this->assertNotNull($user);
+        $this->assertTrue($user->hasVerifiedEmail());
+
+        $dashboardResponse = $this->actingAs($user)->get('/dashboard');
+        $dashboardResponse->assertStatus(200);
     }
 }

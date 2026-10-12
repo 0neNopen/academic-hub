@@ -18,7 +18,7 @@ Route::get('/healthz', function () {
     return response('OK', 200);
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     // Dashboard Utama: Menampilkan ringkasan matkul & deadline terdekat
     Route::get('/dashboard', function (Request $request) {
         $user = $request->user();
