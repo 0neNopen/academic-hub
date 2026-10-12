@@ -665,7 +665,7 @@ export default function CourseShow({ course }) {
             <Head title={`Detail: ${course.name}`} />
 
             <div className="py-8">
-                <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-[1720px] px-4 sm:px-6 lg:px-8 xl:px-10">
                     {/* Mobile Segmented Control Tab */}
                     <div className="flex lg:hidden p-1 bg-gray-200/80 dark:bg-gray-800 rounded-xl mb-5">
                         <button

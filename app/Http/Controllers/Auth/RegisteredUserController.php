@@ -38,6 +38,21 @@ class RegisteredUserController extends Controller
             'is_d3_ti' => 'nullable|boolean',
         ]);
 
+        $disposableDomains = [
+            'tempmail.com', '10minutemail.com', 'guerrillamail.com', 'mailinator.com',
+            'yopmail.com', 'dispostable.com', 'trashmail.com', 'getnada.com',
+            'dropmail.me', 'fakemailgenerator.com', 'temp-mail.org', 'throwawaymail.com',
+            'mohmal.com', 'sharklasers.com', 'guerrillamailblock.com', 'grr.la',
+            'inboxkitten.com', 'crazymailing.com', 'emailondeck.com',
+        ];
+
+        $emailDomain = strtolower(substr(strrchr($request->email, "@"), 1));
+        if (in_array($emailDomain, $disposableDomains)) {
+            throw ValidationException::withMessages([
+                'email' => 'Pendaftaran menggunakan email sementara/disposable tidak diperbolehkan. Harap gunakan akun Gmail atau email resmi Anda.',
+            ]);
+        }
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -48,7 +63,11 @@ class RegisteredUserController extends Controller
             \App\Services\CoursePackageService::seedD3TI($user);
         }
 
-        event(new Registered($user));
+        try {
+            event(new Registered($user));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal mengirim email verifikasi pendaftaran: ' . $e->getMessage());
+        }
 
         Auth::login($user);
 

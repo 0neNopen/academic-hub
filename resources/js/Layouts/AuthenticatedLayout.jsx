@@ -7,7 +7,11 @@ import Toast from '@/Components/Toast';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function AuthenticatedLayout({ header, children }) {
+export default function AuthenticatedLayout({
+    header,
+    maxWidth = 'max-w-[1720px]',
+    children,
+}) {
     const user = usePage().props.auth.user;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
@@ -16,7 +20,7 @@ export default function AuthenticatedLayout({ header, children }) {
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-200">
             <nav className="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 transition-colors duration-200">
-                <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                <div className={`mx-auto ${maxWidth} px-4 sm:px-6 lg:px-8 xl:px-10`}>
                     <div className="flex h-16 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
@@ -181,7 +185,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
             {header && (
                 <header className="bg-white dark:bg-gray-900 shadow-xs border-b border-gray-100 dark:border-gray-800 transition-colors duration-200">
-                    <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 lg:px-8">
+                    <div className={`mx-auto ${maxWidth} px-4 py-5 sm:px-6 lg:px-8 xl:px-10`}>
                         {header}
                     </div>
                 </header>

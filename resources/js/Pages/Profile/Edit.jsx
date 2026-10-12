@@ -18,6 +18,7 @@ export default function Edit({ mustVerifyEmail, status }) {
 
     return (
         <AuthenticatedLayout
+            maxWidth="max-w-6xl"
             header={
                 <div>
                     <h2 className="text-xl font-bold leading-tight text-gray-900 dark:text-white">

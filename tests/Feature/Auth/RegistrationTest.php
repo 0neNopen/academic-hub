@@ -64,4 +64,26 @@ class RegistrationTest extends TestCase
         $this->assertEquals('TEFA', $tefa->room);
         $this->assertEquals('Dr. Ovide Decroly Wisnu Ardhi, S.T., M.Eng.', $tefa->lecturer_name);
     }
+
+    public function test_disposable_email_is_rejected(): void
+    {
+        $response = $this->post('/register', [
+            'name' => 'Fake User',
+            'email' => 'fakeuser@mailinator.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertSessionHasErrors('email');
+        $this->assertGuest();
+    }
+
+    public function test_unverified_user_is_redirected_to_verify_email(): void
+    {
+        $user = \App\Models\User::factory()->unverified()->create();
+
+        $response = $this->actingAs($user)->get('/dashboard');
+
+        $response->assertRedirect('/verify-email');
+    }
 }

@@ -269,7 +269,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
             <Head title="Dashboard Kuliah" />
 
             <div className="py-8">
-                <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 space-y-6">
+                <div className="mx-auto max-w-[1720px] px-4 sm:px-6 lg:px-8 xl:px-10 space-y-6">
                     {/* Ringkasan Cepat / Status Metrik Interaktif */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                         {/* 1. Total Mata Kuliah */}
@@ -537,7 +537,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                     </button>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-4">
                                     {filteredCourses.map((course) => (
                                         <Link
                                             key={course.id}
