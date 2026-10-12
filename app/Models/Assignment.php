@@ -14,6 +14,7 @@ class Assignment extends Model
         'course_id',
         'title',
         'assignment_type',
+        'priority',
         'description',
         'deadline',
         'submission_url',
@@ -33,6 +34,7 @@ class Assignment extends Model
 
     protected $appends = [
         'all_links',
+        'priority_label',
     ];
 
     public function isGroup(): bool
@@ -43,6 +45,15 @@ class Assignment extends Model
     public function getTypeLabelAttribute(): string
     {
         return $this->assignment_type === 'group' ? 'Kelompok' : 'Individu';
+    }
+
+    public function getPriorityLabelAttribute(): string
+    {
+        return match ($this->priority) {
+            'high' => 'Tinggi',
+            'low' => 'Rendah',
+            default => 'Sedang',
+        };
     }
 
     public function getAllLinksAttribute(): array

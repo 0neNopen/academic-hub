@@ -17,6 +17,7 @@ class AssignmentController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'assignment_type' => 'nullable|string|in:individual,group',
+            'priority' => 'nullable|string|in:low,medium,high',
             'description' => 'nullable|string',
             'deadline' => 'required|date',
             'submission_url' => 'nullable|url|max:500',
@@ -53,6 +54,7 @@ class AssignmentController extends Controller
         $course->assignments()->create([
             'title' => $validated['title'],
             'assignment_type' => $validated['assignment_type'] ?? 'individual',
+            'priority' => $validated['priority'] ?? 'medium',
             'description' => $validated['description'] ?? null,
             'deadline' => $validated['deadline'],
             'submission_url' => $submissionUrl,
@@ -69,6 +71,7 @@ class AssignmentController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'assignment_type' => 'nullable|string|in:individual,group',
+            'priority' => 'nullable|string|in:low,medium,high',
             'description' => 'nullable|string',
             'deadline' => 'required|date',
             'submission_url' => 'nullable|url|max:500',
@@ -113,6 +116,7 @@ class AssignmentController extends Controller
 
         $assignment->title = $validated['title'];
         $assignment->assignment_type = $validated['assignment_type'] ?? 'individual';
+        $assignment->priority = $validated['priority'] ?? 'medium';
         $assignment->description = $validated['description'] ?? null;
         $assignment->deadline = $validated['deadline'];
         $assignment->submission_url = $submissionUrl;

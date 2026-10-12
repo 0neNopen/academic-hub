@@ -119,7 +119,8 @@ class SendDailySchedule extends Command
                         $dl = Carbon::parse($task->deadline)->locale('id')->timezone($tz);
                         $cName = $task->course?->name ?? 'Mata Kuliah';
                         $tType = $task->assignment_type === 'group' ? ' [👥 Kelompok]' : ' [👤 Individu]';
-                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b>{$tType} (" . htmlspecialchars($cName) . ")\n";
+                        $prioTag = $task->priority === 'high' ? ' [🔴 Prioritas Tinggi]' : '';
+                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b>{$tType}{$prioTag} (" . htmlspecialchars($cName) . ")\n";
                         $message .= "   ⏰ Deadline: " . $dl->isoFormat('dddd, D MMM - HH:mm') . " WIB\n";
                         $tIdx++;
                     }
@@ -199,7 +200,8 @@ class SendDailySchedule extends Command
                         $dl = Carbon::parse($task->deadline)->locale('id')->timezone($tz);
                         $cName = $task->course?->name ?? 'Mata Kuliah';
                         $tType = $task->assignment_type === 'group' ? ' [👥 Kelompok]' : ' [👤 Individu]';
-                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b>{$tType} ({$cName})\n";
+                        $prioTag = $task->priority === 'high' ? ' [🔴 Prioritas Tinggi]' : '';
+                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b>{$tType}{$prioTag} ({$cName})\n";
                         $message .= "   ⏰ Jam: " . $dl->format('H:i') . " WIB\n";
                         if (!empty($task->description)) {
                             $cleanDesc = htmlspecialchars(trim($task->description));
@@ -223,7 +225,8 @@ class SendDailySchedule extends Command
                         $dl = Carbon::parse($task->deadline)->locale('id')->timezone($tz);
                         $cName = $task->course?->name ?? 'Mata Kuliah';
                         $tType = $task->assignment_type === 'group' ? ' [👥 Kelompok]' : ' [👤 Individu]';
-                        $message .= "• <b>" . htmlspecialchars($task->title) . "</b>{$tType} ({$cName})\n";
+                        $prioTag = $task->priority === 'high' ? ' [🔴 Prioritas Tinggi]' : '';
+                        $message .= "• <b>" . htmlspecialchars($task->title) . "</b>{$tType}{$prioTag} ({$cName})\n";
                         $message .= "   ⏰ Deadline: " . $dl->isoFormat('dddd, D MMM - HH:mm') . " WIB\n";
                     }
                     $message .= "👉 Ketik <b>/tugas</b> untuk cek semua tugas aktif.\n\n";
@@ -294,7 +297,8 @@ class SendDailySchedule extends Command
                         $dl = Carbon::parse($task->deadline)->locale('id')->timezone($tz);
                         $cName = $task->course?->name ?? 'Mata Kuliah';
                         $tType = $task->assignment_type === 'group' ? ' [👥 Kelompok]' : ' [👤 Individu]';
-                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b>{$tType} ({$cName})\n";
+                        $prioTag = $task->priority === 'high' ? ' [🔴 Prioritas Tinggi]' : '';
+                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b>{$tType}{$prioTag} ({$cName})\n";
                         $message .= "   ⏰ Jam: " . $dl->format('H:i') . " WIB\n";
                         if (!empty($task->description)) {
                             $cleanDesc = htmlspecialchars(trim($task->description));

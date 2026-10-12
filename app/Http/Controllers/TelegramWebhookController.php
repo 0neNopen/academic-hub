@@ -57,6 +57,8 @@ class TelegramWebhookController extends Controller
             $this->handleTugasCommand($chatId, $user, $appUrl);
         } elseif (str_starts_with($lowerText, '/materi') || str_contains($lowerText, 'materi')) {
             $this->handleMateriCommand($chatId, $user, $appUrl);
+        } elseif (str_starts_with($lowerText, '/portal') || str_contains($lowerText, 'portal kampus') || str_contains($lowerText, 'portal')) {
+            $this->handlePortalCommand($chatId, $user, $appUrl);
         } elseif (str_starts_with($lowerText, '/id') || str_contains($lowerText, 'chat id')) {
             $this->handleIdCommand($chatId);
         } elseif (str_starts_with($lowerText, '/reset') || str_starts_with($lowerText, '/lupasandi')) {
@@ -80,6 +82,7 @@ class TelegramWebhookController extends Controller
                  . "• 🗓️ <b>/semua_jadwal</b> - Lihat seluruh matkul terdaftar\n"
                  . "• 📝 <b>/tugas</b> - Cek tugas mendekati deadline\n"
                  . "• 📑 <b>/materi</b> - Cek ringkasan berkas materi kuliah\n"
+                 . "• 🏛️ <b>/portal</b> - Akses cepat portal kampus Anda\n"
                  . "• ℹ️ <b>/help</b> - Daftar perintah bot\n\n"
                  . "🌐 <a href=\"{$appUrl}/dashboard\">Buka Website Academic Hub</a>";
 
@@ -314,8 +317,13 @@ class TelegramWebhookController extends Controller
                 $title = htmlspecialchars($assignment->title);
                 $courseNameEscaped = htmlspecialchars($courseName);
                 $typeTag = $assignment->assignment_type === 'group' ? ' [👥 Kelompok]' : ' [👤 Individu]';
+                $priorityTag = match ($assignment->priority) {
+                    'high' => ' [🔴 Prioritas Tinggi]',
+                    'low' => ' [🟢 Prioritas Rendah]',
+                    default => ' [🟡 Prioritas Sedang]',
+                };
 
-                $msg .= "{$no}. <b>{$title}</b>{$typeTag}\n"
+                $msg .= "{$no}. <b>{$title}</b>{$typeTag}{$priorityTag}\n"
                       . "   📚 {$courseNameEscaped}\n"
                       . "   ⏳ Deadline: {$formattedDeadline} WIB ({$diffText})\n";
 
@@ -408,6 +416,7 @@ class TelegramWebhookController extends Controller
              . "• 🗓️ <b>/semua_jadwal</b> - Rangkuman semua jadwal kuliah Anda\n"
              . "• 📝 <b>/tugas</b> - Daftar tugas aktif & hitung mundur deadline\n"
              . "• 📑 <b>/materi</b> - Cek berkas materi per mata kuliah\n"
+             . "• 🏛️ <b>/portal</b> - Akses cepat portal kampus (OCW, SPADA, dll)\n"
              . "• 🔐 <b>/reset</b> - Atur ulang kata sandi akun Anda\n"
              . "• 🔢 <b>/id</b> - Melihat nomor Chat ID Telegram Anda\n"
              . "• ℹ️ <b>/help</b> - Panduan & bantuan perintah bot\n\n"
@@ -425,10 +434,92 @@ class TelegramWebhookController extends Controller
              . "• 🗓️ <b>/semua_jadwal</b> - Rangkuman semua jadwal\n"
              . "• 📝 <b>/tugas</b> - Tugas aktif mendekati deadline\n"
              . "• 📑 <b>/materi</b> - Ringkasan berkas materi kuliah\n"
+             . "• 🏛️ <b>/portal</b> - Akses portal kampus\n"
              . "• 🔐 <b>/reset</b> - Atur ulang kata sandi akun\n"
              . "• ℹ️ <b>/help</b> - Panduan bot";
 
         $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
+    }
+
+    protected function handlePortalCommand(int|string $chatId, ?User $user, string $appUrl): void
+    {
+        if (! $user) {
+            $msg = "⚠️ Akun Telegram Anda belum terhubung ke akun Academic Hub.\n\n"
+                 . "Silakan hubungkan Chat ID Anda <code>{$chatId}</code> di profil web:\n"
+                 . "<a href=\"{$appUrl}/profile\">{$appUrl}/profile</a>";
+            $this->telegramService->sendMessage($chatId, $msg);
+            return;
+        }
+
+        $portals = $user->all_campus_portals;
+        $campusName = $user->campus_name ? htmlspecialchars($user->campus_name) : 'Kampus Anda';
+
+        if (empty($portals)) {
+            $msg = "🏛️ <b>Portal Kampus Belum Diatur</b>\n\n"
+                 . "Halo <b>{$user->name}</b>, Anda belum menambahkan tautan portal kampus (seperti OCW, SPADA, SIAKAD) di Academic Hub.\n\n"
+                 . "👉 Silakan atur portal kampus Anda di halaman profil web:\n"
+                 . "<a href=\"{$appUrl}/profile\">{$appUrl}/profile</a>";
+
+            $buttons = [
+                [
+                    ['text' => '⚙️ Atur Portal di Web', 'url' => "{$appUrl}/profile"],
+                ],
+            ];
+
+            $this->telegramService->sendMessage($chatId, $msg, $buttons);
+            return;
+        }
+
+        $msg = "🏛️ <b>Akses Cepat Portal Kampus</b>\n"
+             . "Kampus: <b>{$campusName}</b>\n"
+             . "───────────────────────\n\n";
+
+        foreach ($portals as $idx => $portal) {
+            $num = $idx + 1;
+            $pName = htmlspecialchars($portal['name'] ?? 'Portal');
+            $pUrl = htmlspecialchars($portal['url']);
+            $msg .= "{$num}️⃣ 🌐 <b>{$pName}</b>\n"
+                  . "   🔗 <a href=\"{$pUrl}\">{$pUrl}</a>\n\n";
+        }
+
+        $msg .= "💡 <i>Ketuk tombol tautan langsung di bawah untuk membuka di browser:</i>";
+
+        $buttons = [];
+        $hasLongName = false;
+        foreach ($portals as $portal) {
+            if (mb_strlen($portal['name'] ?? '') > 12) {
+                $hasLongName = true;
+                break;
+            }
+        }
+
+        if ($hasLongName) {
+            foreach ($portals as $portal) {
+                $pName = $portal['name'] ?? 'Buka Portal';
+                $buttons[] = [
+                    ['text' => "🌐 {$pName} ↗", 'url' => $portal['url']],
+                ];
+            }
+        } else {
+            $row = [];
+            foreach ($portals as $portal) {
+                $pName = $portal['name'] ?? 'Portal';
+                $row[] = ['text' => "🌐 {$pName} ↗", 'url' => $portal['url']];
+                if (count($row) === 2) {
+                    $buttons[] = $row;
+                    $row = [];
+                }
+            }
+            if (!empty($row)) {
+                $buttons[] = $row;
+            }
+        }
+
+        $buttons[] = [
+            ['text' => '🏠 Buka Dashboard Web', 'url' => "{$appUrl}/dashboard"],
+        ];
+
+        $this->telegramService->sendMessage($chatId, $msg, $buttons);
     }
 
     protected function handleResetPasswordCommand(int|string $chatId, ?User $user, string $text, string $appUrl): void

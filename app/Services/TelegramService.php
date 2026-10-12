@@ -169,9 +169,10 @@ class TelegramService
                 'commands' => [
                     ['command' => 'start', 'description' => 'Mulai & cek status akun'],
                     ['command' => 'jadwal', 'description' => 'Jadwal kuliah hari ini'],
-                    ['command' => 'semua_jadwal', 'description' => 'Semua jadwal kuliah (Senin-Minggu)'],
+                    ['command' => 'semua_jadwal', 'description' => 'Lihat seluruh jadwal kuliah'],
                     ['command' => 'tugas', 'description' => 'Daftar tugas & deadline aktif'],
                     ['command' => 'materi', 'description' => 'Ringkasan berkas materi kuliah'],
+                    ['command' => 'portal', 'description' => 'Akses cepat portal kampus Anda'],
                     ['command' => 'reset', 'description' => 'Atur ulang kata sandi akun'],
                     ['command' => 'id', 'description' => 'Lihat Chat ID Telegram saya'],
                     ['command' => 'help', 'description' => 'Bantuan perintah bot'],

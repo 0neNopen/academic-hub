@@ -218,4 +218,34 @@ class AssignmentTest extends TestCase
         $this->assertEquals('https://classroom.google.com/test', $assignment->submission_url);
         $this->assertCount(1, $assignment->all_links);
     }
+
+    public function test_user_can_create_and_update_assignment_with_priority(): void
+    {
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['user_id' => $user->id]);
+
+        $response = $this->actingAs($user)->post("/courses/{$course->id}/assignments", [
+            'title' => 'Tugas Prioritas Tinggi',
+            'priority' => 'high',
+            'deadline' => now()->addDays(2)->format('Y-m-d H:i:s'),
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $assignment = Assignment::where('title', 'Tugas Prioritas Tinggi')->first();
+        $this->assertNotNull($assignment);
+        $this->assertEquals('high', $assignment->priority);
+        $this->assertEquals('Tinggi', $assignment->priority_label);
+
+        // Update to low priority
+        $response = $this->actingAs($user)->put("/assignments/{$assignment->id}", [
+            'title' => 'Tugas Prioritas Diubah',
+            'priority' => 'low',
+            'deadline' => now()->addDays(5)->format('Y-m-d H:i:s'),
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $assignment->refresh();
+        $this->assertEquals('low', $assignment->priority);
+        $this->assertEquals('Rendah', $assignment->priority_label);
+    }
 }

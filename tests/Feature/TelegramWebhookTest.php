@@ -290,5 +290,39 @@ class TelegramWebhookTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+    public function test_telegram_webhook_handles_portal_command_for_linked_user(): void
+    {
+        $user = User::factory()->create([
+            'telegram_chat_id' => '12345678',
+            'campus_name' => 'Politeknik Negeri Malang',
+            'campus_portals' => [
+                ['name' => 'OCW', 'url' => 'https://ocw.polinema.ac.id'],
+                ['name' => 'SPADA', 'url' => 'https://spada.polinema.ac.id'],
+            ],
+        ]);
+
+        $telegramMock = $this->makeMock();
+        $telegramMock->shouldReceive('sendMessage')
+            ->once()
+            ->withArgs(function ($chatId, $msg, $buttons) {
+                return $chatId == 12345678
+                    && str_contains($msg, 'Akses Cepat Portal Kampus')
+                    && str_contains($msg, 'OCW')
+                    && !empty($buttons);
+            })
+            ->andReturn(true);
+
+        $this->app->instance(TelegramService::class, $telegramMock);
+
+        $response = $this->postJson('/telegram/webhook', [
+            'message' => [
+                'chat' => ['id' => 12345678],
+                'text' => '/portal',
+            ],
+        ]);
+
+        $response->assertStatus(200);
+    }
 }
 
