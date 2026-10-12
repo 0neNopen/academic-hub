@@ -369,39 +369,8 @@ export default function UpdateNotificationSettingsForm({ className = "" }) {
                         </div>
                     </div>
 
-                    {/* Kolom Kanan (4): Aksi Simpan Cepat, Koneksi Telegram & FAQ */}
-                    <div className="lg:col-span-5 xl:col-span-4 space-y-6 lg:sticky lg:top-6">
-                        {/* Card Aksi Simpan Cepat */}
-                        <div className="p-5 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-xs space-y-3">
-                            <div className="flex items-center gap-2">
-                                <div className="p-1.5 rounded-lg bg-blue-600 text-white shadow-xs">
-                                    <CheckCircle2 className="h-4 w-4" />
-                                </div>
-                                <div>
-                                    <h4 className="text-sm font-bold text-gray-900 dark:text-white">
-                                        Simpan Perubahan
-                                    </h4>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        Terapkan waktu pengingat & portal kampus.
-                                    </p>
-                                </div>
-                            </div>
-                            <PrimaryButton disabled={processing} className="w-full justify-center py-2.5 shadow-xs text-xs">
-                                {processing ? "Menyimpan..." : "Simpan Pengaturan"}
-                            </PrimaryButton>
-                            <Transition
-                                show={recentlySuccessful}
-                                enter="transition ease-in-out duration-300"
-                                enterFrom="opacity-0"
-                                leave="transition ease-in-out duration-300"
-                                leaveTo="opacity-0"
-                            >
-                                <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1.5 pt-1">
-                                    <CheckCircle2 className="h-4 w-4" /> Pengaturan berhasil disimpan.
-                                </p>
-                            </Transition>
-                        </div>
-
+                    {/* Kolom Kanan (4): Koneksi Telegram, FAQ & Aksi Simpan */}
+                    <div className="lg:col-span-5 xl:col-span-4 space-y-6">
                         {/* 4. KONEKSI AKUN TELEGRAM BOT */}
                         <div className="p-5 rounded-2xl bg-gradient-to-br from-sky-50/80 via-blue-50/40 to-white dark:from-sky-950/40 dark:via-gray-900 dark:to-gray-900 border border-sky-200/80 dark:border-sky-900/60 shadow-xs space-y-4">
                             <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-sky-100 dark:border-sky-900/40">
@@ -504,6 +473,37 @@ export default function UpdateNotificationSettingsForm({ className = "" }) {
                                     • <b>Fitur Interaktif & Bebas Blokir:</b> Notifikasi Telegram dilengkapi tombol link presensi/tugas instan dan perintah cepat (<code>/jadwal</code>, <code>/tugas</code>, <code>/semua_jadwal</code>, <code>/portal</code>).
                                 </p>
                             </div>
+                        </div>
+
+                        {/* Card Aksi Simpan (Paling Bawah) */}
+                        <div className="p-5 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-xs space-y-3">
+                            <div className="flex items-center gap-2">
+                                <div className="p-1.5 rounded-lg bg-blue-600 text-white shadow-xs">
+                                    <CheckCircle2 className="h-4 w-4" />
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-bold text-gray-900 dark:text-white">
+                                        Simpan Perubahan
+                                    </h4>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        Terapkan waktu pengingat & portal kampus.
+                                    </p>
+                                </div>
+                            </div>
+                            <PrimaryButton disabled={processing} className="w-full justify-center py-2.5 shadow-xs text-xs">
+                                {processing ? "Menyimpan..." : "Simpan Pengaturan"}
+                            </PrimaryButton>
+                            <Transition
+                                show={recentlySuccessful}
+                                enter="transition ease-in-out duration-300"
+                                enterFrom="opacity-0"
+                                leave="transition ease-in-out duration-300"
+                                leaveTo="opacity-0"
+                            >
+                                <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1.5 pt-1">
+                                    <CheckCircle2 className="h-4 w-4" /> Pengaturan berhasil disimpan.
+                                </p>
+                            </Transition>
                         </div>
                     </div>
                 </div>
