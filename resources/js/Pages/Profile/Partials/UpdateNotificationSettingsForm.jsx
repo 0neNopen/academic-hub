@@ -367,25 +367,6 @@ export default function UpdateNotificationSettingsForm({ className = "" }) {
                                 <InputError message={errors.campus_portals} />
                             </div>
                         </div>
-
-                        {/* Tombol Simpan di Bawah Kolom Kiri */}
-                        <div className="flex items-center gap-4 pt-2">
-                            <PrimaryButton disabled={processing} className="shadow-xs">
-                                {processing ? "Menyimpan..." : "Simpan Pengaturan Notifikasi"}
-                            </PrimaryButton>
-
-                            <Transition
-                                show={recentlySuccessful}
-                                enter="transition ease-in-out duration-300"
-                                enterFrom="opacity-0"
-                                leave="transition ease-in-out duration-300"
-                                leaveTo="opacity-0"
-                            >
-                                <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                                    <CheckCircle2 className="h-4 w-4" /> Pengaturan berhasil disimpan.
-                                </p>
-                            </Transition>
-                        </div>
                     </div>
 
                     {/* Kolom Kanan (4): Aksi Simpan Cepat, Koneksi Telegram & FAQ */}
