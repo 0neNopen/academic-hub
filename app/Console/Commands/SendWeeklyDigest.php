@@ -41,29 +41,31 @@ class SendWeeklyDigest extends Command
             $courses = $user->courses;
 
             $message = "📅 <b>RINGKASAN AKADEMIK MINGGU INI</b>\n";
-            $message .= "Periode: <i>" . $startOfWeek->isoFormat('D MMMM') . " – " . $endOfWeek->isoFormat('D MMMM YYYY') . "</i>\n\n";
+            $message .= "Periode: <code>" . $startOfWeek->isoFormat('D MMMM') . " – " . $endOfWeek->isoFormat('D MMMM YYYY') . "</code>\n\n";
             $message .= "Halo <b>" . htmlspecialchars($user->name) . "</b>! Semangat mengawali pekan ini! 💪\n\n";
 
             // Seksi 1: Deadline Tugas Minggu Ini
             $message .= "📝 <b>Tugas Kuliah Pekan Ini:</b>\n";
             if ($weeklyAssignments->isEmpty()) {
-                $message .= "<i>✨ Tidak ada deadline tugas minggu ini! Waktu yang bagus untuk review materi atau santai sejenak.</i>\n\n";
+                $message .= "<blockquote>✨ Tidak ada deadline tugas minggu ini! Waktu yang bagus untuk review materi atau santai sejenak.</blockquote>\n\n";
             } else {
                 $idx = 1;
                 foreach ($weeklyAssignments as $assignment) {
                     $dl = Carbon::parse($assignment->deadline)->locale('id')->timezone($tz);
                     $courseName = $assignment->course?->name ?? 'Mata Kuliah';
-                    $message .= "{$idx}. <b>" . htmlspecialchars($assignment->title) . "</b> (" . htmlspecialchars($courseName) . ")\n";
-                    $message .= "   ⏰ " . $dl->isoFormat('dddd, D MMM - HH:mm') . " WIB\n";
+                    $tType = $assignment->assignment_type === 'group' ? ' 👥 <i>Kelompok</i>' : ' 👤 <i>Individu</i>';
+                    $prioTag = $assignment->priority === 'high' ? ' 🔴 <b>Prioritas Tinggi</b>' : '';
+                    $message .= "{$idx}. <b>" . htmlspecialchars($assignment->title) . "</b> ({$courseName}){$tType}{$prioTag}\n";
+                    $message .= "   ⏰ <code>" . $dl->isoFormat('dddd, D MMM - HH:mm') . " WIB</code>\n";
                     $idx++;
                 }
                 $message .= "\n";
             }
 
             // Seksi 2: Ringkasan Mata Kuliah
-            $message .= "📚 <b>Mata Kuliah Terdaftar:</b> " . $courses->count() . " Matkul\n";
-            $message .= "💡 <i>Tips: Cicil tugasmu lebih awal agar akhir pekanmu tetap tenang!</i>\n\n";
-            $message .= "🔗 Buka Academic Hub: " . config('app.url', 'https://academic-hub-ocw2.onrender.com') . "/dashboard";
+            $message .= "📚 <b>Mata Kuliah Terdaftar:</b> " . $courses->count() . " Matkul\n\n";
+            $message .= "<blockquote>💡 Tips: Cicil tugasmu lebih awal agar akhir pekanmu tetap tenang!</blockquote>\n\n";
+            $message .= "🔗 Dashboard: " . config('app.url', 'https://academic-hub-ocw2.onrender.com') . "/dashboard";
 
             $success = $telegramService->sendMessage($user->telegram_chat_id, $message);
             if ($success) {

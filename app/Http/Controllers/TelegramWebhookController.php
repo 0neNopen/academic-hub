@@ -111,7 +111,9 @@ class TelegramWebhookController extends Controller
         if ($user) {
             $msg = "👋 Halo <b>{$user->name}</b>!\n\n"
                  . "✅ <b>Akun Telegram Anda Berhasil Terhubung</b> dengan Academic Hub.\n\n"
-                 . "Ketuk tombol biru <b>[ Menu ]</b> di kiri bawah atau gunakan perintah berikut:\n"
+                 . "<blockquote>\n"
+                 . "💡 <i>Gunakan tombol biru <b>[ Menu ]</b> di kiri bawah atau kirim perintah cepat berikut:</i>\n"
+                 . "</blockquote>\n\n"
                  . "• 📅 <b>/jadwal</b> - Cek kuliah hari ini\n"
                  . "• 🗓️ <b>/semua_jadwal</b> - Lihat seluruh matkul terdaftar\n"
                  . "• 📝 <b>/tugas</b> - Cek tugas mendekati deadline\n"
@@ -126,10 +128,12 @@ class TelegramWebhookController extends Controller
                  . "Selamat datang di <b>Academic Hub Notifier</b>. 🎓\n\n"
                  . "🔢 <b>Chat ID Telegram Anda adalah:</b>\n"
                  . "<code>{$chatId}</code> <i>(ketuk untuk menyalin)</i>\n\n"
+                 . "<blockquote>\n"
                  . "📌 <b>Cara menghubungkan dengan akun web Anda:</b>\n"
                  . "1. Salin angka Chat ID di atas.\n"
                  . "2. Masuk ke halaman profil: <a href=\"{$appUrl}/profile\">{$appUrl}/profile</a>\n"
-                 . "3. Tempelkan ke kolom <b>Telegram Chat ID Anda</b> lalu klik Simpan.\n\n"
+                 . "3. Tempelkan ke kolom <b>Telegram Chat ID Anda</b> lalu klik Simpan.\n"
+                 . "</blockquote>\n\n"
                  . "Setelah disimpan, bot ini akan otomatis aktif mengirimkan jadwal kuliah & pengingat deadline tugas Anda! 🚀";
 
             $buttons = [
@@ -178,10 +182,12 @@ class TelegramWebhookController extends Controller
         if ($allUserCoursesCount === 0) {
             $msg = "📅 <b>Jadwal Kuliah Hari Ini ({$todayName}, {$todayDate})</b>\n\n"
                  . "Halo <b>" . htmlspecialchars($user->name) . "</b>!\n\n"
+                 . "<blockquote>\n"
                  . "📌 <b>Jadwal Kuliah Belum Terdaftar:</b>\n"
                  . "Akun Academic Hub kamu saat ini belum memiliki daftar mata kuliah.\n\n"
                  . "Yuk lengkapi jadwal kuliah semester ini melalui website agar bot dapat menampilkan jadwal harianmu:\n"
-                 . "🔗 <a href=\"{$appUrl}/dashboard\">Buka Dashboard Academic Hub</a>";
+                 . "🔗 <a href=\"{$appUrl}/dashboard\">Buka Dashboard Academic Hub</a>\n"
+                 . "</blockquote>";
             $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
             return;
         }
@@ -202,30 +208,62 @@ class TelegramWebhookController extends Controller
                      . "{$weekendGreeting}\n"
                      . "Halo <b>" . htmlspecialchars($user->name) . "</b>! Tidak ada jadwal perkuliahan hari ini 🥳\n"
                      . "Manfaatkan akhir pekanmu untuk istirahat, refreshing, atau bersantai.\n\n"
+                     . "<blockquote>\n"
                      . "💡 <b>Aksi Cepat:</b>\n"
                      . "• <b>/tugas</b> - Cek status tugas aktif\n"
-                     . "• <b>/semua_jadwal</b> - Intip jadwal kuliah sepekan";
+                     . "• <b>/semua_jadwal</b> - Intip jadwal kuliah sepekan\n"
+                     . "</blockquote>";
             } else {
                 $msg = "📅 <b>Jadwal Kuliah Hari Ini ({$todayName}, {$todayDate})</b>\n\n"
                      . "🎉 <b>Hari Bebas Kuliah (Free Day)!</b>\n"
                      . "<i>Tidak ada jadwal perkuliahan untuk hari ini. Selamat beristirahat atau belajar mandiri!</i>\n\n"
-                     . "💡 Ketuk <b>/tugas</b> untuk cek tugas aktif atau <b>/semua_jadwal</b> untuk melihat jadwal hari lain.";
+                     . "<blockquote>\n"
+                     . "💡 Ketuk <b>/tugas</b> untuk cek tugas aktif atau <b>/semua_jadwal</b> untuk melihat jadwal hari lain.\n"
+                     . "</blockquote>";
             }
         } else {
             $msg = "📅 <b>Jadwal Kuliah Hari Ini ({$todayName}, {$todayDate})</b>\n"
-                 . "Halo <b>{$user->name}</b>, berikut agenda perkuliahanmu hari ini:\n\n";
+                 . "Halo <b>" . htmlspecialchars($user->name) . "</b>, berikut agenda perkuliahanmu hari ini:\n\n";
 
             foreach ($courses as $index => $course) {
                 $no = $index + 1;
                 $timeText = $this->formatCourseTime($course->start_time, $course->end_time);
-                $lecturer = $course->lecturer_name ?: 'Dosen belum diset';
-                $code = $course->code ? " ({$course->code})" : "";
-                $roomText = $course->room ? "   📍 Ruang: {$course->room}\n" : "";
+                $courseName = $course->name;
+                $code = $course->code ? " <code>[" . htmlspecialchars($course->code) . "]</code>" : "";
+                $lecturer = $course->lecturer_name ? htmlspecialchars($course->lecturer_name) : null;
+                $room = $course->room ? htmlspecialchars($course->room) : null;
 
-                $msg .= "{$no}. <b>{$course->name}</b>{$code}\n"
-                      . "   ⏰ Waktu: {$timeText}\n"
-                      . "   👤 Dosen: {$lecturer}\n"
-                      . $roomText . "\n";
+                $msg .= "{$no}. <b>{$courseName}</b>{$code}\n"
+                      . "   ⏰ <code>{$timeText}</code>\n";
+
+                if ($room) {
+                    $msg .= "   📍 Ruang: <b>{$room}</b>\n";
+                }
+                if ($lecturer) {
+                    $msg .= "   👨‍🏫 Dosen: {$lecturer}\n";
+                }
+
+                $details = [];
+                if ($course->pj_name) {
+                    $pjText = "👤 <b>PJ: " . htmlspecialchars($course->pj_name) . "</b>";
+                    if ($course->pj_phone) {
+                        $cleanPhone = preg_replace('/[^0-9]/', '', $course->pj_phone);
+                        if (str_starts_with($cleanPhone, '0')) {
+                            $cleanPhone = '62' . substr($cleanPhone, 1);
+                        }
+                        $pjText .= " (<a href=\"https://wa.me/{$cleanPhone}\">WhatsApp</a>)";
+                    }
+                    $details[] = $pjText;
+                }
+                if ($course->attendance_url) {
+                    $details[] = "📝 <b>Presensi:</b> <a href=\"" . htmlspecialchars($course->attendance_url) . "\">Link Presensi Online</a>";
+                }
+
+                if (!empty($details)) {
+                    $msg .= "<blockquote expandable>\n" . implode("\n", $details) . "\n</blockquote>\n\n";
+                } else {
+                    $msg .= "\n";
+                }
             }
         }
 
@@ -246,8 +284,10 @@ class TelegramWebhookController extends Controller
 
         if ($allCourses->isEmpty()) {
             $msg = "🗓️ <b>Seluruh Jadwal Perkuliahan Terdaftar</b>\n\n"
+                 . "<blockquote>\n"
                  . "Belum ada mata kuliah yang didaftarkan di website.\n\n"
-                 . "👉 Silakan tambahkan mata kuliah Anda melalui website: <a href=\"{$appUrl}/dashboard\">{$appUrl}/dashboard</a>";
+                 . "👉 Silakan tambahkan mata kuliah Anda melalui website: <a href=\"{$appUrl}/dashboard\">{$appUrl}/dashboard</a>\n"
+                 . "</blockquote>";
             $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
             return;
         }
@@ -261,21 +301,49 @@ class TelegramWebhookController extends Controller
         }
 
         $msg = "🗓️ <b>Seluruh Jadwal Perkuliahan Anda</b>\n"
-             . "Halo <b>{$user->name}</b>, berikut ringkasan seluruh matkul yang terdaftar di Academic Hub:\n\n";
+             . "Halo <b>" . htmlspecialchars($user->name) . "</b>, berikut ringkasan seluruh matkul yang terdaftar di Academic Hub:\n\n";
 
         foreach ($dayOrder as $day) {
             if (!empty($grouped[$day])) {
                 $msg .= "📌 <b>" . strtoupper($day) . "</b>\n";
                 foreach ($grouped[$day] as $course) {
                     $timeText = $this->formatCourseTime($course->start_time, $course->end_time);
-                    $code = $course->code ? " ({$course->code})" : "";
-                    $lecturer = $course->lecturer_name ?: 'Dosen belum diset';
-                    $roomText = $course->room ? "   📍 Ruang: {$course->room}\n" : "";
+                    $courseName = $course->name;
+                    $code = $course->code ? " <code>[" . htmlspecialchars($course->code) . "]</code>" : "";
+                    $lecturer = $course->lecturer_name ? htmlspecialchars($course->lecturer_name) : null;
+                    $room = $course->room ? htmlspecialchars($course->room) : null;
 
-                    $msg .= "• <b>{$course->name}</b>{$code}\n"
-                          . "   ⏰ Waktu: {$timeText}\n"
-                          . "   👤 Dosen: {$lecturer}\n"
-                          . $roomText . "\n";
+                    $msg .= "• <b>{$courseName}</b>{$code}\n"
+                          . "   ⏰ <code>{$timeText}</code>\n";
+
+                    if ($room) {
+                        $msg .= "   📍 Ruang: <b>{$room}</b>\n";
+                    }
+                    if ($lecturer) {
+                        $msg .= "   👨‍🏫 Dosen: {$lecturer}\n";
+                    }
+
+                    $details = [];
+                    if ($course->pj_name) {
+                        $pjText = "👤 PJ: " . htmlspecialchars($course->pj_name);
+                        if ($course->pj_phone) {
+                            $cleanPhone = preg_replace('/[^0-9]/', '', $course->pj_phone);
+                            if (str_starts_with($cleanPhone, '0')) {
+                                $cleanPhone = '62' . substr($cleanPhone, 1);
+                            }
+                            $pjText .= " (<a href=\"https://wa.me/{$cleanPhone}\">WhatsApp</a>)";
+                        }
+                        $details[] = $pjText;
+                    }
+                    if ($course->attendance_url) {
+                        $details[] = "📝 <a href=\"" . htmlspecialchars($course->attendance_url) . "\">Presensi Online</a>";
+                    }
+
+                    if (!empty($details)) {
+                        $msg .= "<blockquote expandable>\n" . implode("\n", $details) . "\n</blockquote>\n\n";
+                    } else {
+                        $msg .= "\n";
+                    }
                 }
             }
         }
@@ -286,14 +354,42 @@ class TelegramWebhookController extends Controller
                 $msg .= "📌 <b>" . strtoupper($day) . "</b>\n";
                 foreach ($courses as $course) {
                     $timeText = $this->formatCourseTime($course->start_time, $course->end_time);
-                    $code = $course->code ? " ({$course->code})" : "";
-                    $lecturer = $course->lecturer_name ?: 'Dosen belum diset';
-                    $roomText = $course->room ? "   📍 Ruang: {$course->room}\n" : "";
+                    $courseName = $course->name;
+                    $code = $course->code ? " <code>[" . htmlspecialchars($course->code) . "]</code>" : "";
+                    $lecturer = $course->lecturer_name ? htmlspecialchars($course->lecturer_name) : null;
+                    $room = $course->room ? htmlspecialchars($course->room) : null;
 
-                    $msg .= "• <b>{$course->name}</b>{$code}\n"
-                          . "   ⏰ Waktu: {$timeText}\n"
-                          . "   👤 Dosen: {$lecturer}\n"
-                          . $roomText . "\n";
+                    $msg .= "• <b>{$courseName}</b>{$code}\n"
+                          . "   ⏰ <code>{$timeText}</code>\n";
+
+                    if ($room) {
+                        $msg .= "   📍 Ruang: <b>{$room}</b>\n";
+                    }
+                    if ($lecturer) {
+                        $msg .= "   👨‍🏫 Dosen: {$lecturer}\n";
+                    }
+
+                    $details = [];
+                    if ($course->pj_name) {
+                        $pjText = "👤 PJ: " . htmlspecialchars($course->pj_name);
+                        if ($course->pj_phone) {
+                            $cleanPhone = preg_replace('/[^0-9]/', '', $course->pj_phone);
+                            if (str_starts_with($cleanPhone, '0')) {
+                                $cleanPhone = '62' . substr($cleanPhone, 1);
+                            }
+                            $pjText .= " (<a href=\"https://wa.me/{$cleanPhone}\">WhatsApp</a>)";
+                        }
+                        $details[] = $pjText;
+                    }
+                    if ($course->attendance_url) {
+                        $details[] = "📝 <a href=\"" . htmlspecialchars($course->attendance_url) . "\">Presensi Online</a>";
+                    }
+
+                    if (!empty($details)) {
+                        $msg .= "<blockquote expandable>\n" . implode("\n", $details) . "\n</blockquote>\n\n";
+                    } else {
+                        $msg .= "\n";
+                    }
                 }
             }
         }
@@ -322,7 +418,9 @@ class TelegramWebhookController extends Controller
 
         if ($assignments->isEmpty()) {
             $msg = "📝 <b>Daftar Tugas Aktif:</b>\n\n"
-                 . "🎉 <i>Hebat! Tidak ada tugas aktif yang mendekati deadline saat ini. Semua tugas telah terselesaikan.</i>";
+                 . "<blockquote>\n"
+                 . "🎉 <i>Hebat! Tidak ada tugas aktif yang mendekati deadline saat ini. Semua tugas telah terselesaikan.</i>\n"
+                 . "</blockquote>";
         } else {
             $msg = "📝 <b>Daftar Tugas Mendekati Deadline:</b>\n\n";
             $now = Carbon::now('Asia/Jakarta');
@@ -332,7 +430,7 @@ class TelegramWebhookController extends Controller
                 $deadline = Carbon::parse($assignment->deadline)->setTimezone('Asia/Jakarta');
 
                 if ($deadline->isPast()) {
-                    $diffText = 'Terlewat ' . $deadline->diffForHumans($now, [
+                    $diffText = '⚠️ Terlewat ' . $deadline->diffForHumans($now, [
                         'syntax' => Carbon::DIFF_RELATIVE_TO_NOW,
                         'parts' => 2,
                     ]);
@@ -342,7 +440,7 @@ class TelegramWebhookController extends Controller
                         'parts' => 2,
                     ]);
                     $cleanDiff = str_replace('dari sekarang', 'lagi', $rawDiff);
-                    $diffText = "sisa {$cleanDiff}";
+                    $diffText = "⏳ sisa {$cleanDiff}";
                 }
 
                 $courseName = $assignment->course?->name ?? 'Mata Kuliah';
@@ -358,13 +456,14 @@ class TelegramWebhookController extends Controller
                 };
 
                 $msg .= "{$no}. <b>{$title}</b>{$typeTag}{$priorityTag}\n"
-                      . "   📚 {$courseNameEscaped}\n"
-                      . "   ⏳ Deadline: {$formattedDeadline} WIB ({$diffText})\n";
+                      . "   📚 <i>{$courseNameEscaped}</i>\n"
+                      . "   ⏳ Deadline: <code>{$formattedDeadline} WIB</code> ({$diffText})\n";
 
+                $extraBlocks = [];
                 if (!empty($assignment->description)) {
                     $cleanDesc = htmlspecialchars(trim($assignment->description));
-                    $descPreview = Str::limit($cleanDesc, 140);
-                    $msg .= "   📝 Keterangan: <i>{$descPreview}</i>\n";
+                    $descPreview = Str::limit($cleanDesc, 180);
+                    $extraBlocks[] = "📝 <b>Keterangan:</b> <i>{$descPreview}</i>";
                 }
 
                 $assignmentLinks = $assignment->all_links;
@@ -372,18 +471,23 @@ class TelegramWebhookController extends Controller
                     if (count($assignmentLinks) === 1) {
                         $lTitle = htmlspecialchars($assignmentLinks[0]['title'] ?? 'Link Pengumpulan');
                         $lUrl = htmlspecialchars($assignmentLinks[0]['url']);
-                        $msg .= "   🔗 <a href=\"{$lUrl}\">{$lTitle}</a>\n";
+                        $extraBlocks[] = "🔗 <b>{$lTitle}:</b> <a href=\"{$lUrl}\">{$lUrl}</a>";
                     } else {
-                        $msg .= "   🔗 <b>Tautan Terkait:</b>\n";
+                        $linksText = "🔗 <b>Tautan Terkait:</b>";
                         foreach ($assignmentLinks as $l) {
                             $lTitle = htmlspecialchars($l['title'] ?? 'Tautan');
                             $lUrl = htmlspecialchars($l['url']);
-                            $msg .= "      • <a href=\"{$lUrl}\">{$lTitle}</a>\n";
+                            $linksText .= "\n• {$lTitle}: <a href=\"{$lUrl}\">{$lUrl}</a>";
                         }
+                        $extraBlocks[] = $linksText;
                     }
                 }
 
-                $msg .= "\n";
+                if (!empty($extraBlocks)) {
+                    $msg .= "<blockquote expandable>\n" . implode("\n", $extraBlocks) . "\n</blockquote>\n\n";
+                } else {
+                    $msg .= "\n";
+                }
             }
         }
 
@@ -406,8 +510,10 @@ class TelegramWebhookController extends Controller
 
         if ($courses->isEmpty()) {
             $msg = "📑 <b>Arsip Berkas Materi Perkuliahan</b>\n\n"
+                 . "<blockquote>\n"
                  . "Belum ada mata kuliah yang didaftarkan di website.\n\n"
-                 . "👉 Tambahkan mata kuliah Anda: <a href=\"{$appUrl}/dashboard\">{$appUrl}/dashboard</a>";
+                 . "👉 Tambahkan mata kuliah Anda: <a href=\"{$appUrl}/dashboard\">{$appUrl}/dashboard</a>\n"
+                 . "</blockquote>";
             $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
             return;
         }
@@ -423,12 +529,12 @@ class TelegramWebhookController extends Controller
             $statusText = $count > 0 ? "<b>{$count} berkas</b> tersimpan" : "<i>Belum ada berkas</i>";
 
             $latest = $course->materials()->orderBy('meeting_number', 'desc')->first();
-            $latestText = ($latest && $latest->meeting_number) ? " <i>(P{$latest->meeting_number})</i>" : "";
+            $latestText = ($latest && $latest->meeting_number) ? " <code>[P{$latest->meeting_number}]</code>" : "";
 
             $msg .= "• <b>{$course->name}</b>: {$statusText}{$latestText}\n";
 
             // Tombol interaktif per matkul: HANYA TEKS BERSIH DAN RAPI (TANPA EMOJI)
-            $btnLabel = $course->name . ($count > 0 ? " ({$count} berkas)" : " (0 berkas)");
+            $btnLabel = $course->name . " ({$count} berkas)";
             $buttons[] = [
                 [
                     'text' => Str::limit($btnLabel, 35),
@@ -437,8 +543,10 @@ class TelegramWebhookController extends Controller
             ];
         }
 
-        $msg .= "\n📊 <b>Total Materi:</b> {$totalMaterials} berkas tersimpan\n\n"
-              . "💡 <i>Ketuk tombol mata kuliah di bawah untuk membuka rincian berkas, dokumen, dan tautan materi secara detail.</i>";
+        $msg .= "\n📊 <b>Total Materi:</b> <code>{$totalMaterials} berkas tersimpan</code>\n\n"
+              . "<blockquote>\n"
+              . "💡 <i>Ketuk tombol mata kuliah di bawah untuk membuka rincian berkas, dokumen, dan tautan materi secara detail.</i>\n"
+              . "</blockquote>";
 
         $buttons[] = [
             [
@@ -488,20 +596,22 @@ class TelegramWebhookController extends Controller
             return;
         }
 
-        $courseName = htmlspecialchars($course->name);
-        $courseCode = $course->code ? ' (' . htmlspecialchars($course->code) . ')' : '';
+        $courseName = $course->name;
+        $courseCode = $course->code ? ' <code>[' . htmlspecialchars($course->code) . ']</code>' : '';
         $lecturer = $course->lecturer_name ? htmlspecialchars($course->lecturer_name) : 'Dosen belum diset';
         $materials = $course->materials;
         $total = $materials->count();
 
         $msg = "📚 <b>Materi Kuliah: {$courseName}</b>{$courseCode}\n"
              . "👤 <b>Dosen:</b> {$lecturer}\n"
-             . "📊 <b>Total Materi:</b> {$total} berkas tersimpan\n"
+             . "📊 <b>Total Materi:</b> <code>{$total} berkas tersimpan</code>\n"
              . "──────────────────────────────\n\n";
 
         if ($materials->isEmpty()) {
-            $msg .= "📭 <i>Belum ada berkas atau tautan materi yang diunggah untuk mata kuliah ini.</i>\n\n"
-                  . "💡 <i>Anda dapat mengunggah berkas slide, PDF, atau tautan Drive/LMS melalui website Academic Hub.</i>\n";
+            $msg .= "<blockquote>\n"
+                  . "📭 <i>Belum ada berkas atau tautan materi yang diunggah untuk mata kuliah ini.</i>\n\n"
+                  . "💡 <i>Anda dapat mengunggah berkas slide, PDF, atau tautan Drive/LMS melalui website Academic Hub.</i>\n"
+                  . "</blockquote>\n";
         } else {
             foreach ($materials as $index => $material) {
                 $no = $index + 1;
@@ -509,10 +619,10 @@ class TelegramWebhookController extends Controller
                 $meetingText = $material->meeting_number ? "Pertemuan ke-{$material->meeting_number}" : "Materi Umum";
                 $createdDate = $material->created_at ? $material->created_at->locale('id')->isoFormat('D MMMM YYYY') : '-';
 
-                $msg .= "<b>{$no}. {$title}</b>\n"
-                      . "   🏷️ <i>{$meetingText}</i>\n"
-                      . "   📅 Diunggah: {$createdDate}\n";
+                $msg .= "📁 <b>{$no}. {$title}</b>\n"
+                      . "   🏷️ <i>{$meetingText}</i> • 📅 <code>{$createdDate}</code>\n";
 
+                $details = [];
                 if (!empty($material->file_path)) {
                     $ext = strtolower(pathinfo($material->file_path, PATHINFO_EXTENSION));
                     $icon = match ($ext) {
@@ -525,7 +635,7 @@ class TelegramWebhookController extends Controller
                     };
                     $fileTypeLabel = strtoupper($ext) ?: 'FILE';
                     $cleanFilename = htmlspecialchars(basename($material->file_path));
-                    $msg .= "   {$icon} Berkas: <code>{$cleanFilename}</code> ({$fileTypeLabel})\n";
+                    $details[] = "{$icon} Berkas: <code>{$cleanFilename}</code> ({$fileTypeLabel})";
                 }
 
                 $links = $material->all_links;
@@ -533,23 +643,28 @@ class TelegramWebhookController extends Controller
                     if (count($links) === 1) {
                         $lTitle = htmlspecialchars($links[0]['title'] ?? 'Tautan Materi');
                         $lUrl = htmlspecialchars($links[0]['url']);
-                        $msg .= "   🔗 <a href=\"{$lUrl}\">{$lTitle}</a>\n";
+                        $details[] = "🔗 <a href=\"{$lUrl}\">{$lTitle}</a>";
                     } else {
-                        $msg .= "   🔗 <b>Tautan Terkait:</b>\n";
+                        $lText = "🔗 <b>Tautan Terkait:</b>";
                         foreach ($links as $l) {
                             $lTitle = htmlspecialchars($l['title'] ?? 'Tautan');
                             $lUrl = htmlspecialchars($l['url']);
-                            $msg .= "      • <a href=\"{$lUrl}\">{$lTitle}</a>\n";
+                            $lText .= "\n• <a href=\"{$lUrl}\">{$lTitle}</a>";
                         }
+                        $details[] = $lText;
                     }
                 }
 
                 if (!empty($material->notes)) {
                     $cleanNotes = htmlspecialchars(trim($material->notes));
-                    $msg .= "   📝 Catatan: <i>" . Str::limit($cleanNotes, 160) . "</i>\n";
+                    $details[] = "📝 Catatan: <i>" . Str::limit($cleanNotes, 200) . "</i>";
                 }
 
-                $msg .= "\n";
+                if (!empty($details)) {
+                    $msg .= "<blockquote expandable>\n" . implode("\n", $details) . "\n</blockquote>\n\n";
+                } else {
+                    $msg .= "\n";
+                }
             }
         }
 
@@ -576,8 +691,10 @@ class TelegramWebhookController extends Controller
     protected function handleIdCommand(int|string $chatId): void
     {
         $msg = "🔢 <b>Chat ID Telegram Anda:</b>\n\n"
-             . "<code>{$chatId}</code>\n\n"
-             . "<i>Gunakan angka ID ini pada menu Pengaturan Profil di Academic Hub untuk menghubungkan bot notifikasi.</i>";
+             . "<code>{$chatId}</code> <i>(ketuk untuk menyalin)</i>\n\n"
+             . "<blockquote>\n"
+             . "💡 <i>Gunakan angka ID ini pada menu Pengaturan Notifikasi & Kampus di Academic Hub untuk menghubungkan bot notifikasi.</i>\n"
+             . "</blockquote>";
 
         $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
     }
@@ -623,16 +740,20 @@ class TelegramWebhookController extends Controller
              . "• 🔐 <b>/reset</b> - Atur ulang kata sandi akun Anda\n"
              . "• 🔢 <b>/id</b> - Melihat nomor Chat ID Telegram Anda\n"
              . "• ℹ️ <b>/help</b> - Panduan & bantuan perintah bot\n\n"
-             . $reminderNote;
+             . "<blockquote>\n"
+             . $reminderNote . "\n"
+             . "</blockquote>";
 
         $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
     }
 
     protected function handleDefaultMessage(int|string $chatId, ?User $user): void
     {
-        $name = $user ? $user->name : 'Mahasiswa';
+        $name = $user ? htmlspecialchars($user->name) : 'Mahasiswa';
         $msg = "Halo <b>{$name}</b>! 👋\n\n"
-             . "Silakan ketuk tombol biru <b>[ Menu ]</b> di pojok kiri bawah atau gunakan perintah berikut:\n"
+             . "<blockquote>\n"
+             . "💡 <i>Silakan ketuk tombol biru <b>[ Menu ]</b> di pojok kiri bawah atau gunakan perintah berikut:</i>\n"
+             . "</blockquote>\n\n"
              . "• 📅 <b>/jadwal</b> - Jadwal kuliah hari ini\n"
              . "• 🗓️ <b>/semua_jadwal</b> - Rangkuman semua jadwal\n"
              . "• 📝 <b>/tugas</b> - Tugas aktif mendekati deadline\n"
@@ -685,7 +806,9 @@ class TelegramWebhookController extends Controller
                   . "   🔗 <a href=\"{$pUrl}\">{$pUrl}</a>\n\n";
         }
 
-        $msg .= "💡 <i>Ketuk tombol tautan langsung di bawah untuk membuka di browser:</i>";
+        $msg .= "<blockquote>\n"
+              . "💡 <i>Ketuk tombol tautan langsung di bawah untuk membuka di browser:</i>\n"
+              . "</blockquote>";
 
         $buttons = [];
         $hasLongName = false;
