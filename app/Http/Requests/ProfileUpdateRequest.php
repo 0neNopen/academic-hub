@@ -19,14 +19,21 @@ class ProfileUpdateRequest extends FormRequest
                 if (!is_array($portal)) {
                     return false;
                 }
-                $name = trim($portal['name'] ?? '');
                 $url = trim($portal['url'] ?? '');
-                return $name !== '' || $url !== '';
+                return $url !== '';
             }));
 
             $this->merge([
-                'campus_portals' => $filtered,
+                'campus_portals' => !empty($filtered) ? $filtered : null,
             ]);
+        }
+
+        if ($this->has('campus_portal_url') && trim((string) $this->campus_portal_url) === '') {
+            $this->merge(['campus_portal_url' => null]);
+        }
+
+        if ($this->has('telegram_chat_id') && trim((string) $this->telegram_chat_id) === '') {
+            $this->merge(['telegram_chat_id' => null]);
         }
     }
 

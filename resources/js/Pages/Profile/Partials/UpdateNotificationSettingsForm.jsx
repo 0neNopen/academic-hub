@@ -27,10 +27,10 @@ export default function UpdateNotificationSettingsForm({ className = "" }) {
         if (user.campus_portal_url) {
             return [{ name: "Portal SIAKAD", url: user.campus_portal_url }];
         }
-        return [{ name: "SIAKAD", url: "" }];
+        return [{ name: "", url: "" }];
     };
 
-    const { data, setData, patch, errors, processing, recentlySuccessful } =
+    const { data, setData, patch, errors, processing, recentlySuccessful, transform } =
         useForm({
             name: user.name,
             email: user.email,
@@ -73,8 +73,16 @@ export default function UpdateNotificationSettingsForm({ className = "" }) {
 
     const submit = (e) => {
         e.preventDefault();
-        const firstValid = data.campus_portals.find((p) => p.url && p.url.trim() !== "");
-        data.campus_portal_url = firstValid ? firstValid.url.trim() : "";
+        const validPortals = data.campus_portals.filter(
+            (p) => p && typeof p.url === "string" && p.url.trim() !== ""
+        );
+        const firstValid = validPortals.length > 0 ? validPortals[0] : null;
+
+        transform((currentData) => ({
+            ...currentData,
+            campus_portal_url: firstValid ? firstValid.url.trim() : "",
+            campus_portals: validPortals.length > 0 ? validPortals : [],
+        }));
         patch(route("profile.update"));
     };
 
@@ -387,17 +395,37 @@ export default function UpdateNotificationSettingsForm({ className = "" }) {
                                         </p>
                                     </div>
                                 </div>
-                                {data.telegram_chat_id ? (
-                                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-100/90 dark:bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800/60 shadow-2xs">
-                                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                                        Terhubung
-                                    </span>
-                                ) : (
-                                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-900 dark:text-amber-300 bg-amber-100/90 dark:bg-amber-950/80 px-3 py-1 rounded-full border border-amber-200 dark:border-amber-800/60 shadow-2xs">
-                                        <Info className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                                        Belum Terhubung
-                                    </span>
-                                )}
+                                {(() => {
+                                    const savedId = String(user.telegram_chat_id || "").trim();
+                                    const currentId = String(data.telegram_chat_id || "").trim();
+                                    const isSaved = Boolean(savedId && currentId === savedId);
+                                    const isUnsaved = Boolean(currentId && currentId !== savedId);
+
+                                    if (isSaved) {
+                                        return (
+                                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-100/90 dark:bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800/60 shadow-2xs">
+                                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                                                Terhubung
+                                            </span>
+                                        );
+                                    }
+
+                                    if (isUnsaved) {
+                                        return (
+                                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-800 dark:text-amber-300 bg-amber-100/90 dark:bg-amber-950/80 px-3 py-1 rounded-full border border-amber-300 dark:border-amber-800/60 shadow-2xs">
+                                                <Info className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                                                Belum Disimpan
+                                            </span>
+                                        );
+                                    }
+
+                                    return (
+                                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full border border-gray-200 dark:border-gray-700 shadow-2xs">
+                                            <Info className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+                                            Belum Terhubung
+                                        </span>
+                                    );
+                                })()}
                             </div>
 
                             <div>
@@ -418,6 +446,12 @@ export default function UpdateNotificationSettingsForm({ className = "" }) {
                                     Masukkan angka unik ID akun Telegram Anda untuk menerima notifikasi kuliah.
                                 </p>
                                 <InputError className="mt-2" message={errors.telegram_chat_id} />
+                                {String(data.telegram_chat_id || "").trim() !== String(user.telegram_chat_id || "").trim() && String(data.telegram_chat_id || "").trim() !== "" && (
+                                    <p className="mt-1.5 text-[11px] font-medium text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                        <Info className="h-3.5 w-3.5 shrink-0" />
+                                        Chat ID baru belum tersimpan. Jangan lupa klik tombol <b>Simpan Pengaturan Notifikasi & Bot</b> di bawah agar bot mengenali Anda.
+                                    </p>
+                                )}
                             </div>
 
                             {/* Panduan 1 Menit */}
@@ -451,7 +485,7 @@ export default function UpdateNotificationSettingsForm({ className = "" }) {
                                         lalu klik <b>Start</b> agar bot memiliki izin mengirimkan pesan ke akun Anda.
                                     </li>
                                     <li className="leading-relaxed">
-                                        Salin angka <b>Id</b> Anda, tempelkan ke kolom Chat ID di atas, lalu klik <b>Simpan Pengaturan</b>.
+                                        Salin angka <b>Id</b> Anda, tempelkan ke kolom Chat ID di atas, lalu klik <b>Simpan Pengaturan Notifikasi & Bot</b> di bawah.
                                     </li>
                                 </ol>
                             </div>
@@ -483,15 +517,15 @@ export default function UpdateNotificationSettingsForm({ className = "" }) {
                                 </div>
                                 <div>
                                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">
-                                        Simpan Perubahan
+                                        Simpan Pengaturan
                                     </h4>
                                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        Terapkan waktu pengingat & portal kampus.
+                                        Terapkan waktu pengingat, Chat ID bot Telegram, & portal kampus.
                                     </p>
                                 </div>
                             </div>
                             <PrimaryButton disabled={processing} className="w-full justify-center py-2.5 shadow-xs text-xs">
-                                {processing ? "Menyimpan..." : "Simpan Pengaturan"}
+                                {processing ? "Menyimpan..." : "Simpan Pengaturan Notifikasi & Bot"}
                             </PrimaryButton>
                             <Transition
                                 show={recentlySuccessful}

@@ -98,7 +98,7 @@ export default function UpdateProfileInformation({
 
                 <div className="flex items-center gap-4 pt-3 border-t border-gray-100 dark:border-gray-800">
                     <PrimaryButton disabled={processing} className="shadow-xs">
-                        {processing ? "Menyimpan..." : "Simpan Profil"}
+                        {processing ? "Menyimpan..." : "Simpan Identitas Profil"}
                     </PrimaryButton>
 
                     <Transition

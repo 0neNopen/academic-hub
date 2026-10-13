@@ -249,4 +249,55 @@ class ProfileTest extends TestCase
         $user->refresh();
         $this->assertEmpty($user->campus_portals);
     }
+
+    public function test_user_can_update_telegram_chat_id_when_campus_portals_contains_empty_url_rows(): void
+    {
+        $user = User::factory()->create([
+            'telegram_chat_id' => null,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'telegram_chat_id' => '7107606089',
+                'campus_portals' => [
+                    ['name' => 'SIAKAD', 'url' => ''],
+                ],
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $user->refresh();
+        $this->assertSame('7107606089', $user->telegram_chat_id);
+        $this->assertEmpty($user->campus_portals);
+    }
+
+    public function test_portals_with_name_only_and_blank_url_are_dropped_without_validation_errors(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'campus_portals' => [
+                    ['name' => 'SIAKAD', 'url' => ''],
+                    ['name' => 'LMS Moodle', 'url' => 'https://lms.kampus.ac.id'],
+                ],
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $user->refresh();
+        $this->assertCount(1, $user->campus_portals);
+        $this->assertSame('LMS Moodle', $user->campus_portals[0]['name']);
+        $this->assertSame('https://lms.kampus.ac.id', $user->campus_portals[0]['url']);
+    }
 }
