@@ -95,10 +95,10 @@ class SendDailySchedule extends Command
                 $message .= "Hari: <b>{$todayDay}, {$formattedDate}</b>\n\n";
                 $message .= "Halo <b>{$userName}</b>! Semangat mengawali harimu 💪\n\n";
                 $message .= "📌 <b>Jadwal Kuliah Belum Terdaftar:</b>\n";
-                $message .= "<blockquote>Akun Academic Hub kamu saat ini belum memiliki daftar mata kuliah.\n\n";
+                $message .= "Akun Academic Hub kamu saat ini belum memiliki daftar mata kuliah.\n\n";
                 $message .= "Yuk lengkapi jadwal kuliah semester ini di website agar bot bisa:\n";
-                $message .= "• Mengingatkan kelas setiap pagi beserta jam & ruangannya\n";
-                $message .= "• Membantu memantau deadline tugas kuliahmu</blockquote>\n\n";
+                $message .= "✓ Mengingatkan kelas setiap pagi beserta jam & ruangannya\n";
+                $message .= "✓ Membantu memantau deadline tugas kuliahmu\n\n";
                 $message .= "👉 Tambah jadwal sekarang:\n";
                 $message .= "🔗 Dashboard: {$appUrl}/dashboard";
             }
@@ -107,31 +107,31 @@ class SendDailySchedule extends Command
                 $message = "🌴 <b>HAPPY WEEKEND! (SABTU SANTAI)</b>\n";
                 $message .= "Hari: <b>Sabtu, {$formattedDate}</b>\n\n";
                 $message .= "Selamat pagi <b>{$userName}</b>! Waktunya rehat sejenak setelah sepekan beraktivitas 🥳\n";
-                $message .= "<blockquote>Nikmati hari libur ini untuk refreshing, istirahat, atau kumpul bersama orang terdekat.</blockquote>\n\n";
+                $message .= "Nikmati hari libur ini untuk refreshing, istirahat, atau kumpul bersama orang terdekat.\n\n";
 
                 // Status tugas mandiri aktif
                 if ($allPendingAssignments->isNotEmpty()) {
                     $message .= "📋 <b>Status Tugas Mandiri:</b>\n";
-                    $message .= "Kamu masih memiliki <b>" . $allPendingAssignments->count() . " tugas aktif</b> nih. Kalau ada waktu luang, yuk cicil santai agar pekan depan lebih tenang:\n";
+                    $message .= "Kamu masih memiliki " . $allPendingAssignments->count() . " tugas aktif nih. Kalau ada waktu luang, yuk cicil santai agar pekan depan lebih tenang:\n";
                     $limitTasks = $allPendingAssignments->take(3);
                     $tIdx = 1;
                     foreach ($limitTasks as $task) {
                         $dl = Carbon::parse($task->deadline)->locale('id')->timezone($tz);
                         $cName = $task->course?->name ?? 'Mata Kuliah';
-                        $tType = $task->assignment_type === 'group' ? ' 👥 <i>Kelompok</i>' : ' 👤 <i>Individu</i>';
-                        $prioTag = $task->priority === 'high' ? ' 🔴 <b>Prioritas Tinggi</b>' : '';
-                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b> ({$cName}){$tType}{$prioTag}\n";
-                        $message .= "   ⏰ Deadline: <code>" . $dl->isoFormat('dddd, D MMM - HH:mm') . " WIB</code>\n";
+                        $tType = $task->assignment_type === 'group' ? ' [👥 Kelompok]' : ' [👤 Individu]';
+                        $prioTag = $task->priority === 'high' ? ' [🔴 Prioritas Tinggi]' : '';
+                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b>{$tType}{$prioTag} (" . htmlspecialchars($cName) . ")\n";
+                        $message .= "   ⏰ Deadline: " . $dl->isoFormat('dddd, D MMM - HH:mm') . " WIB\n";
                         $tIdx++;
                     }
-                    $message .= "\n👉 Ketik <b>/tugas</b> untuk melihat detail seluruh tugasmu.\n\n";
+                    $message .= "👉 Ketik <b>/tugas</b> untuk melihat detail seluruh tugasmu.\n\n";
                 } else {
-                    $message .= "<blockquote>🎉 Hore! Semua tugasmu sudah beres. Nikmati akhir pekan tanpa beban pikiran ya!</blockquote>\n\n";
+                    $message .= "🎉 <i>Hore! Semua tugasmu sudah beres. Nikmati akhir pekan tanpa beban pikiran ya!</i>\n\n";
                 }
 
                 $message .= "💡 <b>Aksi Cepat:</b>\n";
-                $message .= "• /tugas — Cek tugas aktif\n";
-                $message .= "• /semua_jadwal — Intip jadwal kuliah sepekan\n\n";
+                $message .= "• /tugas - Cek tugas aktif\n";
+                $message .= "• /semua_jadwal - Intip jadwal kuliah sepekan\n\n";
                 $message .= "🔗 Dashboard: {$appUrl}/dashboard";
             }
             // KASUS 3: HARI MINGGU (Edisi Sunday Recharge) & Tidak ada jadwal kelas hari ini
@@ -139,7 +139,7 @@ class SendDailySchedule extends Command
                 $message = "☕ <b>SELAMAT HARI MINGGU!</b>\n";
                 $message .= "Hari: <b>Minggu, {$formattedDate}</b>\n\n";
                 $message .= "Selamat pagi <b>{$userName}</b>! Semoga akhir pekanmu menyenangkan dan berenergi ✨\n\n";
-                $message .= "<blockquote>🔋 Isi ulang energimu dan luangkan waktu sejenak untuk persiapan perkuliahan besok.</blockquote>\n\n";
+                $message .= "🔋 <i>Isi ulang energimu dan luangkan waktu sejenak untuk persiapan perkuliahan besok.</i>\n\n";
 
                 // Intipan kuliah besok Senin
                 $tomorrowCourses = $allCourses->filter(function ($c) {
@@ -151,17 +151,15 @@ class SendDailySchedule extends Command
                     $message .= "Besok kamu memiliki " . $tomorrowCourses->count() . " mata kuliah:\n";
                     $cIdx = 1;
                     foreach ($tomorrowCourses as $course) {
-                        $code = $course->code ? " <code>[" . htmlspecialchars($course->code) . "]</code>" : "";
-                        $time = $course->start_time ? "<code>" . substr($course->start_time, 0, 5) . " WIB</code>" : "<i>Waktu menyesuaikan</i>";
-                        $room = $course->room ? " — Ruang " . htmlspecialchars($course->room) : "";
-                        $message .= "{$cIdx}. <b>" . $course->name . "</b>{$code}\n";
-                        $message .= "   🕒 {$time}{$room}\n";
+                        $time = $course->start_time ? substr($course->start_time, 0, 5) . " WIB" : "Waktu menyesuaikan";
+                        $room = $course->room ? " - " . htmlspecialchars($course->room) : "";
+                        $message .= "{$cIdx}. <b>" . htmlspecialchars($course->name) . "</b> ({$time}{$room})\n";
                         $cIdx++;
                     }
                     $message .= "\n";
                 } else {
                     $message .= "📅 <b>Info Besok (Senin):</b>\n";
-                    $message .= "<blockquote>🎉 Besok hari Senin kamu juga tidak ada jadwal kelas (Free Day)!</blockquote>\n\n";
+                    $message .= "🎉 <i>Besok hari Senin kamu juga tidak ada jadwal kelas (Free Day)!</i>\n\n";
                 }
 
                 // Pengingat tugas terdekat
@@ -172,18 +170,18 @@ class SendDailySchedule extends Command
                     foreach ($limitTasks as $task) {
                         $dl = Carbon::parse($task->deadline)->locale('id')->timezone($tz);
                         $cName = $task->course?->name ?? 'Mata Kuliah';
-                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b> ({$cName})\n";
-                        $message .= "   ⏰ Deadline: <code>" . $dl->isoFormat('dddd, D MMM - HH:mm') . " WIB</code>\n";
+                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b> (" . htmlspecialchars($cName) . ")\n";
+                        $message .= "   ⏰ Deadline: " . $dl->isoFormat('dddd, D MMM - HH:mm') . " WIB\n";
                         $tIdx++;
                     }
-                    $message .= "\n👉 Ketik <b>/tugas</b> untuk detail tugas lainnya.\n\n";
+                    $message .= "👉 Ketik <b>/tugas</b> untuk detail tugas lainnya.\n\n";
                 } else {
-                    $message .= "<blockquote>🎉 Tidak ada tanggungan tugas mendesak. Siap menyambut pekan baru!</blockquote>\n\n";
+                    $message .= "🎉 <i>Tidak ada tanggungan tugas mendesak. Siap menyambut pekan baru!</i>\n\n";
                 }
 
                 $message .= "💡 <b>Aksi Cepat:</b>\n";
-                $message .= "• /tugas — Cek tugas aktif\n";
-                $message .= "• /semua_jadwal — Lihat jadwal lengkap sepekan\n\n";
+                $message .= "• /tugas - Cek tugas aktif\n";
+                $message .= "• /semua_jadwal - Lihat jadwal lengkap sepekan\n\n";
                 $message .= "🔗 Dashboard: {$appUrl}/dashboard";
             }
             // KASUS 4: HARI KERJA (Senin - Jumat) & Hari Bebas Kuliah (Free Day)
@@ -192,7 +190,7 @@ class SendDailySchedule extends Command
                 $message .= "Hari: <b>{$todayDay}, {$formattedDate}</b>\n\n";
                 $message .= "Selamat pagi <b>{$userName}</b>!\n\n";
                 $message .= "🎉 <b>Hari Bebas Kuliah (Free Day)!</b>\n";
-                $message .= "<blockquote>🏖️ Tidak ada jadwal kuliah hari ini! Manfaatkan waktu untuk istirahat, mengulang materi, atau menyelesaikan tugas.</blockquote>\n\n";
+                $message .= "🏖️ <i>Tidak ada jadwal kuliah hari ini! Manfaatkan waktu untuk istirahat, mengulang materi, atau menyelesaikan tugas.</i>\n\n";
 
                 // Cek apakah ada deadline hari ini
                 if ($todayAssignments->isNotEmpty()) {
@@ -201,28 +199,21 @@ class SendDailySchedule extends Command
                     foreach ($todayAssignments as $task) {
                         $dl = Carbon::parse($task->deadline)->locale('id')->timezone($tz);
                         $cName = $task->course?->name ?? 'Mata Kuliah';
-                        $tType = $task->assignment_type === 'group' ? ' 👥 <i>Kelompok</i>' : ' 👤 <i>Individu</i>';
-                        $prioTag = $task->priority === 'high' ? ' 🔴 <b>Prioritas Tinggi</b>' : '';
-                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b> ({$cName}){$tType}{$prioTag}\n";
-                        $message .= "   ⏰ Jam: <code>" . $dl->format('H:i') . " WIB</code>\n";
-
-                        $taskDetails = [];
+                        $tType = $task->assignment_type === 'group' ? ' [👥 Kelompok]' : ' [👤 Individu]';
+                        $prioTag = $task->priority === 'high' ? ' [🔴 Prioritas Tinggi]' : '';
+                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b>{$tType}{$prioTag} ({$cName})\n";
+                        $message .= "   ⏰ Jam: " . $dl->format('H:i') . " WIB\n";
                         if (!empty($task->description)) {
                             $cleanDesc = htmlspecialchars(trim($task->description));
-                            $taskDetails[] = "📝 " . Str::limit($cleanDesc, 120);
+                            $message .= "   📝 Keterangan: <i>" . Str::limit($cleanDesc, 100) . "</i>\n";
                         }
                         $links = $task->all_links;
                         if (!empty($links)) {
-                            $linkItems = [];
                             foreach ($links as $l) {
                                 $lTitle = htmlspecialchars($l['title'] ?? 'Link');
                                 $lUrl = htmlspecialchars($l['url']);
-                                $linkItems[] = "<a href=\"{$lUrl}\">{$lTitle}</a>";
+                                $message .= "   🔗 <a href=\"{$lUrl}\">{$lTitle}</a>\n";
                             }
-                            $taskDetails[] = "🔗 " . implode(' • ', $linkItems);
-                        }
-                        if (!empty($taskDetails)) {
-                            $message .= "   <blockquote expandable>" . implode("\n   ", $taskDetails) . "</blockquote>\n";
                         }
                         $tIdx++;
                     }
@@ -233,12 +224,12 @@ class SendDailySchedule extends Command
                     foreach ($limitTasks as $task) {
                         $dl = Carbon::parse($task->deadline)->locale('id')->timezone($tz);
                         $cName = $task->course?->name ?? 'Mata Kuliah';
-                        $tType = $task->assignment_type === 'group' ? ' 👥 <i>Kelompok</i>' : ' 👤 <i>Individu</i>';
-                        $prioTag = $task->priority === 'high' ? ' 🔴 <b>Prioritas Tinggi</b>' : '';
-                        $message .= "• <b>" . htmlspecialchars($task->title) . "</b> ({$cName}){$tType}{$prioTag}\n";
-                        $message .= "   ⏰ Deadline: <code>" . $dl->isoFormat('dddd, D MMM - HH:mm') . " WIB</code>\n";
+                        $tType = $task->assignment_type === 'group' ? ' [👥 Kelompok]' : ' [👤 Individu]';
+                        $prioTag = $task->priority === 'high' ? ' [🔴 Prioritas Tinggi]' : '';
+                        $message .= "• <b>" . htmlspecialchars($task->title) . "</b>{$tType}{$prioTag} ({$cName})\n";
+                        $message .= "   ⏰ Deadline: " . $dl->isoFormat('dddd, D MMM - HH:mm') . " WIB\n";
                     }
-                    $message .= "\n👉 Ketik <b>/tugas</b> untuk cek semua tugas aktif.\n\n";
+                    $message .= "👉 Ketik <b>/tugas</b> untuk cek semua tugas aktif.\n\n";
                 }
 
                 $portals = $user->all_campus_portals;
@@ -265,40 +256,34 @@ class SendDailySchedule extends Command
                 $message .= "📚 <b>Kelas Hari Ini (" . $todayCourses->count() . " Matkul):</b>\n";
                 $idx = 1;
                 foreach ($todayCourses as $course) {
-                    $codeText = $course->code ? " <code>[" . htmlspecialchars($course->code) . "]</code>" : "";
-                    $message .= "{$idx}. <b>" . $course->name . "</b>{$codeText}\n";
+                    $codeText = $course->code ? " [{$course->code}]" : "";
+                    $message .= "{$idx}. <b>" . htmlspecialchars($course->name) . "</b>{$codeText}\n";
                     if ($course->start_time) {
                         $start = substr($course->start_time, 0, 5);
                         $end = $course->end_time ? substr($course->end_time, 0, 5) : 'Selesai';
-                        $message .= "   🕒 <code>{$start} - {$end} WIB</code>\n";
+                        $message .= "   🕒 Waktu: {$start} - {$end} WIB\n";
                     } else {
-                        $message .= "   🕒 <i>Waktu menyesuaikan dosen</i>\n";
-                    }
-                    if ($course->room) {
-                        $message .= "   📍 Ruang: <b>" . htmlspecialchars($course->room) . "</b>\n";
+                        $message .= "   🕒 Waktu: Menyesuaikan Dosen\n";
                     }
                     if ($course->lecturer_name) {
                         $message .= "   👨‍🏫 Dosen: " . htmlspecialchars($course->lecturer_name) . "\n";
                     }
-
-                    $optionalDetails = [];
-                    if (!empty($course->pj_name)) {
+                    if ($course->room) {
+                        $message .= "   📍 Ruang: " . htmlspecialchars($course->room) . "\n";
+                    }
+                    if ($course->pj_name) {
                         $pjPhone = '';
-                        if (!empty($course->pj_phone)) {
+                        if ($course->pj_phone) {
                             $cleanPhone = preg_replace('/[^0-9]/', '', $course->pj_phone);
                             if (str_starts_with($cleanPhone, '0')) {
                                 $cleanPhone = '62' . substr($cleanPhone, 1);
                             }
                             $pjPhone = " (<a href=\"https://wa.me/{$cleanPhone}\">WhatsApp</a>)";
                         }
-                        $optionalDetails[] = "👤 PJ: " . htmlspecialchars($course->pj_name) . $pjPhone;
+                        $message .= "   👤 PJ: " . htmlspecialchars($course->pj_name) . "{$pjPhone}\n";
                     }
-                    if (!empty($course->attendance_url)) {
-                        $optionalDetails[] = "📝 Presensi: <a href=\"" . htmlspecialchars($course->attendance_url) . "\">Link Presensi</a>";
-                    }
-
-                    if (!empty($optionalDetails)) {
-                        $message .= "   <blockquote expandable>" . implode("\n   ", $optionalDetails) . "</blockquote>\n";
+                    if ($course->attendance_url) {
+                        $message .= "   📝 Presensi: <a href=\"" . htmlspecialchars($course->attendance_url) . "\">Link Presensi</a>\n";
                     }
                     $idx++;
                 }
@@ -311,28 +296,21 @@ class SendDailySchedule extends Command
                     foreach ($todayAssignments as $task) {
                         $dl = Carbon::parse($task->deadline)->locale('id')->timezone($tz);
                         $cName = $task->course?->name ?? 'Mata Kuliah';
-                        $tType = $task->assignment_type === 'group' ? ' 👥 <i>Kelompok</i>' : ' 👤 <i>Individu</i>';
-                        $prioTag = $task->priority === 'high' ? ' 🔴 <b>Prioritas Tinggi</b>' : '';
-                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b> ({$cName}){$tType}{$prioTag}\n";
-                        $message .= "   ⏰ Jam: <code>" . $dl->format('H:i') . " WIB</code>\n";
-
-                        $taskDetails = [];
+                        $tType = $task->assignment_type === 'group' ? ' [👥 Kelompok]' : ' [👤 Individu]';
+                        $prioTag = $task->priority === 'high' ? ' [🔴 Prioritas Tinggi]' : '';
+                        $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b>{$tType}{$prioTag} ({$cName})\n";
+                        $message .= "   ⏰ Jam: " . $dl->format('H:i') . " WIB\n";
                         if (!empty($task->description)) {
                             $cleanDesc = htmlspecialchars(trim($task->description));
-                            $taskDetails[] = "📝 " . Str::limit($cleanDesc, 120);
+                            $message .= "   📝 Keterangan: <i>" . Str::limit($cleanDesc, 100) . "</i>\n";
                         }
                         $links = $task->all_links;
                         if (!empty($links)) {
-                            $linkItems = [];
                             foreach ($links as $l) {
                                 $lTitle = htmlspecialchars($l['title'] ?? 'Link');
                                 $lUrl = htmlspecialchars($l['url']);
-                                $linkItems[] = "<a href=\"{$lUrl}\">{$lTitle}</a>";
+                                $message .= "   🔗 <a href=\"{$lUrl}\">{$lTitle}</a>\n";
                             }
-                            $taskDetails[] = "🔗 " . implode(' • ', $linkItems);
-                        }
-                        if (!empty($taskDetails)) {
-                            $message .= "   <blockquote expandable>" . implode("\n   ", $taskDetails) . "</blockquote>\n";
                         }
                         $tIdx++;
                     }

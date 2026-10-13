@@ -93,20 +93,25 @@ class SendAssignmentReminderJob implements ShouldQueue
 
         $assignmentLinks = $assignment->all_links;
         $linksWA = '';
+        $linksTG = '';
 
         if (!empty($assignmentLinks)) {
             if (count($assignmentLinks) === 1) {
                 $lTitle = $assignmentLinks[0]['title'] ?? 'Link Pengumpulan';
                 $lUrl = $assignmentLinks[0]['url'];
                 $linksWA = "🔗 *{$lTitle}:* {$lUrl}\n\n";
+                $linksTG = "🔗 <b>" . htmlspecialchars($lTitle) . ":</b> <a href=\"" . htmlspecialchars($lUrl) . "\">" . htmlspecialchars($lUrl) . "</a>\n\n";
             } else {
                 $linksWA = "🔗 *Tautan Terkait:*\n";
+                $linksTG = "🔗 <b>Tautan Terkait:</b>\n";
                 foreach ($assignmentLinks as $l) {
                     $lTitle = $l['title'] ?? 'Link';
                     $lUrl = $l['url'];
                     $linksWA .= "• {$lTitle}: {$lUrl}\n";
+                    $linksTG .= "• " . htmlspecialchars($lTitle) . ": <a href=\"" . htmlspecialchars($lUrl) . "\">" . htmlspecialchars($lUrl) . "</a>\n";
                 }
                 $linksWA .= "\n";
+                $linksTG .= "\n";
             }
         }
 
@@ -121,32 +126,16 @@ class SendAssignmentReminderJob implements ShouldQueue
             . $linksWA
             . "Yuk segera diselesaikan agar tidak terburu-buru!";
 
-        // Format Pesan Telegram (Modern Premium HTML + Inline Keyboard Button)
-        $optionalBlock = [];
-        if (!empty($assignment->description)) {
-            $cleanDesc = htmlspecialchars(trim($assignment->description));
-            $optionalBlock[] = "📝 <i>" . Str::limit($cleanDesc, 200) . "</i>";
-        }
-        if (!empty($assignmentLinks)) {
-            $linkLines = [];
-            foreach ($assignmentLinks as $l) {
-                $lTitle = htmlspecialchars($l['title'] ?? 'Link');
-                $lUrl = htmlspecialchars($l['url']);
-                $linkLines[] = "<a href=\"{$lUrl}\">{$lTitle}</a>";
-            }
-            $optionalBlock[] = "🔗 " . implode(' • ', $linkLines);
-        }
-
-        $detailsBlock = !empty($optionalBlock) ? "<blockquote expandable>" . implode("\n", $optionalBlock) . "</blockquote>\n" : "";
-
+        // Format Pesan Telegram (HTML + Inline Keyboard Button)
         $tgMessage = "{$urgencyTitleTG}\n\n"
             . "Halo <b>" . htmlspecialchars($user->name) . "</b>!\n"
             . "Tugas <b>" . htmlspecialchars($assignment->title) . "</b> (" . htmlspecialchars($assignment->course->name) . ") {$statusWaktuTG}:\n\n"
             . $typeTagTG
-            . "📅 <b>Batas Pengumpulan:</b> <code>{$formattedDeadline}</code>\n"
-            . "⏱️ <b>Sisa Waktu:</b> <b>{$timeRemainingText}</b>\n\n"
-            . ($detailsBlock ? "{$detailsBlock}\n" : "")
-            . "💡 <i>Yuk segera diselesaikan dan kumpulkan tepat waktu!</i>";
+            . "📅 <b>Batas Pengumpulan:</b> {$formattedDeadline}\n"
+            . "⏱️ <b>Sisa Waktu:</b> {$timeRemainingText}\n"
+            . ($descTG ? "{$descTG}\n" : "\n")
+            . $linksTG
+            . "Yuk segera diselesaikan dan kumpulkan tepat waktu!";
 
         $appUrl = config('app.url', 'http://localhost');
         $tgButtons = $telegramService->buildSubmissionButton($assignment->submission_url, $assignment->links, $appUrl);
