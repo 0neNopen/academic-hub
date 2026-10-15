@@ -8,6 +8,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
@@ -60,16 +61,20 @@ class RegisteredUserController extends Controller
             ]);
         }
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'email_verified_at' => now(),
-        ]);
+        $user = DB::transaction(function () use ($request) {
+            $createdUser = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'email_verified_at' => now(),
+            ]);
 
-        if ($request->boolean('is_d3_ti')) {
-            \App\Services\CoursePackageService::seedD3TI($user);
-        }
+            if ($request->boolean('is_d3_ti')) {
+                \App\Services\CoursePackageService::seedD3TI($createdUser);
+            }
+
+            return $createdUser;
+        });
 
         try {
             event(new Registered($user));

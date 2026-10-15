@@ -46,7 +46,7 @@ export default function UpdateNotificationSettingsForm({ className = "" }) {
             campus_name: user.campus_name || "",
             campus_portal_url: user.campus_portal_url || "",
             campus_portals: initialPortals(),
-            notification_channel: "telegram",
+            notification_channel: user.notification_channel || "telegram",
             telegram_chat_id: user.telegram_chat_id || "",
         });
 

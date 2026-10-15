@@ -144,7 +144,7 @@ export default function CourseShow({ course }) {
             };
         }
 
-        if (['jpg', 'jpeg', 'png', 'webp', 'svg', 'gif'].includes(ext)) {
+        if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) {
             return {
                 ext: ext.toUpperCase(),
                 type: 'image',
@@ -565,9 +565,11 @@ export default function CourseShow({ course }) {
                         </Link>
                         <div>
                             <div className="flex items-center gap-2">
-                                <span className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400 uppercase bg-blue-50 dark:bg-blue-950/70 border border-blue-200/60 dark:border-blue-900/60 px-2 py-0.5 rounded">
-                                    {course.code || 'MK'}
-                                </span>
+                                {course.code && (
+                                    <span className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400 uppercase bg-blue-50 dark:bg-blue-950/70 border border-blue-200/60 dark:border-blue-900/60 px-2 py-0.5 rounded">
+                                        {course.code}
+                                    </span>
+                                )}
                                 <h2 className="text-xl font-bold text-gray-800 dark:text-white leading-tight">
                                     {course.name}
                                 </h2>
@@ -632,35 +634,27 @@ export default function CourseShow({ course }) {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
-                        <button
-                            onClick={() => setIsAssignmentModalOpen(true)}
-                            className="order-1 sm:order-4 inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition"
-                        >
-                            <Plus className="h-4 w-4" />
-                            Tugas Baru
-                        </button>
-                        <button
-                            onClick={() => setIsMaterialModalOpen(true)}
-                            className="order-2 sm:order-3 inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 shadow-xs hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-                        >
-                            <Plus className="h-4 w-4" />
-                            Materi
-                        </button>
+                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                         <button
                             onClick={openEditCourse}
-                            className="order-3 sm:order-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 shadow-xs hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 shadow-xs hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                         >
                             <Pencil className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
                             Edit Matkul
                         </button>
                         <button
-                            onClick={handleDeleteCourse}
-                            className="order-4 sm:order-2 inline-flex items-center justify-center gap-1.5 rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/30 px-3 py-2 text-xs font-semibold text-red-600 dark:text-red-400 shadow-xs hover:bg-red-100 dark:hover:bg-red-900/50 transition"
-                            title="Hapus Mata Kuliah"
+                            onClick={() => setIsMaterialModalOpen(true)}
+                            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 shadow-xs hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                         >
-                            <Trash2 className="h-3.5 w-3.5" />
-                            Hapus Matkul
+                            <Plus className="h-4 w-4" />
+                            Materi
+                        </button>
+                        <button
+                            onClick={() => setIsAssignmentModalOpen(true)}
+                            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Tugas Baru
                         </button>
                     </div>
                 </div>
@@ -669,7 +663,7 @@ export default function CourseShow({ course }) {
             <Head title={`Detail: ${course.name}`} />
 
             <div className="py-8">
-                <div className="mx-auto max-w-[1720px] px-4 sm:px-6 lg:px-8 xl:px-10">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     {/* Mobile Segmented Control Tab */}
                     <div className="flex lg:hidden p-1 bg-gray-200/80 dark:bg-gray-800 rounded-xl mb-5">
                         <button

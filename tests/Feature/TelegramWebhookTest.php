@@ -100,7 +100,7 @@ class TelegramWebhookTest extends TestCase
         $telegramMock->shouldReceive('sendMessage')
             ->once()
             ->withArgs(function ($chatId, $msg) {
-                return $chatId == 12345678 && str_contains($msg, 'Algoritma & Pemrograman');
+                return $chatId == 12345678 && str_contains($msg, 'Algoritma &amp; Pemrograman');
             })
             ->andReturn(true);
 
@@ -247,7 +247,7 @@ class TelegramWebhookTest extends TestCase
             ->withArgs(function ($chatId, $msg) {
                 return $chatId == 12345678 
                     && str_contains($msg, 'Arsip Berkas Materi Perkuliahan')
-                    && str_contains($msg, 'Struktur Data & Algoritma')
+                    && str_contains($msg, 'Struktur Data &amp; Algoritma')
                     && str_contains($msg, '1 berkas');
             })
             ->andReturn(true);
@@ -291,6 +291,58 @@ class TelegramWebhookTest extends TestCase
         ]);
 
         $response->assertStatus(200);
+    }
+
+    public function test_telegram_webhook_rejects_reset_command_for_unlinked_user(): void
+    {
+        $telegramMock = $this->makeMock();
+        $telegramMock->shouldReceive('sendMessage')
+            ->once()
+            ->withArgs(function ($chatId, $msg, $keyboard) {
+                return $chatId == 99999999
+                    && str_contains($msg, 'Demi alasan keamanan')
+                    && str_contains($msg, 'sudah terhubung sebelumnya');
+            })
+            ->andReturn(true);
+
+        $this->app->instance(TelegramService::class, $telegramMock);
+
+        // Attacker tries to reset someone's account using /reset victim@email.com
+        $response = $this->postJson('/telegram/webhook', [
+            'message' => [
+                'chat' => ['id' => 99999999],
+                'text' => '/reset victim@example.com',
+            ],
+        ]);
+
+        $response->assertStatus(200);
+    }
+
+    public function test_telegram_webhook_validates_secret_token_when_configured(): void
+    {
+        config(['services.telegram.webhook_secret' => 'valid-tg-secret-token']);
+
+        $telegramMock = $this->makeMock();
+        $telegramMock->shouldReceive('sendMessage')->once()->andReturn(true);
+        $this->app->instance(TelegramService::class, $telegramMock);
+
+        // Without header -> 403
+        $this->postJson('/telegram/webhook', [
+            'message' => ['chat' => ['id' => 12345678], 'text' => '/start'],
+        ])->assertStatus(403);
+
+        // With wrong header -> 403
+        $this->postJson('/telegram/webhook', [
+            'message' => ['chat' => ['id' => 12345678], 'text' => '/start'],
+        ], ['X-Telegram-Bot-Api-Secret-Token' => 'wrong-secret'])->assertStatus(403);
+
+        // With correct header -> 200
+        $this->postJson('/telegram/webhook', [
+            'message' => ['chat' => ['id' => 12345678], 'text' => '/start'],
+        ], ['X-Telegram-Bot-Api-Secret-Token' => 'valid-tg-secret-token'])->assertStatus(200);
+
+        // Reset config
+        config(['services.telegram.webhook_secret' => '']);
     }
 
     public function test_telegram_webhook_handles_portal_command_for_linked_user(): void

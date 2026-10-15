@@ -38,7 +38,10 @@ return [
     'telegram' => [
         'bot_token' => env('TELEGRAM_BOT_TOKEN', ''),
         'bot_username' => env('TELEGRAM_BOT_USERNAME', 'AcademicHubBot'),
+        'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET', ''),
     ],
+
+    'cron_key' => env('CRON_KEY'),
 
     'whatsapp' => [
         'driver' => env('WHATSAPP_DRIVER', 'green_api'), // Opsi gratis: green_api (cloud) atau waha (self-hosted)

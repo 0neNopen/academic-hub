@@ -22,7 +22,7 @@ class SendAssignmentReminders extends Command
         $assignments = Assignment::with(['course.user'])
             ->where('status', '!=', 'completed')
             ->where('deadline', '>', $now)
-            ->where('deadline', '<=', $now->copy()->addDays(2))
+            ->where('deadline', '<=', $now->copy()->addDays(3))
             ->where(function ($query) {
                 $query->whereNull('reminder_h24_sent_at')
                       ->orWhereNull('reminder_h3_sent_at');

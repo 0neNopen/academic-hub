@@ -33,12 +33,12 @@ class Course extends Model
     
     public function materials(): HasMany
     {
-    return $this->hasMany(Material::class);
+        return $this->hasMany(Material::class)->chaperone();
     }
 
     public function assignments(): HasMany
     {
-        return $this->hasMany(Assignment::class);
+        return $this->hasMany(Assignment::class)->chaperone();
     }
 
     protected static function booted(): void

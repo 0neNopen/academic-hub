@@ -28,7 +28,7 @@ Route::middleware(['auth'])->group(function () {
             ->latest()
             ->get();
 
-        $upcomingAssignments = Assignment::whereIn('course_id', $user->courses()->pluck('id'))
+        $upcomingAssignments = Assignment::whereIn('course_id', $courses->pluck('id'))
             ->where('status', '!=', 'completed')
             ->orderBy('deadline', 'asc')
             ->with('course')
@@ -68,14 +68,12 @@ Route::middleware(['auth'])->group(function () {
 
 // Webhook Cron Scheduler (Gratis untuk Cloud Deployment via cron-job.org)
 Route::get('/cron/run-schedule', function (Request $request) {
-    $secret = config('app.key');
-    $cronKey = env('CRON_KEY', 'academic-hub-keep-alive-2026');
+    $cronKey = (string) config('services.cron_key');
     $providedKey = (string) $request->query('key');
 
-    $isAppKeyValid = !empty($secret) && hash_equals((string) $secret, $providedKey);
-    $isCronKeyValid = !empty($cronKey) && hash_equals((string) $cronKey, $providedKey);
+    $isCronKeyValid = !empty($cronKey) && hash_equals($cronKey, $providedKey);
 
-    if (!$isAppKeyValid && !$isCronKeyValid) {
+    if (!$isCronKeyValid) {
         return response()->json([
             'status' => 'error',
             'message' => 'Unauthorized cron trigger.',
@@ -93,7 +91,7 @@ Route::get('/cron/run-schedule', function (Request $request) {
     ]);
 });
 
-// Telegram Bot Webhook
-Route::match(['get', 'post'], '/telegram/webhook', [\App\Http\Controllers\TelegramWebhookController::class, 'handle'])->name('telegram.webhook');
+// Telegram Bot Webhook (Hanya menerima POST dari Telegram API)
+Route::post('/telegram/webhook', [\App\Http\Controllers\TelegramWebhookController::class, 'handle'])->name('telegram.webhook');
 
 require __DIR__.'/auth.php';

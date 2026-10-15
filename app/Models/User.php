@@ -90,4 +90,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Course::class);
     }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (User $user) {
+            // Trigger deleting on each related course to cascade physical material file cleanup
+            $user->courses()->each(fn ($course) => $course->delete());
+        });
+    }
 }

@@ -38,6 +38,10 @@ class TelegramService
             return false;
         }
 
+        if (mb_strlen($message) > 4000) {
+            $message = mb_substr($message, 0, 3950) . "\n\n<i>...(pesan dipotong karena batas panjang Telegram)</i>";
+        }
+
         $payload = [
             'chat_id' => $chatId,
             'text' => $message,
@@ -75,6 +79,10 @@ class TelegramService
     {
         if (empty($this->botToken) || empty($chatId)) {
             return null;
+        }
+
+        if (mb_strlen($message) > 4000) {
+            $message = mb_substr($message, 0, 3950) . "\n\n<i>...(pesan dipotong karena batas panjang Telegram)</i>";
         }
 
         $payload = [

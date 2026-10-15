@@ -54,9 +54,14 @@ class Material extends Model
     protected static function booted(): void
     {
         static::deleting(function (Material $material) {
+            if (!$material->file_path) {
+                return;
+            }
             $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
-            if ($material->file_path && \Illuminate\Support\Facades\Storage::disk($disk)->exists($material->file_path)) {
+            if (\Illuminate\Support\Facades\Storage::disk($disk)->exists($material->file_path)) {
                 \Illuminate\Support\Facades\Storage::disk($disk)->delete($material->file_path);
+            } elseif ($disk !== 'public' && \Illuminate\Support\Facades\Storage::disk('public')->exists($material->file_path)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($material->file_path);
             }
         });
     }

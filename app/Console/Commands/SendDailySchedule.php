@@ -198,7 +198,7 @@ class SendDailySchedule extends Command
                     $tIdx = 1;
                     foreach ($todayAssignments as $task) {
                         $dl = Carbon::parse($task->deadline)->locale('id')->timezone($tz);
-                        $cName = $task->course?->name ?? 'Mata Kuliah';
+                        $cName = htmlspecialchars($task->course?->name ?? 'Mata Kuliah', ENT_QUOTES, 'UTF-8');
                         $tType = $task->assignment_type === 'group' ? ' [👥 Kelompok]' : ' [👤 Individu]';
                         $prioTag = $task->priority === 'high' ? ' [🔴 Prioritas Tinggi]' : '';
                         $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b>{$tType}{$prioTag} ({$cName})\n";
@@ -223,7 +223,7 @@ class SendDailySchedule extends Command
                     $limitTasks = $allPendingAssignments->take(2);
                     foreach ($limitTasks as $task) {
                         $dl = Carbon::parse($task->deadline)->locale('id')->timezone($tz);
-                        $cName = $task->course?->name ?? 'Mata Kuliah';
+                        $cName = htmlspecialchars($task->course?->name ?? 'Mata Kuliah', ENT_QUOTES, 'UTF-8');
                         $tType = $task->assignment_type === 'group' ? ' [👥 Kelompok]' : ' [👤 Individu]';
                         $prioTag = $task->priority === 'high' ? ' [🔴 Prioritas Tinggi]' : '';
                         $message .= "• <b>" . htmlspecialchars($task->title) . "</b>{$tType}{$prioTag} ({$cName})\n";
@@ -256,7 +256,7 @@ class SendDailySchedule extends Command
                 $message .= "📚 <b>Kelas Hari Ini (" . $todayCourses->count() . " Matkul):</b>\n";
                 $idx = 1;
                 foreach ($todayCourses as $course) {
-                    $codeText = $course->code ? " [{$course->code}]" : "";
+                    $codeText = $course->code ? " [" . htmlspecialchars($course->code, ENT_QUOTES, 'UTF-8') . "]" : "";
                     $message .= "{$idx}. <b>" . htmlspecialchars($course->name) . "</b>{$codeText}\n";
                     if ($course->start_time) {
                         $start = substr($course->start_time, 0, 5);
@@ -295,7 +295,7 @@ class SendDailySchedule extends Command
                     $tIdx = 1;
                     foreach ($todayAssignments as $task) {
                         $dl = Carbon::parse($task->deadline)->locale('id')->timezone($tz);
-                        $cName = $task->course?->name ?? 'Mata Kuliah';
+                        $cName = htmlspecialchars($task->course?->name ?? 'Mata Kuliah', ENT_QUOTES, 'UTF-8');
                         $tType = $task->assignment_type === 'group' ? ' [👥 Kelompok]' : ' [👤 Individu]';
                         $prioTag = $task->priority === 'high' ? ' [🔴 Prioritas Tinggi]' : '';
                         $message .= "{$tIdx}. <b>" . htmlspecialchars($task->title) . "</b>{$tType}{$prioTag} ({$cName})\n";

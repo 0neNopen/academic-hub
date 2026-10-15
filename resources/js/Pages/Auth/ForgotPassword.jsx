@@ -6,7 +6,8 @@ import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Send } from 'lucide-react';
 
-export default function ForgotPassword({ status }) {
+export default function ForgotPassword({ status, botUsername = 'academic_hub_notif_bot' }) {
+    const cleanBotUsername = (botUsername || 'academic_hub_notif_bot').replace(/^@/, '');
     const { data, setData, post, processing, errors } = useForm({
         email: '',
     });
@@ -76,7 +77,7 @@ export default function ForgotPassword({ status }) {
                     </div>
                     <div className="text-[11px] leading-relaxed text-gray-600 dark:text-gray-300">
                         <span className="font-semibold text-gray-900 dark:text-white">Opsi Instan:</span>
-                        {' '}Jika akun sudah terhubung ke Telegram, tautan reset akan otomatis dikirim ke bot <a href="https://t.me/academic_hub_notif_bot" target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">@academic_hub_notif_bot</a>.
+                        {' '}Jika akun sudah terhubung ke Telegram, tautan reset akan otomatis dikirim ke bot <a href={`https://t.me/${cleanBotUsername}`} target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">@{cleanBotUsername}</a>.
                     </div>
                 </div>
 

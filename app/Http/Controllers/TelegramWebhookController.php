@@ -21,6 +21,14 @@ class TelegramWebhookController extends Controller
      */
     public function handle(Request $request): JsonResponse
     {
+        $webhookSecret = (string) config('services.telegram.webhook_secret', '');
+        if ($webhookSecret !== '') {
+            $headerSecret = (string) $request->header('X-Telegram-Bot-Api-Secret-Token', '');
+            if (! hash_equals($webhookSecret, $headerSecret)) {
+                abort(403, 'Unauthorized webhook request.');
+            }
+        }
+
         $payload = $request->all();
 
         $appUrl = config('app.url', 'https://academic-hub-ocw2.onrender.com');
@@ -79,28 +87,28 @@ class TelegramWebhookController extends Controller
         // Routing perintah teks (mendukung slash command & teks tombol keyboard)
         if (str_starts_with($lowerText, '/start')) {
             $this->handleStartCommand($chatId, $firstName, $user, $appUrl);
+        } elseif (str_starts_with($lowerText, '/reset') || str_starts_with($lowerText, '/lupasandi')) {
+            $this->handleResetPasswordCommand($chatId, $user, $text, $appUrl);
         } elseif (str_starts_with($lowerText, '/semua_jadwal') || str_starts_with($lowerText, '/semuajadwal') || str_contains($lowerText, 'semua jadwal')) {
             $this->handleSemuaJadwalCommand($chatId, $user, $appUrl);
         } elseif (str_starts_with($lowerText, '/jadwal') || str_contains($lowerText, 'jadwal hari ini')) {
             $this->handleJadwalCommand($chatId, $user, $appUrl);
         } elseif (str_starts_with($lowerText, '/tugas') || str_contains($lowerText, 'tugas aktif')) {
             $this->handleTugasCommand($chatId, $user, $appUrl);
-        } elseif (str_starts_with($lowerText, '/materi') || str_contains($lowerText, 'materi')) {
+        } elseif (str_starts_with($lowerText, '/materi') || $lowerText === 'materi' || str_contains($lowerText, 'materi kuliah')) {
             if (preg_match('/^\/materi[_ ](\d+)$/i', $text, $matches)) {
                 $this->handleMateriDetail($chatId, $user, (int) $matches[1], $appUrl);
             } else {
                 $this->handleMateriCommand($chatId, $user, $appUrl);
             }
-        } elseif (str_starts_with($lowerText, '/portal') || str_contains($lowerText, 'portal kampus') || str_contains($lowerText, 'portal')) {
+        } elseif (str_starts_with($lowerText, '/portal') || str_contains($lowerText, 'portal kampus') || $lowerText === 'portal') {
             $this->handlePortalCommand($chatId, $user, $appUrl);
         } elseif (str_starts_with($lowerText, '/id') || str_contains($lowerText, 'chat id')) {
             $this->handleIdCommand($chatId);
-        } elseif (str_starts_with($lowerText, '/reset') || str_starts_with($lowerText, '/lupasandi')) {
-            $this->handleResetPasswordCommand($chatId, $user, $text, $appUrl);
         } elseif (str_starts_with($lowerText, '/help') || str_starts_with($lowerText, '/bantuan') || str_contains($lowerText, 'bantuan')) {
-            $this->handleHelpCommand($chatId, $user);
+            $this->handleHelpCommand($chatId, $user, $appUrl);
         } else {
-            $this->handleDefaultMessage($chatId, $user);
+            $this->handleDefaultMessage($chatId, $user, $appUrl);
         }
 
         return response()->json(['status' => 'ok']);
@@ -108,8 +116,10 @@ class TelegramWebhookController extends Controller
 
     protected function handleStartCommand(int|string $chatId, string $firstName, ?User $user, string $appUrl): void
     {
+        $safeFirstName = htmlspecialchars($firstName, ENT_QUOTES, 'UTF-8');
         if ($user) {
-            $msg = "👋 Halo <b>{$user->name}</b>!\n\n"
+            $safeName = htmlspecialchars($user->name, ENT_QUOTES, 'UTF-8');
+            $msg = "👋 Halo <b>{$safeName}</b>!\n\n"
                  . "✅ <b>Akun Telegram Anda Berhasil Terhubung</b> dengan Academic Hub.\n\n"
                  . "Ketuk tombol biru <b>[ Menu ]</b> di kiri bawah atau gunakan perintah berikut:\n"
                  . "• 📅 <b>/jadwal</b> - Cek kuliah hari ini\n"
@@ -122,7 +132,7 @@ class TelegramWebhookController extends Controller
 
             $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
         } else {
-            $msg = "👋 Halo <b>{$firstName}</b>!\n\n"
+            $msg = "👋 Halo <b>{$safeFirstName}</b>!\n\n"
                  . "Selamat datang di <b>Academic Hub Notifier</b>. 🎓\n\n"
                  . "🔢 <b>Chat ID Telegram Anda adalah:</b>\n"
                  . "<code>{$chatId}</code> <i>(ketuk untuk menyalin)</i>\n\n"
@@ -173,11 +183,12 @@ class TelegramWebhookController extends Controller
         $now = Carbon::now('Asia/Jakarta');
         $todayName = $now->locale('id')->isoFormat('dddd');
         $todayDate = $now->locale('id')->isoFormat('D MMMM YYYY');
+        $safeName = htmlspecialchars($user->name, ENT_QUOTES, 'UTF-8');
 
         $allUserCoursesCount = $user->courses()->count();
         if ($allUserCoursesCount === 0) {
             $msg = "📅 <b>Jadwal Kuliah Hari Ini ({$todayName}, {$todayDate})</b>\n\n"
-                 . "Halo <b>" . htmlspecialchars($user->name) . "</b>!\n\n"
+                 . "Halo <b>{$safeName}</b>!\n\n"
                  . "📌 <b>Jadwal Kuliah Belum Terdaftar:</b>\n"
                  . "Akun Academic Hub kamu saat ini belum memiliki daftar mata kuliah.\n\n"
                  . "Yuk lengkapi jadwal kuliah semester ini melalui website agar bot dapat menampilkan jadwal harianmu:\n"
@@ -200,7 +211,7 @@ class TelegramWebhookController extends Controller
                     : "☕ <b>Selamat Hari Minggu!</b>";
                 $msg = "📅 <b>Jadwal Kuliah Hari Ini ({$todayName}, {$todayDate})</b>\n\n"
                      . "{$weekendGreeting}\n"
-                     . "Halo <b>" . htmlspecialchars($user->name) . "</b>! Tidak ada jadwal perkuliahan hari ini 🥳\n"
+                     . "Halo <b>{$safeName}</b>! Tidak ada jadwal perkuliahan hari ini 🥳\n"
                      . "Manfaatkan akhir pekanmu untuk istirahat, refreshing, atau bersantai.\n\n"
                      . "💡 <b>Aksi Cepat:</b>\n"
                      . "• <b>/tugas</b> - Cek status tugas aktif\n"
@@ -213,16 +224,17 @@ class TelegramWebhookController extends Controller
             }
         } else {
             $msg = "📅 <b>Jadwal Kuliah Hari Ini ({$todayName}, {$todayDate})</b>\n"
-                 . "Halo <b>{$user->name}</b>, berikut agenda perkuliahanmu hari ini:\n\n";
+                 . "Halo <b>{$safeName}</b>, berikut agenda perkuliahanmu hari ini:\n\n";
 
             foreach ($courses as $index => $course) {
                 $no = $index + 1;
                 $timeText = $this->formatCourseTime($course->start_time, $course->end_time);
-                $lecturer = $course->lecturer_name ?: 'Dosen belum diset';
-                $code = $course->code ? " ({$course->code})" : "";
-                $roomText = $course->room ? "   📍 Ruang: {$course->room}\n" : "";
+                $courseName = htmlspecialchars($course->name, ENT_QUOTES, 'UTF-8');
+                $lecturer = htmlspecialchars($course->lecturer_name ?: 'Dosen belum diset', ENT_QUOTES, 'UTF-8');
+                $code = $course->code ? " (" . htmlspecialchars($course->code, ENT_QUOTES, 'UTF-8') . ")" : "";
+                $roomText = $course->room ? "   📍 Ruang: " . htmlspecialchars($course->room, ENT_QUOTES, 'UTF-8') . "\n" : "";
 
-                $msg .= "{$no}. <b>{$course->name}</b>{$code}\n"
+                $msg .= "{$no}. <b>{$courseName}</b>{$code}\n"
                       . "   ⏰ Waktu: {$timeText}\n"
                       . "   👤 Dosen: {$lecturer}\n"
                       . $roomText . "\n";
@@ -260,19 +272,21 @@ class TelegramWebhookController extends Controller
             $grouped[$day][] = $c;
         }
 
+        $safeName = htmlspecialchars($user->name, ENT_QUOTES, 'UTF-8');
         $msg = "🗓️ <b>Seluruh Jadwal Perkuliahan Anda</b>\n"
-             . "Halo <b>{$user->name}</b>, berikut ringkasan seluruh matkul yang terdaftar di Academic Hub:\n\n";
+             . "Halo <b>{$safeName}</b>, berikut ringkasan seluruh matkul yang terdaftar di Academic Hub:\n\n";
 
         foreach ($dayOrder as $day) {
             if (!empty($grouped[$day])) {
                 $msg .= "📌 <b>" . strtoupper($day) . "</b>\n";
                 foreach ($grouped[$day] as $course) {
                     $timeText = $this->formatCourseTime($course->start_time, $course->end_time);
-                    $code = $course->code ? " ({$course->code})" : "";
-                    $lecturer = $course->lecturer_name ?: 'Dosen belum diset';
-                    $roomText = $course->room ? "   📍 Ruang: {$course->room}\n" : "";
+                    $code = $course->code ? " (" . htmlspecialchars($course->code, ENT_QUOTES, 'UTF-8') . ")" : "";
+                    $courseName = htmlspecialchars($course->name, ENT_QUOTES, 'UTF-8');
+                    $lecturer = htmlspecialchars($course->lecturer_name ?: 'Dosen belum diset', ENT_QUOTES, 'UTF-8');
+                    $roomText = $course->room ? "   📍 Ruang: " . htmlspecialchars($course->room, ENT_QUOTES, 'UTF-8') . "\n" : "";
 
-                    $msg .= "• <b>{$course->name}</b>{$code}\n"
+                    $msg .= "• <b>{$courseName}</b>{$code}\n"
                           . "   ⏰ Waktu: {$timeText}\n"
                           . "   👤 Dosen: {$lecturer}\n"
                           . $roomText . "\n";
@@ -286,11 +300,12 @@ class TelegramWebhookController extends Controller
                 $msg .= "📌 <b>" . strtoupper($day) . "</b>\n";
                 foreach ($courses as $course) {
                     $timeText = $this->formatCourseTime($course->start_time, $course->end_time);
-                    $code = $course->code ? " ({$course->code})" : "";
-                    $lecturer = $course->lecturer_name ?: 'Dosen belum diset';
-                    $roomText = $course->room ? "   📍 Ruang: {$course->room}\n" : "";
+                    $code = $course->code ? " (" . htmlspecialchars($course->code, ENT_QUOTES, 'UTF-8') . ")" : "";
+                    $courseName = htmlspecialchars($course->name, ENT_QUOTES, 'UTF-8');
+                    $lecturer = htmlspecialchars($course->lecturer_name ?: 'Dosen belum diset', ENT_QUOTES, 'UTF-8');
+                    $roomText = $course->room ? "   📍 Ruang: " . htmlspecialchars($course->room, ENT_QUOTES, 'UTF-8') . "\n" : "";
 
-                    $msg .= "• <b>{$course->name}</b>{$code}\n"
+                    $msg .= "• <b>{$courseName}</b>{$code}\n"
                           . "   ⏰ Waktu: {$timeText}\n"
                           . "   👤 Dosen: {$lecturer}\n"
                           . $roomText . "\n";
@@ -402,7 +417,11 @@ class TelegramWebhookController extends Controller
             return;
         }
 
-        $courses = $user->courses()->withCount('materials')->orderBy('name', 'asc')->get();
+        $courses = $user->courses()
+            ->withCount('materials')
+            ->withMax('materials', 'meeting_number')
+            ->orderBy('name', 'asc')
+            ->get();
 
         if ($courses->isEmpty()) {
             $msg = "📑 <b>Arsip Berkas Materi Perkuliahan</b>\n\n"
@@ -412,8 +431,9 @@ class TelegramWebhookController extends Controller
             return;
         }
 
+        $safeName = htmlspecialchars($user->name, ENT_QUOTES, 'UTF-8');
         $msg = "📑 <b>Arsip Berkas Materi Perkuliahan</b>\n"
-             . "Halo <b>" . htmlspecialchars($user->name) . "</b>, berikut ringkasan berkas materi kuliah Anda:\n\n";
+             . "Halo <b>{$safeName}</b>, berikut ringkasan berkas materi kuliah Anda:\n\n";
 
         $totalMaterials = 0;
         $buttons = [];
@@ -422,10 +442,11 @@ class TelegramWebhookController extends Controller
             $totalMaterials += $count;
             $statusText = $count > 0 ? "<b>{$count} berkas</b> tersimpan" : "<i>Belum ada berkas</i>";
 
-            $latest = $course->materials()->orderBy('meeting_number', 'desc')->first();
-            $latestText = ($latest && $latest->meeting_number) ? " <i>(P{$latest->meeting_number})</i>" : "";
+            $latestMeeting = $course->materials_max_meeting_number;
+            $latestText = $latestMeeting ? " <i>(P{$latestMeeting})</i>" : "";
+            $safeCourseName = htmlspecialchars($course->name, ENT_QUOTES, 'UTF-8');
 
-            $msg .= "• <b>{$course->name}</b>: {$statusText}{$latestText}\n";
+            $msg .= "• <b>{$safeCourseName}</b>: {$statusText}{$latestText}\n";
 
             // Tombol interaktif per matkul: HANYA TEKS BERSIH DAN RAPI (TANPA EMOJI)
             $btnLabel = $course->name . ($count > 0 ? " ({$count} berkas)" : " (0 berkas)");
@@ -582,7 +603,7 @@ class TelegramWebhookController extends Controller
         $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
     }
 
-    protected function handleHelpCommand(int|string $chatId, ?User $user = null): void
+    protected function handleHelpCommand(int|string $chatId, ?User $user = null, ?string $appUrl = null): void
     {
         if ($user) {
             $reminderTime = $user->schedule_reminder_time ?: '06:00';
@@ -628,9 +649,9 @@ class TelegramWebhookController extends Controller
         $this->telegramService->sendMessage($chatId, $msg, null, $this->telegramService->removeKeyboardMarkup());
     }
 
-    protected function handleDefaultMessage(int|string $chatId, ?User $user): void
+    protected function handleDefaultMessage(int|string $chatId, ?User $user, string $appUrl): void
     {
-        $name = $user ? $user->name : 'Mahasiswa';
+        $name = htmlspecialchars($user ? $user->name : 'Mahasiswa', ENT_QUOTES, 'UTF-8');
         $msg = "Halo <b>{$name}</b>! 👋\n\n"
              . "Silakan ketuk tombol biru <b>[ Menu ]</b> di pojok kiri bawah atau gunakan perintah berikut:\n"
              . "• 📅 <b>/jadwal</b> - Jadwal kuliah hari ini\n"
@@ -655,11 +676,12 @@ class TelegramWebhookController extends Controller
         }
 
         $portals = $user->all_campus_portals;
-        $campusName = $user->campus_name ? htmlspecialchars($user->campus_name) : 'Kampus Anda';
+        $campusName = $user->campus_name ? htmlspecialchars($user->campus_name, ENT_QUOTES, 'UTF-8') : 'Kampus Anda';
 
         if (empty($portals)) {
+            $safeName = htmlspecialchars($user->name, ENT_QUOTES, 'UTF-8');
             $msg = "🏛️ <b>Portal Kampus Belum Diatur</b>\n\n"
-                 . "Halo <b>{$user->name}</b>, Anda belum menambahkan tautan portal kampus (seperti OCW, SPADA, SIAKAD) di Academic Hub.\n\n"
+                 . "Halo <b>{$safeName}</b>, Anda belum menambahkan tautan portal kampus (seperti OCW, SPADA, SIAKAD) di Academic Hub.\n\n"
                  . "👉 Silakan atur portal kampus Anda di halaman profil web:\n"
                  . "<a href=\"{$appUrl}/profile\">{$appUrl}/profile</a>";
 
@@ -727,44 +749,31 @@ class TelegramWebhookController extends Controller
 
     protected function handleResetPasswordCommand(int|string $chatId, ?User $user, string $text, string $appUrl): void
     {
-        $parts = preg_split('/\s+/', trim($text));
-        $targetEmail = $parts[1] ?? null;
-
-        $targetUser = $user;
-        if (! $targetUser && $targetEmail && filter_var($targetEmail, FILTER_VALIDATE_EMAIL)) {
-            $candidateUser = User::where('email', $targetEmail)->first();
-            if ($candidateUser) {
-                if (empty($candidateUser->telegram_chat_id)) {
-                    $chatIdInUse = User::where('telegram_chat_id', (string) $chatId)->exists();
-                    if (! $chatIdInUse) {
-                        $candidateUser->update(['telegram_chat_id' => (string) $chatId]);
-                    }
-                }
-                if ($candidateUser->telegram_chat_id === (string) $chatId) {
-                    $targetUser = $candidateUser;
-                }
-            }
-        }
-
-        if (! $targetUser) {
+        if (! $user) {
             $msg = "🔐 <b>Atur Ulang Kata Sandi</b>\n\n"
-                 . "Akun Telegram Anda belum terhubung ke akun Academic Hub.\n\n"
-                 . "Silakan kirim perintah dengan format:\n"
-                 . "<code>/reset email_anda@kampus.ac.id</code>\n\n"
-                 . "Contoh:\n"
-                 . "<code>/reset novv.a2n@gmail.com</code>";
-            $this->telegramService->sendMessage($chatId, $msg);
+                 . "⚠️ Demi alasan keamanan, fitur reset kata sandi via Telegram hanya dapat digunakan jika akun Telegram Anda <b>sudah terhubung sebelumnya</b> di halaman Profil Academic Hub.\n\n"
+                 . "Silakan gunakan fitur <b>Lupa Kata Sandi</b> melalui website:\n"
+                 . "🔗 <a href=\"{$appUrl}/forgot-password\">{$appUrl}/forgot-password</a>";
+
+            $buttons = [
+                [
+                    ['text' => '🌐 Buka Lupa Kata Sandi', 'url' => "{$appUrl}/forgot-password"],
+                ],
+            ];
+
+            $this->telegramService->sendMessage($chatId, $msg, $buttons);
             return;
         }
 
-        $token = \Illuminate\Support\Facades\Password::broker()->createToken($targetUser);
+        $token = \Illuminate\Support\Facades\Password::broker()->createToken($user);
         $resetUrl = url(route('password.reset', [
             'token' => $token,
-            'email' => $targetUser->email,
+            'email' => $user->email,
         ], false));
 
+        $safeName = htmlspecialchars($user->name, ENT_QUOTES, 'UTF-8');
         $msg = "🔐 <b>Tautan Reset Kata Sandi Anda</b>\n\n"
-             . "Halo <b>" . htmlspecialchars($targetUser->name) . "</b>,\n"
+             . "Halo <b>{$safeName}</b>,\n"
              . "Berikut adalah tautan untuk mengatur ulang kata sandi akun Academic Hub Anda (berlaku selama 60 menit):\n\n"
              . "🔗 <a href=\"{$resetUrl}\">{$resetUrl}</a>\n\n"
              . "<i>Ketuk tombol di bawah ini untuk membuka halaman ubah sandi baru:</i>";
@@ -776,7 +785,7 @@ class TelegramWebhookController extends Controller
         ]);
 
         if ($msgId) {
-            cache()->put('tg_reset_msg_' . $targetUser->id, $msgId, 3600);
+            cache()->put('tg_reset_msg_' . $user->id, $msgId, 3600);
         }
     }
 }

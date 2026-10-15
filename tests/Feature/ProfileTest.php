@@ -2,8 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Course;
+use App\Models\Material;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -299,5 +302,40 @@ class ProfileTest extends TestCase
         $this->assertCount(1, $user->campus_portals);
         $this->assertSame('LMS Moodle', $user->campus_portals[0]['name']);
         $this->assertSame('https://lms.kampus.ac.id', $user->campus_portals[0]['url']);
+    }
+
+    public function test_deleting_user_account_cleans_up_course_material_files_from_storage(): void
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create();
+        $course = Course::factory()->create(['user_id' => $user->id]);
+
+        $filePath = 'materials/user_deletion_test.pdf';
+        Storage::disk('public')->put($filePath, 'User material content');
+
+        $material = Material::create([
+            'course_id' => $course->id,
+            'title' => 'Materi User Hapus',
+            'file_path' => $filePath,
+        ]);
+
+        Storage::disk('public')->assertExists($filePath);
+
+        $response = $this
+            ->actingAs($user)
+            ->delete('/profile', [
+                'password' => 'password',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/');
+
+        $this->assertGuest();
+        $this->assertDatabaseMissing('users', ['id' => $user->id]);
+        $this->assertDatabaseMissing('courses', ['id' => $course->id]);
+        $this->assertDatabaseMissing('materials', ['id' => $material->id]);
+        Storage::disk('public')->assertMissing($filePath);
     }
 }

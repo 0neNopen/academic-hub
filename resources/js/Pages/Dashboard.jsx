@@ -289,31 +289,31 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
         if (diffHours < 0) {
             return {
                 label: 'Lewat Tenggat',
-                badgeClass: 'bg-rose-50 text-rose-700 border-rose-200/80',
-                textClass: 'text-rose-600 font-semibold',
+                badgeClass: 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200/80 dark:border-rose-900/60',
+                textClass: 'text-rose-600 dark:text-rose-400 font-semibold',
                 isOverdue: true,
             };
         }
         if (diffHours <= 24) {
             return {
                 label: '< 24 Jam (Mendesak)',
-                badgeClass: 'bg-red-50 text-red-700 border-red-200 font-bold',
-                textClass: 'text-red-600 font-bold',
+                badgeClass: 'bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900/60 font-bold',
+                textClass: 'text-red-600 dark:text-red-400 font-bold',
                 isUrgent: true,
             };
         }
         if (diffHours <= 72) {
             return {
                 label: '< 3 Hari',
-                badgeClass: 'bg-amber-50 text-amber-800 border-amber-200 font-semibold',
-                textClass: 'text-amber-700 font-semibold',
+                badgeClass: 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-900/60 font-semibold',
+                textClass: 'text-amber-700 dark:text-amber-400 font-semibold',
                 isSoon: true,
             };
         }
         return {
             label: 'Mendatang',
-            badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
-            textClass: 'text-gray-600',
+            badgeClass: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700/60 font-medium',
+            textClass: 'text-gray-600 dark:text-gray-400',
         };
     };
 
@@ -449,7 +449,7 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                 setSelectedDayFilter('Hari Ini');
                                 setMobileTab('courses');
                             }}
-                            className="group rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-3.5 sm:p-4 shadow-xs hover:shadow-md hover:border-emerald-200 dark:border-emerald-800 transition-all text-left flex flex-col justify-between active:scale-[0.98]"
+                            className="group rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-3.5 sm:p-4 shadow-xs hover:shadow-md hover:border-emerald-200 dark:hover:border-emerald-800 transition-all text-left flex flex-col justify-between active:scale-[0.98]"
                         >
                             <div className="flex items-center justify-between w-full">
                                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Jadwal Hari Ini</span>
@@ -684,9 +684,13 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                             <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
                                                 <div>
                                                     <div className="flex items-center justify-between mb-2">
-                                                        <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300">
-                                                            {course.code || 'MK'}
-                                                        </span>
+                                                        {course.code ? (
+                                                            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300">
+                                                                {course.code}
+                                                            </span>
+                                                        ) : (
+                                                            <span></span>
+                                                        )}
                                                         <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 font-medium">
                                                             <Calendar className="h-3.5 w-3.5 text-gray-400" />
                                                             {course.day_of_week || 'Jadwal fleksibel'}
@@ -700,29 +704,15 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                                     </p>
                                                 </div>
 
-                                                <div className="flex flex-wrap items-center gap-2 mt-3 pt-2.5 border-t border-gray-100 dark:border-gray-800 text-xs">
-                                                    {course.room ? (
-                                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold border border-emerald-100 dark:border-emerald-900/40">
-                                                            <MapPin className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                                                            <span className="truncate max-w-[130px]">{course.room}</span>
-                                                        </span>
-                                                    ) : (
-                                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-medium border border-gray-100 dark:border-gray-700/60">
-                                                            <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                                                            Ruang -
-                                                        </span>
-                                                    )}
-                                                    {formatCourseTime(course.start_time, course.end_time) ? (
-                                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-semibold border border-amber-100 dark:border-amber-900/40">
-                                                            <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                                                            <span>{formatCourseTime(course.start_time, course.end_time)}</span>
-                                                        </span>
-                                                    ) : (
-                                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-medium border border-gray-100 dark:border-gray-700/60">
-                                                            <Clock className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                                                            Fleksibel
-                                                        </span>
-                                                    )}
+                                                <div className="flex flex-wrap items-center gap-3 mt-3 pt-2.5 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400">
+                                                    <span className="inline-flex items-center gap-1.5 font-medium">
+                                                        <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                                                        <span className="truncate max-w-[130px]">{course.room || 'Ruang -'}</span>
+                                                    </span>
+                                                    <span className="inline-flex items-center gap-1.5 font-medium tabular-nums">
+                                                        <Clock className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                                                        <span>{formatCourseTime(course.start_time, course.end_time) || 'Fleksibel'}</span>
+                                                    </span>
                                                 </div>
                                             </div>
 
@@ -768,7 +758,6 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                                 rel="noreferrer"
                                                 className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-50/90 dark:bg-gray-800/80 text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-600 dark:hover:text-blue-400 border border-gray-200/80 dark:border-gray-700/80 transition-all shadow-2xs hover:shadow-xs active:scale-95"
                                             >
-                                                <span className="h-1.5 w-1.5 rounded-full bg-blue-500/70 group-hover:bg-blue-500"></span>
                                                 <span>{portal.name || 'Portal'}</span>
                                                 <ExternalLink className="h-3 w-3 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                                             </a>
@@ -941,17 +930,6 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                                 <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex flex-wrap items-center justify-between text-xs gap-2">
                                                     <div className="flex flex-wrap items-center gap-2">
                                                         <TaskLinksGroup task={task} />
-
-                                                        {task.course_id && (
-                                                            <Link
-                                                                href={route('courses.show', task.course_id)}
-                                                                className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium text-xs transition px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 shrink-0"
-                                                                title={`Buka detail mata kuliah ${task.course?.name || ''}`}
-                                                            >
-                                                                <span>Detail MK</span>
-                                                                <ArrowRight className="h-3 w-3" />
-                                                            </Link>
-                                                        )}
                                                     </div>
 
                                                     {/* Tombol Cepat Tandai Selesai Langsung dari Dashboard */}
