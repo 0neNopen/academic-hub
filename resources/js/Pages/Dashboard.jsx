@@ -509,29 +509,36 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
 
                     {/* Akses Cepat Portal Kampus Ramping (Khusus Layar Mobile) */}
                     {((auth.user.campus_portals && auth.user.campus_portals.length > 0) || auth.user.campus_portal_url) && (
-                        <div className="lg:hidden rounded-2xl border border-gray-100 dark:border-gray-800 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xs p-3 shadow-2xs">
-                            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-                                <span className="text-xs font-bold text-gray-500 dark:text-gray-400 shrink-0 flex items-center gap-1.5">
-                                    <ExternalLink className="h-3.5 w-3.5 text-blue-500" />
-                                    Portal Kampus:
+                        <div className="lg:hidden rounded-2xl border border-gray-100 dark:border-gray-800 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xs p-3.5 shadow-2xs space-y-2.5">
+                            <div className="flex items-center justify-between gap-2">
+                                <span className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5 shrink-0">
+                                    <div className="p-1 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+                                        <ExternalLink className="h-3 w-3" />
+                                    </div>
+                                    <span>Portal Kampus</span>
                                 </span>
-                                <div className="flex items-center gap-1.5 shrink-0">
-                                    {(auth.user.campus_portals && auth.user.campus_portals.length > 0
-                                        ? auth.user.campus_portals
-                                        : [{ name: auth.user.campus_name || 'Portal Kampus', url: auth.user.campus_portal_url }]
-                                    ).map((portal, idx) => (
-                                        <a
-                                            key={idx}
-                                            href={portal.url}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 border border-gray-200 dark:border-gray-700 transition shrink-0 active:scale-95"
-                                        >
-                                            <span>{portal.name || 'Portal'}</span>
-                                            <ExternalLink className="h-2.5 w-2.5 opacity-60" />
-                                        </a>
-                                    ))}
-                                </div>
+                                {auth.user.campus_name && (
+                                    <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 truncate max-w-[200px]">
+                                        {auth.user.campus_name}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+                                {(auth.user.campus_portals && auth.user.campus_portals.length > 0
+                                    ? auth.user.campus_portals
+                                    : [{ name: auth.user.campus_name || 'Portal Kampus', url: auth.user.campus_portal_url }]
+                                ).map((portal, idx) => (
+                                    <a
+                                        key={idx}
+                                        href={portal.url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 border border-gray-200 dark:border-gray-700 transition shrink-0 active:scale-95 shadow-2xs"
+                                    >
+                                        <span>{portal.name || 'Portal'}</span>
+                                        <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+                                    </a>
+                                ))}
                             </div>
                         </div>
                     )}
@@ -732,9 +739,9 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
 
                         {/* Kolom Kanan (4): Deadline Tugas Terdekat (Sidebar Agenda + Aksi Selesai Cepat) */}
                         <div id="deadlines-section" className={`${mobileTab === 'deadlines' ? 'block' : 'hidden'} lg:block lg:col-span-5 xl:col-span-4 space-y-4 lg:sticky lg:top-6 self-start`}>
-                            {/* Akses Cepat Portal Kampus (Desktop & Tab Deadlines) */}
+                            {/* Akses Cepat Portal Kampus (Desktop) */}
                             {((auth.user.campus_portals && auth.user.campus_portals.length > 0) || auth.user.campus_portal_url) && (
-                                <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 sm:p-5 shadow-xs space-y-3">
+                                <div className="hidden lg:block rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 sm:p-5 shadow-xs space-y-3">
                                     <div className="flex items-center justify-between">
                                         <h4 className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                             <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
