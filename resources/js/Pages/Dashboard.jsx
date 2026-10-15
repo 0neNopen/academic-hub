@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
+    ArrowRight,
     BookOpen,
     Calendar,
     CheckCircle2,
@@ -19,7 +20,109 @@ import {
     Users,
     X,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+function TaskLinksGroup({ task }) {
+    const rawLinks = Array.isArray(task.all_links) && task.all_links.length > 0
+        ? task.all_links
+        : task.submission_url
+            ? [{ title: 'Link Tugas', url: task.submission_url }]
+            : [];
+
+    const links = rawLinks.filter((l) => l && l.url && typeof l.url === 'string');
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const menuRef = useRef(null);
+
+    useEffect(() => {
+        if (!isMenuOpen) return;
+        const handleOutsideClick = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setIsMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleOutsideClick);
+        return () => document.removeEventListener('mousedown', handleOutsideClick);
+    }, [isMenuOpen]);
+
+    if (links.length === 0) {
+        return null;
+    }
+
+    if (links.length <= 2) {
+        return (
+            <div className="flex flex-wrap items-center gap-1.5">
+                {links.map((linkItem, idx) => (
+                    <a
+                        key={idx}
+                        href={linkItem.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition border border-blue-200 dark:border-blue-800 shrink-0"
+                        title={linkItem.url}
+                    >
+                        <ExternalLink className="h-3 w-3 shrink-0" />
+                        <span className="truncate max-w-[130px]">{linkItem.title || 'Link'}</span>
+                    </a>
+                ))}
+            </div>
+        );
+    }
+
+    // Opsi B: Tampilkan 1 link utama dan tombol dropdown untuk link lainnya
+    const primaryLink = links[0];
+    const remainingLinks = links.slice(1);
+
+    return (
+        <div className="flex items-center gap-1.5 relative shrink-0" ref={menuRef}>
+            <a
+                href={primaryLink.url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition border border-blue-200 dark:border-blue-800 shrink-0"
+                title={primaryLink.url}
+            >
+                <ExternalLink className="h-3 w-3 shrink-0" />
+                <span className="truncate max-w-[120px]">{primaryLink.title || 'Link'}</span>
+            </a>
+
+            <div className="relative">
+                <button
+                    type="button"
+                    onClick={() => setIsMenuOpen((prev) => !prev)}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold bg-blue-50/80 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200/80 dark:border-blue-800/80 transition"
+                    title="Tampilkan tautan tugas lainnya"
+                >
+                    <span>+{remainingLinks.length} tautan</span>
+                    <ChevronDown className={`h-3 w-3 transition-transform duration-150 ${isMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isMenuOpen && (
+                    <div className="absolute left-0 bottom-full mb-1.5 z-40 w-56 p-1.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
+                        <div className="px-2 py-1 text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                            Tautan Lainnya ({remainingLinks.length})
+                        </div>
+                        <div className="max-h-48 overflow-y-auto space-y-0.5">
+                            {remainingLinks.map((item, idx) => (
+                                <a
+                                    key={idx}
+                                    href={item.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-700 dark:hover:text-blue-300 transition"
+                                    title={item.url}
+                                >
+                                    <span className="truncate">{item.title || item.url}</span>
+                                    <ExternalLink className="h-3 w-3 shrink-0 text-gray-400" />
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
 
 export default function Dashboard({ auth, courses, upcomingAssignments }) {
     const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
@@ -772,9 +875,20 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
                                             >
                                                 <div className="flex items-center justify-between text-xs gap-2">
                                                     <div className="flex flex-wrap items-center gap-1.5 min-w-0">
-                                                        <span className="px-2.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs truncate font-medium">
-                                                            {task.course?.name}
-                                                        </span>
+                                                        {task.course_id ? (
+                                                            <Link
+                                                                href={route('courses.show', task.course_id)}
+                                                                className="px-2.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-200 dark:hover:bg-gray-700/80 text-xs truncate font-medium transition inline-flex items-center gap-1 group shrink-0"
+                                                                title={`Buka detail mata kuliah ${task.course?.name || ''}`}
+                                                            >
+                                                                <span className="truncate max-w-[150px] sm:max-w-[220px]">{task.course?.name}</span>
+                                                                <ArrowRight className="h-2.5 w-2.5 opacity-40 group-hover:opacity-100 transition-opacity shrink-0" />
+                                                            </Link>
+                                                        ) : (
+                                                            <span className="px-2.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs truncate font-medium shrink-0">
+                                                                {task.course?.name}
+                                                            </span>
+                                                        )}
                                                         {task.assignment_type === 'group' ? (
                                                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shrink-0">
                                                                 <Users className="h-3 w-3" /> Kelompok
@@ -825,36 +939,17 @@ export default function Dashboard({ auth, courses, upcomingAssignments }) {
 
                                                 {/* Baris Tombol Aksi: Link Tugas, Detail MK, dan Tombol Tandai Selesai */}
                                                 <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex flex-wrap items-center justify-between text-xs gap-2">
-                                                    <div className="flex flex-wrap items-center gap-1.5">
-                                                        {Array.isArray(task.all_links) && task.all_links.length > 0 ? (
-                                                            task.all_links.map((linkItem, idx) => (
-                                                                <a
-                                                                    key={idx}
-                                                                    href={linkItem.url}
-                                                                    target="_blank"
-                                                                    rel="noreferrer"
-                                                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition border border-blue-200 dark:border-blue-800"
-                                                                    title={linkItem.url}
-                                                                >
-                                                                    <ExternalLink className="h-3 w-3 shrink-0" />
-                                                                    <span className="truncate max-w-[130px]">{linkItem.title || 'Link'}</span>
-                                                                </a>
-                                                            ))
-                                                        ) : task.submission_url ? (
-                                                            <a
-                                                                href={task.submission_url}
-                                                                target="_blank"
-                                                                rel="noreferrer"
-                                                                className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 font-medium hover:underline text-xs"
-                                                            >
-                                                                Link Tugas <ExternalLink className="h-3 w-3" />
-                                                            </a>
-                                                        ) : (
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <TaskLinksGroup task={task} />
+
+                                                        {task.course_id && (
                                                             <Link
                                                                 href={route('courses.show', task.course_id)}
-                                                                className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium text-xs"
+                                                                className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium text-xs transition px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 shrink-0"
+                                                                title={`Buka detail mata kuliah ${task.course?.name || ''}`}
                                                             >
-                                                                Detail MK →
+                                                                <span>Detail MK</span>
+                                                                <ArrowRight className="h-3 w-3" />
                                                             </Link>
                                                         )}
                                                     </div>
